@@ -104,5 +104,8 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-22 | Allow camelCase and snake_case in `agent_traces.tool_name` check constraint | Reconciles `ai-agent.md`/Phase 5 spec camelCase (`scoreSeverity`) with initial `database.md` snake_case | Yes |
 | 2026-11-22 | Add `update_complaint_severity` and `record_agent_trace` RPC helpers | Guarantees strict single-column PATCH constraint and audit logging reliability across RLS caller contexts | Yes |
 | 2026-11-22 | Implement trace deduplication in `CivicAgent.scoreSeverity` | Prevents redundant model calls and duplicate traces when server background task and client status queries run concurrently | Yes |
+| 2026-11-22 | Implement 32x32 DCT-II perceptual hash (pHash) algorithm using `sharp` luminance buffer | Avoids abandoned C++ node-phash native compilation failure while computing true 64-bit Hamming distance (< 15 threshold) across platforms | Yes |
+| 2026-11-22 | Introduce `get_public_map_pins` and `get_complaint_details_with_attestations` RPC functions | Streams single representative pins with cluster counts and nested member attestations to the public map while maintaining backward compatibility | Yes |
+| 2026-11-22 | Multiply severity by cluster weight in `get_priority_queue` (`severity * COALESCE(complaint_count, 1)`) | Elevates priority of multi-report clustered tickets above standalone complaints of equivalent individual severity | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.

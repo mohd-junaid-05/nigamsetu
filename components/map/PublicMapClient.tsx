@@ -61,11 +61,12 @@ export default function PublicMapClient({
   const mapInstanceRef = useRef<L.Map | null>(null);
   const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
 
-  // Helper to create pin icon with status color and severity CSS scale
-  const createPinIcon = (status: string, severity: number) => {
+  // Helper to create pin icon with status color, severity CSS scale, and optional cluster report badge
+  const createPinIcon = (status: string, severity: number, complaintCount: number = 1) => {
     const color = STATUS_COLORS[status] || '#ef4444';
     const severityData = SEVERITY_INFO[severity] || SEVERITY_INFO[2];
     const isEmergency = severity >= 4;
+    const isClustered = complaintCount > 1;
 
     return L.divIcon({
       className: 'custom-complaint-pin',
@@ -74,6 +75,11 @@ export default function PublicMapClient({
           ${
             isEmergency
               ? `<div style="position: absolute; width: 38px; height: 38px; border-radius: 50%; background: ${color}; opacity: 0.35; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>`
+              : ''
+          }
+          ${
+            isClustered
+              ? `<div style="position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #0f172a; color: #ffffff; font-size: 10px; font-weight: 800; padding: 1px 7px; border-radius: 9999px; border: 1.5px solid #ffffff; box-shadow: 0 2px 6px rgba(0,0,0,0.5); white-space: nowrap; pointer-events: none; letter-spacing: -0.2px;">${complaintCount} reports</div>`
               : ''
           }
           <svg viewBox="0 0 24 24" width="34" height="34" fill="${color}" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.45));">
@@ -132,8 +138,11 @@ export default function PublicMapClient({
         const categoryLabel = CATEGORY_ICONS[c.category] || c.category;
         const severityData = SEVERITY_INFO[c.severity] || SEVERITY_INFO[2];
 
+        const isClustered = typeof c.complaint_count === 'number' && c.complaint_count > 1;
+        const attestations = Array.isArray(c.attestations) ? c.attestations : [];
+
         const contentHtml = `
-          <div style="width: 280px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
+          <div style="width: 285px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
             <div style="position: relative; width: 100%; height: 145px; background: #18181b; overflow: hidden;">
               <img
                 src="${c.image_url}"
@@ -144,8 +153,24 @@ export default function PublicMapClient({
               <div style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;">
                 ${categoryLabel}
               </div>
+              ${
+                isClustered
+                  ? `<div style="position: absolute; top: 8px; right: 8px; background: #0f172a; color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: 800; box-shadow: 0 2px 4px rgba(0,0,0,0.4);">
+                      ${c.complaint_count} Reports Clustered
+                    </div>`
+                  : ''
+              }
             </div>
             <div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+              ${
+                isClustered
+                  ? `<div style="display: flex; align-items: center; justify-content: space-between; background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.2); border-radius: 6px; padding: 3px 8px; font-size: 11px; font-weight: 700; color: #2563eb;">
+                      <span>👥 Clustered Ticket</span>
+                      <span>${c.complaint_count} verified reports</span>
+                    </div>`
+                  : ''
+              }
+
               <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
                 <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: ${color};">
                   <span style="width: 8px; height: 8px; border-radius: 50%; background: ${color}; display: inline-block;"></span>
@@ -160,6 +185,31 @@ export default function PublicMapClient({
                 <span style="opacity: 0.6; shrink: 0;">📍</span>
                 <span style="font-weight: 500;">${c.address_text || 'GPS Position Recorded'}</span>
               </div>
+
+              ${
+                isClustered && attestations.length > 0
+                  ? `<div style="border-top: 1px dashed rgba(128,128,128,0.25); padding-top: 6px; margin-top: 2px; display: flex; flex-direction: column; gap: 4px;">
+                      <div style="font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.4px;">
+                        Citizen Attestations (${attestations.length})
+                      </div>
+                      <div style="max-height: 80px; overflow-y: auto; display: flex; flex-direction: column; gap: 3px;">
+                        ${attestations
+                          .map(
+                            (a: any) => `
+                          <div style="font-size: 10px; display: flex; align-items: center; justify-content: space-between; padding: 3px 6px; background: rgba(0,0,0,0.04); border-radius: 4px;">
+                            <span style="truncate max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                              📍 ${a.address_text || 'Neighboring report'}
+                            </span>
+                            <span style="opacity: 0.6; font-size: 9px; shrink: 0;">
+                              ${formatDate(a.created_at)}
+                            </span>
+                          </div>`
+                          )
+                          .join('')}
+                      </div>
+                    </div>`
+                  : ''
+              }
 
               <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; opacity: 0.65; border-top: 1px solid rgba(128,128,128,0.2); padding-top: 8px; margin-top: 2px;">
                 <span>Reported: ${formatDate(c.created_at)}</span>
@@ -268,7 +318,7 @@ export default function PublicMapClient({
       if (typeof pin.location?.lat !== 'number' || typeof pin.location?.lng !== 'number') return;
 
       const marker = L.marker([pin.location.lat, pin.location.lng], {
-        icon: createPinIcon(pin.status, pin.severity),
+        icon: createPinIcon(pin.status, pin.severity, pin.complaint_count),
       });
 
       marker.on('click', () => {

@@ -12,6 +12,8 @@ export interface PublicMapPin {
   };
   created_at: string;
   resolved_at: string | null;
+  complaint_count: number;
+  cluster_id: string | null;
 }
 
 export interface PublicMapApiResponse {
@@ -30,28 +32,37 @@ interface RawPublicComplaintRow {
   lng: number;
   created_at: string;
   resolved_at: string | null;
+  complaint_count?: number;
+  cluster_id?: string | null;
 }
 
 export async function GET(): Promise<Response> {
   try {
     const supabase = createAnonymousSupabaseClient();
 
-    // Call the public RPC function which bypasses RLS and returns sanitized fields
-    const { data, error } = await supabase.rpc('get_public_map_complaints');
+    // Call get_public_map_pins to retrieve representative pins and cluster sizes
+    let rows: RawPublicComplaintRow[] = [];
+    const { data: pinsData, error: pinsError } = await supabase.rpc('get_public_map_pins');
 
-    if (error) {
-      return Response.json(
-        {
-          success: false,
-          pins: [],
-          total: 0,
-          error: `Failed to fetch public map data: ${error.message}`,
-        } satisfies PublicMapApiResponse,
-        { status: 500 }
-      );
+    if (!pinsError && Array.isArray(pinsData)) {
+      rows = pinsData as RawPublicComplaintRow[];
+    } else {
+      // Fallback to get_public_map_complaints
+      const { data: fallbackData, error: fallbackError } =
+        await supabase.rpc('get_public_map_complaints');
+      if (fallbackError) {
+        return Response.json(
+          {
+            success: false,
+            pins: [],
+            total: 0,
+            error: `Failed to fetch public map data: ${fallbackError.message}`,
+          } satisfies PublicMapApiResponse,
+          { status: 500 }
+        );
+      }
+      rows = (fallbackData as RawPublicComplaintRow[]) || [];
     }
-
-    const rows = (data as RawPublicComplaintRow[]) || [];
 
     // Map into standardized PublicMapPin structure
     const pins: PublicMapPin[] = rows.map((row) => ({
@@ -65,6 +76,8 @@ export async function GET(): Promise<Response> {
       },
       created_at: row.created_at,
       resolved_at: row.resolved_at,
+      complaint_count: typeof row.complaint_count === 'number' ? row.complaint_count : 1,
+      cluster_id: row.cluster_id || null,
     }));
 
     return Response.json(

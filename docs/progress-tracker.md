@@ -51,11 +51,11 @@
 - [x] Real-time severity preview on `SuccessScreen` displaying semantic severity badge and reasoning without page refresh
 
 ## Phase 06: AI Agent: Duplicate clustering
-- [ ] `checkDuplicate` tool using spatial proximity query (PostGIS `ST_DWithin` 100m)
-- [ ] Perceptual image hashing / visual embedding comparison for same-scene matching
-- [ ] DBSCAN clustering algorithm grouping duplicate reports into one weighted ticket
-- [ ] Cluster attestation counter incrementing ticket priority for repeated complaints
-- [ ] Structured logging of duplicate clustering runs into `agent_traces`
+- [x] `checkDuplicate` tool using spatial proximity query (PostGIS `ST_DWithin` 100m)
+- [x] Perceptual image hashing / visual embedding comparison for same-scene matching
+- [x] DBSCAN clustering algorithm grouping duplicate reports into one weighted ticket
+- [x] Cluster attestation counter incrementing ticket priority for repeated complaints
+- [x] Structured logging of duplicate clustering runs into `agent_traces`
 
 ## Phase 07: Official dashboard
 - [ ] 3-panel desktop-first controller layout (25% queue, 50% map, 25% details)

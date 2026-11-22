@@ -74,3 +74,36 @@ export function createAnonymousSupabaseClient() {
     },
   });
 }
+
+/**
+ * Creates an authenticated Supabase client for a specific user ID and role.
+ * Injects required PostgREST identity headers (x-user-id, x-user-role).
+ */
+export function createAuthenticatedSupabaseClient(
+  userId: string,
+  role = 'citizen',
+  wardId?: string
+) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xlagdiqtedflkigftwov.supabase.co';
+  const supabaseAnonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    'sb_publishable_7y4gVv5VE6TVDPqvGewU4Q_0PTa9PuB';
+
+  const headers: Record<string, string> = {
+    'x-user-id': userId,
+    'x-user-role': role,
+  };
+  if (wardId) headers['x-user-ward-id'] = wardId;
+
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    global: {
+      headers,
+    },
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+}

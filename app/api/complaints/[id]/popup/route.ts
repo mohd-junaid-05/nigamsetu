@@ -11,6 +11,15 @@ export interface ComplaintPopupData {
   created_at: string;
   lat: number;
   lng: number;
+  complaint_count?: number;
+  cluster_id?: string | null;
+  attestations?: Array<{
+    id: string;
+    created_at: string;
+    address_text: string | null;
+    image_url: string;
+    severity: number;
+  }>;
 }
 
 export interface ComplaintPopupResponse {
@@ -29,6 +38,9 @@ interface RawPopupRow {
   created_at: string;
   lat: number;
   lng: number;
+  complaint_count?: number;
+  cluster_id?: string | null;
+  attestations?: any;
 }
 
 export async function GET(
@@ -50,35 +62,65 @@ export async function GET(
     }
 
     const supabase = createAnonymousSupabaseClient();
-    const { data, error } = await supabase.rpc('get_complaint_popup', {
-      target_id: complaintId,
-    });
+    
+    // Attempt detailed fetch with cluster attestations
+    let row: ComplaintPopupData | null = null;
+    const { data: detailData, error: detailError } = await supabase.rpc(
+      'get_complaint_details_with_attestations',
+      {
+        target_id: complaintId,
+      }
+    );
 
-    if (error) {
-      return Response.json(
-        {
-          success: false,
-          error: `Failed to fetch complaint popup: ${error.message}`,
-        } satisfies ComplaintPopupResponse,
-        { status: 500 }
-      );
-    }
+    if (!detailError && Array.isArray(detailData) && detailData.length > 0) {
+      const d = detailData[0] as RawPopupRow;
+      row = {
+        id: d.id,
+        category: d.category,
+        severity: d.severity,
+        status: d.status,
+        image_url: d.image_url,
+        address_text: d.address_text,
+        created_at: d.created_at,
+        lat: d.lat,
+        lng: d.lng,
+        complaint_count: typeof d.complaint_count === 'number' ? d.complaint_count : 1,
+        cluster_id: d.cluster_id || null,
+        attestations: Array.isArray(d.attestations) ? d.attestations : [],
+      };
+    } else {
+      // Fallback to basic get_complaint_popup
+      const { data, error } = await supabase.rpc('get_complaint_popup', {
+        target_id: complaintId,
+      });
 
-    const rows = (data as RawPopupRow[]) || [];
-    if (!rows.length) {
-      return Response.json(
-        {
-          success: false,
-          error: 'Complaint not found',
-        } satisfies ComplaintPopupResponse,
-        { status: 404 }
-      );
+      if (error) {
+        return Response.json(
+          {
+            success: false,
+            error: `Failed to fetch complaint popup: ${error.message}`,
+          } satisfies ComplaintPopupResponse,
+          { status: 500 }
+        );
+      }
+
+      const rows = (data as RawPopupRow[]) || [];
+      if (!rows.length) {
+        return Response.json(
+          {
+            success: false,
+            error: 'Complaint not found',
+          } satisfies ComplaintPopupResponse,
+          { status: 404 }
+        );
+      }
+      row = rows[0];
     }
 
     return Response.json(
       {
         success: true,
-        complaint: rows[0],
+        complaint: row,
       } satisfies ComplaintPopupResponse,
       {
         headers: {

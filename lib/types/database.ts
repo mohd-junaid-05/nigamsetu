@@ -14,7 +14,17 @@ export type VerificationStatus = 'pending' | 'passed' | 'failed';
 export type EscalationTrigger = 'sla_breach' | 'verification_failed' | 'ghost_closure';
 export type EscalationAuthority = 'municipal_commissioner' | 'ward_officer' | 'rti';
 export type EscalationStatus = 'draft' | 'submitted' | 'acknowledged' | 'resolved';
-export type AgentToolName = 'severity_score' | 'duplicate_check' | 'verify_resolution' | 'generate_escalation' | 'chat_answer';
+export type AgentToolName =
+  | 'severity_score'
+  | 'scoreSeverity'
+  | 'duplicate_check'
+  | 'checkDuplicate'
+  | 'verify_resolution'
+  | 'verifyResolution'
+  | 'generate_escalation'
+  | 'generateEscalation'
+  | 'chat_answer'
+  | 'answerChat';
 
 export interface Database {
   public: {
@@ -111,6 +121,7 @@ export interface Database {
           image_url: string;
           location: unknown;
           address_text: string | null;
+          image_perceptual_hash: string | null;
           sla_deadline: string | null;
           resolved_at: string | null;
           resolution_image_url: string | null;
@@ -133,6 +144,7 @@ export interface Database {
           image_url: string;
           location: unknown;
           address_text?: string | null;
+          image_perceptual_hash?: string | null;
           sla_deadline?: string | null;
           resolved_at?: string | null;
           resolution_image_url?: string | null;
@@ -155,6 +167,7 @@ export interface Database {
           image_url?: string;
           location?: unknown;
           address_text?: string | null;
+          image_perceptual_hash?: string | null;
           sla_deadline?: string | null;
           resolved_at?: string | null;
           resolution_image_url?: string | null;
@@ -285,8 +298,79 @@ export interface Database {
         Args: { target_cluster_id: string };
         Returns: number;
       };
+      find_duplicate_candidates: {
+        Args: {
+          p_lat: number;
+          p_lng: number;
+          p_category: string;
+          p_exclude_id?: string | null;
+        };
+        Returns: {
+          id: string;
+          category: ComplaintCategory;
+          severity: number;
+          status: ComplaintStatus;
+          image_url: string;
+          image_perceptual_hash: string | null;
+          cluster_id: string | null;
+          created_at: string;
+          lat: number;
+          lng: number;
+          distance_meters: number;
+        }[];
+      };
+      create_standalone_cluster: {
+        Args: { p_complaint_id: string };
+        Returns: string;
+      };
+      add_complaint_to_cluster: {
+        Args: { p_complaint_id: string; p_cluster_id: string };
+        Returns: number;
+      };
+      update_complaint_phash: {
+        Args: { p_complaint_id: string; p_hash: string };
+        Returns: boolean;
+      };
+      get_public_map_pins: {
+        Args: Record<string, never>;
+        Returns: {
+          id: string;
+          category: ComplaintCategory;
+          severity: number;
+          status: ComplaintStatus;
+          lat: number;
+          lng: number;
+          created_at: string;
+          resolved_at: string | null;
+          complaint_count: number;
+          cluster_id: string | null;
+        }[];
+      };
+      get_complaint_details_with_attestations: {
+        Args: { target_id: string };
+        Returns: {
+          id: string;
+          category: ComplaintCategory;
+          severity: number;
+          status: ComplaintStatus;
+          image_url: string;
+          address_text: string | null;
+          created_at: string;
+          lat: number;
+          lng: number;
+          complaint_count: number;
+          cluster_id: string | null;
+          attestations: {
+            id: string;
+            created_at: string;
+            address_text: string | null;
+            image_url: string;
+            severity: number;
+          }[];
+        }[];
+      };
       get_priority_queue: {
-        Args: { target_ward_id: string };
+        Args: { target_ward_id?: string | null };
         Returns: (Database['public']['Tables']['complaints']['Row'] & {
           weight: number;
           sla_breached: boolean;

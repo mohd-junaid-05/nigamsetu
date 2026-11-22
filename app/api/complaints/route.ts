@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ComplaintCategory, ComplaintStatus } from '@/lib/types/database';
-import { CivicAgent } from '@/lib/agent/CivicAgent';
+import { CivicAgent, CheckDuplicateInput, CheckDuplicateOutput } from '@/lib/agent/CivicAgent';
 import sharp from 'sharp';
 
 export type SubmitComplaintResponse = {
@@ -12,6 +12,9 @@ export type SubmitComplaintResponse = {
   ward_name?: string | null;
   image_url?: string;
   created_at?: string;
+  cluster_id?: string | null;
+  complaint_count?: number;
+  is_duplicate?: boolean;
   error?: string;
 };
 
@@ -197,9 +200,39 @@ export async function POST(req: Request): Promise<Response> {
       );
     }
 
-    // 10. Asynchronously trigger severity scoring (Phase 05 Spec)
-    // The citizen gets a "submitted" response immediately, severity updates in the background.
+    // 10. Run Duplicate Clustering Check (Phase 06 Spec)
+    // Synchronously evaluates geospatial proximity (100m) and perceptual hash
+    // to cluster identical reports into a single ticket or start a new cluster of size 1.
     const agent = new CivicAgent(process.env.GOOGLE_AI_API_KEY, supabase);
+    let clusterId: string | null = null;
+    let complaintCount = 1;
+    let isDuplicate = false;
+
+    try {
+      const dupResult = await agent.run<CheckDuplicateInput, CheckDuplicateOutput>(
+        'checkDuplicate',
+        {
+          complaintId: complaint.id,
+          location: [lat, lng],
+          category,
+          imageUrl: publicUrl,
+          createdAt: complaint.created_at,
+        },
+        {
+          complaintId: complaint.id,
+          wardId: matchedWard?.id || undefined,
+          supabase,
+        }
+      );
+      clusterId = dupResult.matchedClusterId || null;
+      complaintCount = dupResult.clusterCount;
+      isDuplicate = dupResult.isDuplicate;
+    } catch (dupErr) {
+      console.warn('[Complaint Submission] Duplicate check warning:', dupErr);
+    }
+
+    // 11. Asynchronously trigger severity scoring (Phase 05 Spec)
+    // The citizen gets a "submitted" response immediately, severity updates in the background.
     agent.run(
       'scoreSeverity',
       {
@@ -225,6 +258,9 @@ export async function POST(req: Request): Promise<Response> {
       ward_name: matchedWard?.name || null,
       image_url: publicUrl,
       created_at: complaint.created_at,
+      cluster_id: clusterId,
+      complaint_count: complaintCount,
+      is_duplicate: isDuplicate,
     } satisfies SubmitComplaintResponse);
   } catch (err: unknown) {
     const error = err as Error;

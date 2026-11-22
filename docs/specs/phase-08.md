@@ -6,7 +6,6 @@
 
 - **Resolution upload flow:** on the facility's scoped view (or the official dashboard), a "Mark Resolved" button opens a camera/file picker. The worker captures the after photo, optionally adds notes, and submits.
 - **POST /api/complaints/[id]/resolve:** uploads the resolution image to Storage, updates `complaints.resolution_image_url`, `resolved_at`, and sets `status = 'resolved'`. Triggers the verification agent.
-- **Facility notification:** when a complaint is assigned to a facility, the facility contact (phone from `facilities.contact_phone`) receives an SMS via Twilio sandbox. This is a stretch -- if time is short, use a toast notification in the dashboard instead.
 - **Facility scoped view:** a simplified dashboard for facility workers showing only complaints assigned to their facility, with "In Progress" and "Mark Resolved" actions.
 
 ## Constraints
