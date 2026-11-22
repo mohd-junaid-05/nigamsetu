@@ -8,7 +8,7 @@ export default function SignUpPage() {
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Create your NigamSetu account</h1>
           <p className="text-sm text-muted mt-1">
-            Get started with Phone OTP or Email. Default role is Citizen.
+            Get started with Google or Email. Default role is Citizen.
           </p>
         </div>
         <Suspense

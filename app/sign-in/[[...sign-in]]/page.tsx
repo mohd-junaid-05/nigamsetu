@@ -8,7 +8,7 @@ export default function SignInPage() {
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">Sign in to NigamSetu</h1>
           <p className="text-sm text-muted mt-1">
-            Sign in with Phone OTP or Email to report or manage civic infrastructure fixes.
+            Sign in with Google or Email to report or manage civic infrastructure fixes.
           </p>
         </div>
         <Suspense

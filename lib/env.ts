@@ -15,14 +15,19 @@ let cachedEnv: Env | null = null;
 export function validateEnv(): Env {
   if (cachedEnv) return cachedEnv;
 
+  const supabaseAnonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    '';
+
   // Allows skipping in non-boot build steps if explicitly configured
   if (process.env.SKIP_ENV_VALIDATION === 'true') {
     return {
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || '',
       CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY || '',
-      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '',
-      GOOGLE_AI_API_KEY: process.env.GOOGLE_AI_API_KEY || '',
+      NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xlagdiqtedflkigftwov.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: supabaseAnonKey || 'sb_publishable_7y4gVv5VE6TVDPqvGewU4Q_0PTa9PuB',
+      GOOGLE_AI_API_KEY: process.env.GOOGLE_AI_API_KEY || 'placeholder-gemini-key',
     };
   }
 
@@ -30,7 +35,7 @@ export function validateEnv(): Env {
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
     NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: supabaseAnonKey,
     GOOGLE_AI_API_KEY: process.env.GOOGLE_AI_API_KEY,
   });
 

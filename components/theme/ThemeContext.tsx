@@ -7,17 +7,21 @@ export type Theme = 'system' | 'light' | 'dark';
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  mounted: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
   theme: 'system',
   setTheme: () => {},
+  mounted: false,
 });
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>('system');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     try {
       const stored = localStorage.getItem('nigamsetu-theme') as Theme | null;
       if (stored === 'light' || stored === 'dark' || stored === 'system') {
@@ -62,7 +66,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider value={{ theme, setTheme, mounted }}>
       {children}
     </ThemeContext.Provider>
   );

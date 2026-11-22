@@ -1,7 +1,7 @@
 # Progress Tracker
 
 ## Phase 01: Auth and shell
-- [x] Integrate Clerk Authentication with phone OTP and email support
+- [x] Integrate Clerk Authentication with Email and Google OAuth (phone OTP removed)
 - [x] Configure Next.js 16 proxy/middleware to protect routes (`/dashboard`, `/report`, `/complaint/*`)
 - [x] Read `role` and `ward_id` claims during server rendering without hydration delay
 - [x] Implement system/light/dark theme switcher with zero-flash inline script
@@ -13,12 +13,12 @@
 - [x] Configure `@clerk/nextjs` Core 3 `<Show>` control components wrapped in `<Suspense>`
 
 ## Phase 02: Database and RLS
-- [ ] PostGIS extension initialization and schema migration
-- [ ] Migration: 7 core tables (`profiles`, `wards`, `facilities`, `complaints`, `complaint_clusters`, `cluster_members`, `escalations`, `agent_traces`)
-- [ ] Row-Level Security on all tables with policies reading Clerk JWT claims (`auth.uid()`, `role`, `ward_id`)
-- [ ] PostGIS spatial GIST indexes on locations, ward boundaries, and cluster centroids
-- [ ] RPC functions for geospatial lookups (`get_ward_from_point`, `increment_cluster_count`, `get_priority_queue`)
-- [ ] Seed script for demo wards, facilities, and initial profiles
+- [x] PostGIS extension initialization and schema migration
+- [x] Migration: 7 core tables (`profiles`, `wards`, `facilities`, `complaints`, `complaint_clusters`, `cluster_members`, `escalations`, `agent_traces`)
+- [x] Row-Level Security on all tables with policies reading Clerk JWT claims (`auth.uid()`, `role`, `ward_id`)
+- [x] PostGIS spatial GIST indexes on locations, ward boundaries, and cluster centroids
+- [x] RPC functions for geospatial lookups (`get_ward_from_point`, `increment_cluster_count`, `get_priority_queue`)
+- [x] Seed script for demo wards, facilities, and initial profiles
 
 ## Phase 03: Complaint submission
 - [ ] Mobile-first camera capture component with image preview

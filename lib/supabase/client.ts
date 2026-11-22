@@ -6,8 +6,11 @@ import { createClient } from '@supabase/supabase-js';
  * Supabase self-refreshing cookies and session persistence are explicitly disabled.
  */
 export function createBrowserSupabaseClient(clerkToken?: string | null) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co';
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-anon-key';
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xlagdiqtedflkigftwov.supabase.co';
+  const supabaseAnonKey =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+    'sb_publishable_7y4gVv5VE6TVDPqvGewU4Q_0PTa9PuB';
 
   return createClient(supabaseUrl, supabaseAnonKey, {
     global: {
