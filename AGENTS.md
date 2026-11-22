@@ -96,5 +96,7 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-22 | Store `profiles.id` and `complaints.reporter_id` as `text` instead of `uuid` | Clerk user IDs are strings (e.g., `user_2s8d...`) that cannot be cast to Postgres UUID without syntax errors | Yes (if an internal UUID mapping table were introduced) |
 | 2026-11-22 | Use `requesting_user_id()`, `requesting_user_role()`, `requesting_user_ward_id()` SQL helpers | Allows RLS policies to cleanly read Clerk claims from JWT while safely handling string IDs and role/ward metadata | Yes |
 | 2026-11-22 | Remove phone OTP from Clerk authentication in favor of Email and Google OAuth | Clerk test mode restricts SMS delivery to Indian (+91) numbers; Email and Google OAuth provide instant, reliable sign-in | Yes |
+| 2026-11-22 | Read `x-user-id`, `x-user-role`, `x-user-ward-id` headers in SQL helpers alongside JWT claims | Next.js server routes authenticate Clerk server-side and pass authenticated user identity directly to PostgREST with strict RLS | Yes |
+| 2026-11-22 | Implement `/api/geocode/reverse` proxy route for Nominatim | Prevents browser CORS blocks, enforces 4-second timeout, and attaches compliant User-Agent headers | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.

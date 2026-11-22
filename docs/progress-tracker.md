@@ -21,12 +21,12 @@
 - [x] Seed script for demo wards, facilities, and initial profiles
 
 ## Phase 03: Complaint submission
-- [ ] Mobile-first camera capture component with image preview
-- [ ] Live GPS auto-detection with fallback manual location pin override
-- [ ] Category selector cards (Roads, Garbage, Sewage, School, Health, Other)
-- [ ] Optional voice note recording with Whisper STT integration
-- [ ] Image upload pipeline to Supabase Storage bucket
-- [ ] Submission API route (`POST /api/complaints`) creating complaint and calculating ward boundary
+- [x] Mobile-first camera capture component with image preview
+- [x] Live GPS auto-detection with fallback manual location pin override
+- [x] Category selector cards (Roads, Garbage, Sewage, School, Health, Other)
+- [x] Optional voice note recording with Whisper STT integration (UI slot reserved for v2)
+- [x] Image upload pipeline to Supabase Storage bucket
+- [x] Submission API route (`POST /api/complaints`) creating complaint and calculating ward boundary
 
 ## Phase 04: Public map
 - [ ] Leaflet map view with OpenStreetMap tile layer and dark mode inversion
