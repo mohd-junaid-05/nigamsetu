@@ -1,26 +1,77 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ffffff;
+    --foreground: #09090b;
+    --surface: #f4f4f5;
+    --surface-hover: #e4e4e7;
+    --surface-card: #ffffff;
+    --border: #e4e4e7;
+    --muted: #71717a;
+    --muted-foreground: #71717a;
+
+    /* Semantic Severity Colors */
+    --severity-1: #9ca3af; /* Cosmetic - grey */
+    --severity-2: #f59e0b; /* Significant - amber */
+    --severity-3: #ef4444; /* Critical - red */
+    --severity-4: #dc2626; /* Emergency - darker red */
+
+    /* Semantic Status Colors */
+    --status-open: #ef4444;       /* Open - red */
+    --status-assigned: #f59e0b;   /* Assigned - amber */
+    --status-in-progress: #3b82f6; /* In Progress - blue */
+    --status-resolved: #6b7280;   /* Resolved (unverified) - grey */
+    --status-verified: #22c55e;   /* Verified - green */
+    --status-escalated: #a855f7;  /* Escalated - purple */
+
+    --sla-breached: #dc2626;
+    --accent: #2563eb;
+  }
+
+  .dark {
+    --background: #09090b;
+    --foreground: #fafafa;
+    --surface: #18181b;
+    --surface-hover: #27272a;
+    --surface-card: #121215;
+    --border: #27272a;
+    --muted: #a1a1aa;
+    --muted-foreground: #a1a1aa;
+
+    --status-resolved: #9ca3af;
   }
 }
 
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-card: var(--surface-card);
+  --color-border: var(--border);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-severity-1: var(--severity-1);
+  --color-severity-2: var(--severity-2);
+  --color-severity-3: var(--severity-3);
+  --color-severity-4: var(--severity-4);
+
+  --color-status-open: var(--status-open);
+  --color-status-assigned: var(--status-assigned);
+  --color-status-in-progress: var(--status-in-progress);
+  --color-status-resolved: var(--status-resolved);
+  --color-status-verified: var(--status-verified);
+  --color-status-escalated: var(--status-escalated);
+
+  --color-sla-breached: var(--sla-breached);
+  --color-accent: var(--accent);
+}
+
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
 }

@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="40" fill="#2563eb" />
+  <!-- Bridge / Setu arch motif -->
+  <path d="M36 136 C60 80, 132 80, 156 136" stroke="#ffffff" stroke-width="14" fill="none" stroke-linecap="round" />
+  <circle cx="96" cy="64" r="16" fill="#ffffff" />
+  <path d="M72 136 L72 108 M120 136 L120 108" stroke="#ffffff" stroke-width="8" stroke-linecap="round" />
+</svg>
