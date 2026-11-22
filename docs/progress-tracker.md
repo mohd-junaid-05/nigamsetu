@@ -58,12 +58,12 @@
 - [x] Structured logging of duplicate clustering runs into `agent_traces`
 
 ## Phase 07: Official dashboard
-- [ ] 3-panel desktop-first controller layout (25% queue, 50% map, 25% details)
-- [ ] Priority queue table sorted by `severity * attestations * SLA breach risk`
-- [ ] Ward-filtered map showing active tickets and municipal facility locations
-- [ ] Nearest facility routing tool using KNN PostGIS geospatial distance
-- [ ] Facility assignment modal with status update to `assigned`
-- [ ] Supabase Realtime subscription for live dashboard ticket updates without refresh
+- [x] 3-panel desktop-first controller layout (25% queue, 50% map, 25% details)
+- [x] Priority queue table sorted by `severity * attestations * SLA breach risk` (Phase 7 strict: `severity DESC, weight DESC, created_at ASC`)
+- [x] Ward-filtered map showing active tickets and municipal facility locations
+- [x] Nearest facility routing tool using KNN PostGIS geospatial distance (`get_nearest_facilities` RPC & `/api/facilities/nearest`)
+- [x] Facility assignment modal with status update to `assigned` (`/api/complaints/[id]/assign`)
+- [x] Supabase Realtime subscription for live dashboard ticket updates without refresh (`useLiveComplaints`)
 
 ## Phase 08: Resolution upload and routing
 - [ ] Municipal contractor resolution upload endpoint (`POST /api/complaints/[id]/resolve`)

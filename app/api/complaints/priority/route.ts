@@ -13,6 +13,8 @@ export interface PriorityQueueItem {
   weight: number;
   sla_breached: boolean;
   effective_priority?: number;
+  location?: any;
+  facility_id?: string | null;
 }
 
 export interface PriorityQueueResponse {
@@ -57,6 +59,8 @@ export async function GET(req: Request): Promise<Response> {
       weight: typeof r.weight === 'number' ? r.weight : 1,
       sla_breached: Boolean(r.sla_breached),
       effective_priority: r.severity * (typeof r.weight === 'number' ? r.weight : 1),
+      location: r.location,
+      facility_id: r.facility_id,
     }));
 
     return Response.json({

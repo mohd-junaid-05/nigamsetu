@@ -107,5 +107,8 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-22 | Implement 32x32 DCT-II perceptual hash (pHash) algorithm using `sharp` luminance buffer | Avoids abandoned C++ node-phash native compilation failure while computing true 64-bit Hamming distance (< 15 threshold) across platforms | Yes |
 | 2026-11-22 | Introduce `get_public_map_pins` and `get_complaint_details_with_attestations` RPC functions | Streams single representative pins with cluster counts and nested member attestations to the public map while maintaining backward compatibility | Yes |
 | 2026-11-22 | Multiply severity by cluster weight in `get_priority_queue` (`severity * COALESCE(complaint_count, 1)`) | Elevates priority of multi-report clustered tickets above standalone complaints of equivalent individual severity | Yes |
+| 2026-11-22 | Implement `trg_complaints_sla_deadline` trigger and `calculate_complaint_sla_deadline()` | Automatically computes category-based SLA deadlines (sewage 12h, garbage 24h, healthcenter 48h, road/other 72h, school 168h) at complaint creation | Yes |
+| 2026-11-22 | Use SECURITY DEFINER RPC `assign_complaint_to_facility` for atomic depot assignment | Guarantees atomic update of `facility_id` and transition to status `assigned` in one database transaction | Yes |
+| 2026-11-22 | Implement `get_nearest_facilities` PostGIS KNN RPC | Uses `ST_Distance(f.location::geography, c.location::geography)` to rank nearest category-matched municipal facilities with meter/km distance | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.
