@@ -42,11 +42,13 @@
 - [x] PWA service worker tile caching for offline map viewing of previously viewed map regions
 
 ## Phase 05: AI Agent: Severity scoring
-- [ ] Core `CivicAgent` TypeScript class in `lib/agent/CivicAgent.ts`
-- [ ] `scoreSeverity` tool using Gemini Vision API on submitted complaint image
-- [ ] Visual evidence taxonomy: classify severity tier 1 to 4 with reasoning string
-- [ ] Safe fallback handling: default to severity 2 on timeout or API error
-- [ ] Structured logging of tool execution, model, and latency into `agent_traces` table
+- [x] Core `CivicAgent` TypeScript class in `lib/agent/CivicAgent.ts` with strict decoupled architecture
+- [x] `scoreSeverity` tool using Gemini 1.5 Flash Vision API on submitted complaint image
+- [x] Visual evidence taxonomy: classify severity tier 1 to 4 with coherent reasoning string
+- [x] Safe fallback handling: default to severity 2 on timeout, unparseable response, or blank image with raw response captured
+- [x] Structured logging of tool execution, model (`gemini-1.5-flash`), input/output summaries, and latency into `agent_traces` table
+- [x] Async background severity scoring pipeline (`POST /api/agent/severity` and lightweight status endpoint `GET /api/agent/severity`)
+- [x] Real-time severity preview on `SuccessScreen` displaying semantic severity badge and reasoning without page refresh
 
 ## Phase 06: AI Agent: Duplicate clustering
 - [ ] `checkDuplicate` tool using spatial proximity query (PostGIS `ST_DWithin` 100m)

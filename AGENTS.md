@@ -101,5 +101,8 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-22 | Use SECURITY DEFINER RPC functions `get_public_map_complaints` and `get_complaint_popup` for map endpoints | Allows public map and lazy popup endpoints to safely fetch public geometry and thumbnail data without relaxing core table RLS | Yes |
 | 2026-11-22 | Add `nigamsetu-map-tiles-v1` cache in service worker for OSM tile caching | Fulfills PWA offline map browsing requirement by caching visited OSM tile coordinates | Yes |
 | 2026-11-22 | Apply dark mode CSS inversion specifically to `.dark .leaflet-tile-pane` | Standard OSM tiles lack dark variants; scoping the invert/hue-rotate filter to the tile pane inverts map backgrounds while preserving pin and popup badge colors | Yes |
+| 2026-11-22 | Allow camelCase and snake_case in `agent_traces.tool_name` check constraint | Reconciles `ai-agent.md`/Phase 5 spec camelCase (`scoreSeverity`) with initial `database.md` snake_case | Yes |
+| 2026-11-22 | Add `update_complaint_severity` and `record_agent_trace` RPC helpers | Guarantees strict single-column PATCH constraint and audit logging reliability across RLS caller contexts | Yes |
+| 2026-11-22 | Implement trace deduplication in `CivicAgent.scoreSeverity` | Prevents redundant model calls and duplicate traces when server background task and client status queries run concurrently | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.

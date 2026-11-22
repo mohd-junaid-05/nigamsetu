@@ -41,6 +41,7 @@ export function ReportContainer({ userRole }: ReportContainerProps) {
     id: string;
     wardName: string | null;
     imageUrl?: string;
+    category?: ComplaintCategory;
   } | null>(null);
 
   const handleLocationChange = (newLat: number, newLng: number, newAddress: string) => {
@@ -100,6 +101,7 @@ export function ReportContainer({ userRole }: ReportContainerProps) {
         id: data.id || 'NIGAM-TICKET',
         wardName: data.ward_name || null,
         imageUrl: data.image_url,
+        category: selectedCategory,
       });
     } catch (err: unknown) {
       const error = err as Error;
@@ -168,6 +170,7 @@ export function ReportContainer({ userRole }: ReportContainerProps) {
           complaintId={submittedData.id}
           wardName={submittedData.wardName}
           imageUrl={submittedData.imageUrl}
+          category={submittedData.category}
           onReset={handleResetForm}
           onViewMyComplaints={() => {
             setSubmittedData(null);

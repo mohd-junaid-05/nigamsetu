@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ComplaintCategory, ComplaintStatus } from '@/lib/types/database';
+import { CivicAgent } from '@/lib/agent/CivicAgent';
 import sharp from 'sharp';
 
 export type SubmitComplaintResponse = {
@@ -195,6 +196,26 @@ export async function POST(req: Request): Promise<Response> {
         { status: 500 }
       );
     }
+
+    // 10. Asynchronously trigger severity scoring (Phase 05 Spec)
+    // The citizen gets a "submitted" response immediately, severity updates in the background.
+    const agent = new CivicAgent(process.env.GOOGLE_AI_API_KEY, supabase);
+    agent.run(
+      'scoreSeverity',
+      {
+        complaintId: complaint.id,
+        imageUrl: publicUrl,
+        category,
+        description: description.trim() || undefined,
+      },
+      {
+        complaintId: complaint.id,
+        wardId: matchedWard?.id || undefined,
+        supabase,
+      }
+    ).catch((agentErr) => {
+      console.warn('[Complaint Submission] Background severity scoring warning:', agentErr);
+    });
 
     return Response.json({
       success: true,
