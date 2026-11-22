@@ -98,5 +98,8 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-22 | Remove phone OTP from Clerk authentication in favor of Email and Google OAuth | Clerk test mode restricts SMS delivery to Indian (+91) numbers; Email and Google OAuth provide instant, reliable sign-in | Yes |
 | 2026-11-22 | Read `x-user-id`, `x-user-role`, `x-user-ward-id` headers in SQL helpers alongside JWT claims | Next.js server routes authenticate Clerk server-side and pass authenticated user identity directly to PostgREST with strict RLS | Yes |
 | 2026-11-22 | Implement `/api/geocode/reverse` proxy route for Nominatim | Prevents browser CORS blocks, enforces 4-second timeout, and attaches compliant User-Agent headers | Yes |
+| 2026-11-22 | Use SECURITY DEFINER RPC functions `get_public_map_complaints` and `get_complaint_popup` for map endpoints | Allows public map and lazy popup endpoints to safely fetch public geometry and thumbnail data without relaxing core table RLS | Yes |
+| 2026-11-22 | Add `nigamsetu-map-tiles-v1` cache in service worker for OSM tile caching | Fulfills PWA offline map browsing requirement by caching visited OSM tile coordinates | Yes |
+| 2026-11-22 | Apply dark mode CSS inversion specifically to `.dark .leaflet-tile-pane` | Standard OSM tiles lack dark variants; scoping the invert/hue-rotate filter to the tile pane inverts map backgrounds while preserving pin and popup badge colors | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.

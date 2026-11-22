@@ -63,8 +63,17 @@ export function AppHeader() {
               href="/"
               className="px-3 py-1.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-surface-hover transition-colors flex items-center gap-1.5"
             >
+              <span>Home</span>
+            </Link>
+            <Link
+              href="/map"
+              className="px-3 py-1.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-surface-hover transition-colors flex items-center gap-1.5"
+            >
               <MapPin className="w-4 h-4 text-blue-500" />
               <span>Public Map</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold">
+                Live
+              </span>
             </Link>
             <Link
               href="/report"

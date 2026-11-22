@@ -29,12 +29,17 @@
 - [x] Submission API route (`POST /api/complaints`) creating complaint and calculating ward boundary
 
 ## Phase 04: Public map
-- [ ] Leaflet map view with OpenStreetMap tile layer and dark mode inversion
-- [ ] PostGIS pin rendering with cluster marker group at zoom < 14 and individual pins at zoom >= 14
-- [ ] Marker popups showing category, thumbnail, status color badge, and timestamp
-- [ ] Color-coded status filter bar (Open, Assigned, In Progress, Resolved, Verified, Escalated)
-- [ ] Severity indicator pills (Cosmetic, Significant, Critical, Emergency)
-- [ ] Ward-level statistics banner (open issues, verified this month, average fix time)
+- [x] Public map API endpoint (`GET /api/map/public`) returning lightweight JSON (`id`, `location`, `category`, `severity`, `status`, `created_at`) with no RLS restriction and zero sensitive PII
+- [x] Lazy-loaded popup data endpoint (`GET /api/complaints/[id]/popup`) for on-demand fetch of thumbnail, address, and metadata without flooding initial map load
+- [x] Full-viewport Leaflet map on `/map` (and embedded panel) using OpenStreetMap tiles with no external API keys required
+- [x] Marker clustering with `Leaflet.markercluster`: clusters at zoom < 14 and individual pins with spidering and animation at zoom >= 14
+- [x] Status-based pin colors: open (red), assigned (amber), in_progress (blue), verified (green), resolved unverified (grey)
+- [x] Severity-based CSS scaling: emergency pins scaled larger than cosmetic pins without separate image assets
+- [x] Lazy-loaded marker popup with thumbnail, category label, severity badge, status badge, reported date, address text, and conditional detail link for signed-in users
+- [x] Interactive filter bar with multi-select category toggles, status toggles, and date range slider (last 7 / 30 / 90 / all days)
+- [x] Real-time dynamic stats banner (total open complaints, resolved this month, average resolution time) calculated purely client-side from visible pin set
+- [x] Dark mode tile inversion using CSS `filter: invert(1) hue-rotate(180deg) brightness(0.8)` on OSM tile layer while keeping pins and popups natural
+- [x] PWA service worker tile caching for offline map viewing of previously viewed map regions
 
 ## Phase 05: AI Agent: Severity scoring
 - [ ] Core `CivicAgent` TypeScript class in `lib/agent/CivicAgent.ts`

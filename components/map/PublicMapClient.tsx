@@ -1,0 +1,317 @@
+'use client';
+
+import React, { useEffect, useRef } from 'react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
+import { PublicMapPin } from '@/app/api/map/public/route';
+import { ComplaintPopupResponse } from '@/app/api/complaints/[id]/popup/route';
+
+interface PublicMapClientProps {
+  pins: PublicMapPin[];
+  className?: string;
+  initialCenter?: [number, number];
+  initialZoom?: number;
+}
+
+// Status to semantic hex color mapping
+const STATUS_COLORS: Record<string, string> = {
+  open: '#ef4444',        // red
+  assigned: '#f59e0b',    // amber
+  in_progress: '#3b82f6', // blue
+  resolved: '#6b7280',    // grey (unverified)
+  verified: '#22c55e',    // green
+  escalated: '#a855f7',   // purple
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  open: 'Open',
+  assigned: 'Assigned',
+  in_progress: 'In Progress',
+  resolved: 'Resolved (Unverified)',
+  verified: 'Verified Fix',
+  escalated: 'Escalated',
+};
+
+const CATEGORY_ICONS: Record<string, string> = {
+  road: '🛣️ Road',
+  garbage: '🗑️ Garbage',
+  sewage: '🚰 Sewage',
+  school: '🏫 School',
+  healthcenter: '🏥 Health',
+  other: '📦 Other',
+};
+
+const SEVERITY_INFO: Record<number, { label: string; scale: number; badgeColor: string }> = {
+  1: { label: 'Tier 1 - Cosmetic', scale: 0.85, badgeColor: 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/20' },
+  2: { label: 'Tier 2 - Significant', scale: 1.0, badgeColor: 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20' },
+  3: { label: 'Tier 3 - Critical', scale: 1.18, badgeColor: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20' },
+  4: { label: 'Tier 4 - Emergency', scale: 1.4, badgeColor: 'bg-red-600/10 text-red-700 dark:text-red-300 border-red-600/30' },
+};
+
+export default function PublicMapClient({
+  pins,
+  className = '',
+  initialCenter = [12.935, 77.65],
+  initialZoom = 13,
+}: PublicMapClientProps) {
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const clusterGroupRef = useRef<L.MarkerClusterGroup | null>(null);
+
+  // Helper to create pin icon with status color and severity CSS scale
+  const createPinIcon = (status: string, severity: number) => {
+    const color = STATUS_COLORS[status] || '#ef4444';
+    const severityData = SEVERITY_INFO[severity] || SEVERITY_INFO[2];
+    const isEmergency = severity >= 4;
+
+    return L.divIcon({
+      className: 'custom-complaint-pin',
+      html: `
+        <div style="position: relative; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; transform: scale(${severityData.scale}); transform-origin: 50% 100%; transition: transform 0.2s ease;">
+          ${
+            isEmergency
+              ? `<div style="position: absolute; width: 38px; height: 38px; border-radius: 50%; background: ${color}; opacity: 0.35; animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>`
+              : ''
+          }
+          <svg viewBox="0 0 24 24" width="34" height="34" fill="${color}" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 3px 6px rgba(0,0,0,0.45));">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3.2" fill="#ffffff"></circle>
+          </svg>
+        </div>
+      `,
+      iconSize: [34, 34],
+      iconAnchor: [17, 34],
+      popupAnchor: [0, -32],
+    });
+  };
+
+  // Helper to format date
+  const formatDate = (dateStr: string) => {
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+    } catch {
+      return dateStr;
+    }
+  };
+
+  // Lazy-load popup on marker click
+  const handleMarkerClick = async (pin: PublicMapPin, marker: L.Marker) => {
+    // Initial loading skeleton inside the popup
+    const loadingHtml = `
+      <div style="width: 270px; padding: 12px; font-family: system-ui, sans-serif;">
+        <div style="width: 100%; height: 140px; border-radius: 8px; background: #e4e4e7; animation: pulse 1.5s infinite; margin-bottom: 10px;"></div>
+        <div style="height: 14px; width: 60%; background: #e4e4e7; border-radius: 4px; margin-bottom: 8px; animation: pulse 1.5s infinite;"></div>
+        <div style="height: 12px; width: 90%; background: #e4e4e7; border-radius: 4px; animation: pulse 1.5s infinite;"></div>
+      </div>
+    `;
+
+    const popup = L.popup({
+      closeButton: true,
+      autoPan: true,
+      className: 'custom-leaflet-popup',
+    }).setContent(loadingHtml);
+
+    marker.bindPopup(popup).openPopup();
+
+    try {
+      const res = await fetch(`/api/complaints/${pin.id}/popup`);
+      const data: ComplaintPopupResponse = await res.json();
+
+      if (data.success && data.complaint) {
+        const c = data.complaint;
+        const color = STATUS_COLORS[c.status] || '#ef4444';
+        const statusLabel = STATUS_LABELS[c.status] || c.status;
+        const categoryLabel = CATEGORY_ICONS[c.category] || c.category;
+        const severityData = SEVERITY_INFO[c.severity] || SEVERITY_INFO[2];
+
+        const contentHtml = `
+          <div style="width: 280px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
+            <div style="position: relative; width: 100%; height: 145px; background: #18181b; overflow: hidden;">
+              <img
+                src="${c.image_url}"
+                alt="${categoryLabel}"
+                style="width: 100%; height: 100%; object-fit: cover; display: block;"
+                onerror="this.src='https://images.unsplash.com/photo-1584467735871-8e85353a8413?w=800'; this.onerror=null;"
+              />
+              <div style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;">
+                ${categoryLabel}
+              </div>
+            </div>
+            <div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: ${color};">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: ${color}; display: inline-block;"></span>
+                  ${statusLabel}
+                </span>
+                <span style="font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; background: rgba(0,0,0,0.06); border: 1px solid rgba(0,0,0,0.1);">
+                  ${severityData.label}
+                </span>
+              </div>
+
+              <div style="font-size: 12px; color: inherit; line-height: 1.4; display: flex; align-items: flex-start; gap: 4px;">
+                <span style="opacity: 0.6; shrink: 0;">📍</span>
+                <span style="font-weight: 500;">${c.address_text || 'GPS Position Recorded'}</span>
+              </div>
+
+              <div style="display: flex; align-items: center; justify-content: space-between; font-size: 11px; opacity: 0.65; border-top: 1px solid rgba(128,128,128,0.2); padding-top: 8px; margin-top: 2px;">
+                <span>Reported: ${formatDate(c.created_at)}</span>
+                <a
+                  href="/complaint/${c.id}"
+                  style="color: #2563eb; font-weight: 600; text-decoration: underline;"
+                >
+                  Inspect →
+                </a>
+              </div>
+            </div>
+          </div>
+        `;
+        popup.setContent(contentHtml);
+      } else {
+        popup.setContent(`
+          <div style="padding: 14px; font-size: 12px; color: #ef4444;">
+            Failed to load complaint details.
+          </div>
+        `);
+      }
+    } catch {
+      popup.setContent(`
+        <div style="padding: 14px; font-size: 12px; color: #ef4444;">
+          Unable to load preview data.
+        </div>
+      `);
+    }
+  };
+
+  // Initialize Map
+  useEffect(() => {
+    if (!mapContainerRef.current) return;
+
+    if (!mapInstanceRef.current) {
+      const map = L.map(mapContainerRef.current, {
+        center: initialCenter,
+        zoom: initialZoom,
+        attributionControl: false,
+        maxZoom: 19,
+      });
+
+      // Add OpenStreetMap Tile Layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Add Attribution in corner
+      L.control
+        .attribution({
+          position: 'bottomright',
+          prefix: '<span class="text-[10px] text-muted-foreground opacity-75">© OpenStreetMap contributors</span>',
+        })
+        .addTo(map);
+
+      // Initialize Leaflet.markercluster with required zoom threshold
+      // At zoom < 14, nearby complaints cluster into a single numbered marker.
+      // At zoom >= 14, individual pins appear.
+      const clusterGroup = L.markerClusterGroup({
+        disableClusteringAtZoom: 14,
+        maxClusterRadius: 50,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true,
+        iconCreateFunction: (cluster) => {
+          const childCount = cluster.getChildCount();
+          return L.divIcon({
+            html: `
+              <div class="custom-marker-cluster">
+                <div class="custom-marker-cluster-inner">
+                  ${childCount}
+                </div>
+              </div>
+            `,
+            className: '',
+            iconSize: L.point(40, 40),
+          });
+        },
+      });
+
+      map.addLayer(clusterGroup);
+
+      mapInstanceRef.current = map;
+      clusterGroupRef.current = clusterGroup;
+    }
+
+    return () => {
+      // Map cleanup handled on unmount
+    };
+  }, [initialCenter, initialZoom]);
+
+  // Update Markers whenever pins change
+  useEffect(() => {
+    const clusterGroup = clusterGroupRef.current;
+    const map = mapInstanceRef.current;
+    if (!clusterGroup || !map) return;
+
+    clusterGroup.clearLayers();
+
+    if (pins.length === 0) return;
+
+    const markers: L.Marker[] = [];
+    const latLngBounds: [number, number][] = [];
+
+    pins.forEach((pin) => {
+      if (typeof pin.location?.lat !== 'number' || typeof pin.location?.lng !== 'number') return;
+
+      const marker = L.marker([pin.location.lat, pin.location.lng], {
+        icon: createPinIcon(pin.status, pin.severity),
+      });
+
+      marker.on('click', () => {
+        handleMarkerClick(pin, marker);
+      });
+
+      markers.push(marker);
+      latLngBounds.push([pin.location.lat, pin.location.lng]);
+    });
+
+    clusterGroup.addLayers(markers);
+
+    // Auto-fit bounds if markers exist and bounds are valid
+    if (latLngBounds.length > 0) {
+      try {
+        const bounds = L.latLngBounds(latLngBounds);
+        // Only fit if bounds have valid area and this is first load or significant change
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, {
+            padding: [40, 40],
+            maxZoom: 15,
+          });
+        }
+      } catch {
+        // Fallback keep default view
+      }
+    }
+  }, [pins]);
+
+  // Component cleanup
+  useEffect(() => {
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+        clusterGroupRef.current = null;
+      }
+    };
+  }, []);
+
+  return (
+    <div className={`relative w-full h-full overflow-hidden ${className}`}>
+      <div ref={mapContainerRef} className="w-full h-full z-0" />
+    </div>
+  );
+}

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { getServerSession } from '@/lib/auth/session';
 import { MapPin, AlertTriangle, ArrowRight } from 'lucide-react';
+import { PublicMapContainer } from '@/components/map/PublicMapContainer';
 
 async function IdentityDiagnostic() {
   const session = await getServerSession();
@@ -27,16 +28,18 @@ async function MapClaimFooter() {
   const session = await getServerSession();
 
   return (
-    <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs">
-      <span className="px-3 py-1.5 rounded-lg bg-surface border border-border font-mono">
-        Role: <strong className="capitalize">{session.role}</strong>
-      </span>
-      <span className="px-3 py-1.5 rounded-lg bg-surface border border-border font-mono">
-        Ward: <strong>{session.wardId ?? 'Unassigned'}</strong>
-      </span>
-      <span className="px-3 py-1.5 rounded-lg bg-surface border border-border font-mono">
-        Auth State: <strong>{session.isAuthenticated ? 'Signed In' : 'Public Visitor'}</strong>
-      </span>
+    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground border-t border-border/60 pt-4">
+      <div className="flex items-center gap-2">
+        <span>Identity Session:</span>
+        <strong className="capitalize text-foreground font-mono">{session.role}</strong>
+        {session.wardId && (
+          <span className="font-mono text-foreground font-semibold">({session.wardId})</span>
+        )}
+      </div>
+      <div>
+        <span>Status: </span>
+        <strong className="text-foreground">{session.isAuthenticated ? 'Signed In' : 'Public Visitor (Anonymous)'}</strong>
+      </div>
     </div>
   );
 }
@@ -58,6 +61,9 @@ export default function HomePage() {
           </Suspense>
 
           <div className="flex items-center gap-4 text-xs font-medium">
+            <Link href="/map" className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+              Full Map View <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
             <Link href="/report" className="text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
               Submit Complaint (PWA) <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -93,75 +99,26 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Status & Severity Filter Bar Placeholder */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-surface border border-border text-xs">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-muted-foreground uppercase tracking-wider text-[11px]">
-              Status Filters:
-            </span>
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="px-2.5 py-1 rounded-md bg-surface-card border border-border font-medium flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-status-open" /> Open
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-surface-card border border-border font-medium flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-status-assigned" /> Assigned
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-surface-card border border-border font-medium flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-status-in-progress" /> In Progress
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-surface-card border border-border font-medium flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-status-resolved" /> Resolved (Unverified)
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-surface-card border border-border font-medium flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-status-verified" /> Verified Fix
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-surface-card border border-border font-medium flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-status-escalated" /> Escalated
-              </span>
+        {/* Embedded Public Map View */}
+        <Suspense
+          fallback={
+            <div className="w-full h-[540px] rounded-2xl bg-surface border border-border animate-pulse flex items-center justify-center text-sm text-muted-foreground">
+              Loading Public Map Tracker...
             </div>
-          </div>
+          }
+        >
+          <PublicMapContainer viewMode="embedded" />
+        </Suspense>
 
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-muted-foreground uppercase tracking-wider text-[11px]">
-              Severity:
-            </span>
-            <div className="flex items-center gap-1.5">
-              <span className="px-2 py-0.5 rounded bg-surface-card text-severity-1 border border-border font-semibold">
-                Cosmetic
-              </span>
-              <span className="px-2 py-0.5 rounded bg-surface-card text-severity-2 border border-border font-semibold">
-                Significant
-              </span>
-              <span className="px-2 py-0.5 rounded bg-surface-card text-severity-3 border border-border font-semibold">
-                Critical
-              </span>
-              <span className="px-2 py-0.5 rounded bg-surface-card text-severity-4 border border-border font-semibold">
-                Emergency
-              </span>
+        <Suspense
+          fallback={
+            <div className="mt-4 text-xs text-muted animate-pulse">
+              Loading session diagnostics...
             </div>
-          </div>
-        </div>
-
-        {/* Public Map Canvas Shell */}
-        <div className="flex-1 min-h-[480px] rounded-2xl border border-border bg-surface-card relative flex flex-col items-center justify-center p-8 text-center overflow-hidden">
-          <div className="w-16 h-16 rounded-2xl bg-blue-600/10 text-blue-600 flex items-center justify-center mb-4">
-            <MapPin className="w-8 h-8" />
-          </div>
-          <h2 className="text-xl font-bold text-foreground">Interactive Public Map Shell</h2>
-          <p className="text-sm text-muted-foreground mt-2 max-w-md">
-            This viewport hosts the Leaflet PostGIS map cluster in Phase 4. All shell panels, theme tokens,
-            and role claim handlers are active.
-          </p>
-          <Suspense
-            fallback={
-              <div className="mt-6 text-xs text-muted animate-pulse">
-                Loading role information...
-              </div>
-            }
-          >
-            <MapClaimFooter />
-          </Suspense>
-        </div>
+          }
+        >
+          <MapClaimFooter />
+        </Suspense>
       </div>
     </div>
   );
