@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export type UserRole = 'citizen' | 'official' | 'admin';
+export type UserRole = 'citizen' | 'official' | 'admin' | 'facility';
 export type FacilityType = 'road' | 'sanitation' | 'education' | 'health' | 'sewage' | 'other';
 export type ComplaintCategory = 'road' | 'garbage' | 'sewage' | 'school' | 'healthcenter' | 'other';
 export type ComplaintStatus = 'open' | 'assigned' | 'in_progress' | 'resolved' | 'verified' | 'escalated' | 'rejected';
@@ -34,6 +34,7 @@ export interface Database {
           id: string;
           role: UserRole;
           ward_id: string | null;
+          facility_id: string | null;
           phone: string | null;
           created_at: string;
         };
@@ -41,6 +42,7 @@ export interface Database {
           id: string;
           role?: UserRole;
           ward_id?: string | null;
+          facility_id?: string | null;
           phone?: string | null;
           created_at?: string;
         };
@@ -48,6 +50,7 @@ export interface Database {
           id?: string;
           role?: UserRole;
           ward_id?: string | null;
+          facility_id?: string | null;
           phone?: string | null;
           created_at?: string;
         };
@@ -125,6 +128,8 @@ export interface Database {
           sla_deadline: string | null;
           resolved_at: string | null;
           resolution_image_url: string | null;
+          resolution_notes: string | null;
+          resolution_location: unknown | null;
           verification_score: number | null;
           verification_status: VerificationStatus | null;
           escalation_letter_url: string | null;
@@ -148,6 +153,8 @@ export interface Database {
           sla_deadline?: string | null;
           resolved_at?: string | null;
           resolution_image_url?: string | null;
+          resolution_notes?: string | null;
+          resolution_location?: unknown | null;
           verification_score?: number | null;
           verification_status?: VerificationStatus | null;
           escalation_letter_url?: string | null;
@@ -171,6 +178,8 @@ export interface Database {
           sla_deadline?: string | null;
           resolved_at?: string | null;
           resolution_image_url?: string | null;
+          resolution_notes?: string | null;
+          resolution_location?: unknown | null;
           verification_score?: number | null;
           verification_status?: VerificationStatus | null;
           escalation_letter_url?: string | null;
@@ -288,6 +297,38 @@ export interface Database {
           created_at?: string;
         };
       };
+      complaint_activity_logs: {
+        Row: {
+          id: string;
+          complaint_id: string;
+          action: string;
+          performed_by: string | null;
+          facility_id: string | null;
+          notes: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          complaint_id: string;
+          action: string;
+          performed_by?: string | null;
+          facility_id?: string | null;
+          notes?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          complaint_id?: string;
+          action?: string;
+          performed_by?: string | null;
+          facility_id?: string | null;
+          notes?: string | null;
+          metadata?: Json;
+          created_at?: string;
+        };
+      };
     };
     Functions: {
       get_ward_from_point: {
@@ -375,6 +416,53 @@ export interface Database {
           weight: number;
           sla_breached: boolean;
         })[];
+      };
+      resolve_complaint: {
+        Args: {
+          p_complaint_id: string;
+          p_resolution_image_url: string;
+          p_resolution_notes?: string | null;
+          p_lat?: number | null;
+          p_lng?: number | null;
+          p_resolver_id?: string | null;
+        };
+        Returns: {
+          id: string;
+          status: string;
+          resolved_at: string;
+          resolution_image_url: string;
+          resolution_notes: string | null;
+        }[];
+      };
+      mark_complaint_in_progress: {
+        Args: {
+          p_complaint_id: string;
+          p_user_id?: string | null;
+          p_notes?: string | null;
+        };
+        Returns: boolean;
+      };
+      get_facility_complaints: {
+        Args: { p_facility_id: string };
+        Returns: {
+          id: string;
+          category: ComplaintCategory;
+          severity: number;
+          status: ComplaintStatus;
+          description: string | null;
+          image_url: string;
+          address_text: string | null;
+          lat: number;
+          lng: number;
+          sla_deadline: string | null;
+          resolved_at: string | null;
+          resolution_image_url: string | null;
+          resolution_notes: string | null;
+          created_at: string;
+          updated_at: string;
+          weight: number;
+          sla_breached: boolean;
+        }[];
       };
     };
   };

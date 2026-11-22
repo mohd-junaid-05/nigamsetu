@@ -7,6 +7,7 @@ import PriorityQueueTable from './PriorityQueueTable';
 import DashboardMap from './DashboardMap';
 import ComplaintDetailPanel from './ComplaintDetailPanel';
 import AssignmentModal from './AssignmentModal';
+import ResolutionModal from '@/components/facility/ResolutionModal';
 import { useLiveComplaints } from '@/hooks/useLiveComplaints';
 import { Layers, Map, FileText, Wifi, RefreshCw } from 'lucide-react';
 
@@ -28,6 +29,7 @@ export default function DashboardController({
     initialQueue.length > 0 ? initialQueue[0].id : null
   );
   const [assignTarget, setAssignTarget] = useState<PriorityQueueItem | null>(null);
+  const [resolveTarget, setResolveTarget] = useState<PriorityQueueItem | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'queue' | 'map' | 'details'>('queue');
 
@@ -66,6 +68,56 @@ export default function DashboardController({
       prev.map((item) =>
         item.id === complaintId
           ? { ...item, status: 'assigned' as const }
+          : item
+      )
+    );
+    refreshQueue();
+  };
+
+  // Start work (mark in_progress)
+  const handleStartWork = async (item: PriorityQueueItem) => {
+    try {
+      const res = await fetch(`/api/complaints/${item.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: 'in_progress',
+          notes: 'Work started by municipal operations team',
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setQueue((prev) =>
+          prev.map((q) =>
+            q.id === item.id ? { ...q, status: 'in_progress' as const } : q
+          )
+        );
+        refreshQueue();
+      }
+    } catch (err) {
+      console.error('[DashboardController] Failed to mark in progress:', err);
+    }
+  };
+
+  // Handle resolution update
+  const handleResolved = ({
+    complaintId,
+    resolutionImageUrl,
+    resolvedAt,
+  }: {
+    complaintId: string;
+    resolutionImageUrl: string;
+    resolvedAt: string;
+  }) => {
+    setQueue((prev) =>
+      prev.map((item) =>
+        item.id === complaintId
+          ? {
+              ...item,
+              status: 'resolved' as const,
+              resolution_image_url: resolutionImageUrl,
+              resolved_at: resolvedAt,
+            }
           : item
       )
     );
@@ -212,6 +264,8 @@ export default function DashboardController({
           <ComplaintDetailPanel
             complaint={selectedComplaint}
             onOpenAssign={(item) => setAssignTarget(item)}
+            onOpenResolve={(item) => setResolveTarget(item)}
+            onStartWork={handleStartWork}
           />
         </section>
       </div>
@@ -224,6 +278,20 @@ export default function DashboardController({
         onAssigned={handleAssigned}
         facilities={facilities}
       />
+
+      {/* Resolution Upload Modal Dialog */}
+      {resolveTarget && (
+        <ResolutionModal
+          complaintId={resolveTarget.id}
+          complaintCategory={resolveTarget.category}
+          complaintStatus={resolveTarget.status}
+          defaultLat={typeof resolveTarget.location === 'object' && resolveTarget.location && 'lat' in resolveTarget.location ? (resolveTarget.location as any).lat : null}
+          defaultLng={typeof resolveTarget.location === 'object' && resolveTarget.location && 'lng' in resolveTarget.location ? (resolveTarget.location as any).lng : null}
+          isOpen={true}
+          onClose={() => setResolveTarget(null)}
+          onResolved={handleResolved}
+        />
+      )}
     </div>
   );
 }

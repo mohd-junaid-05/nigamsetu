@@ -10,7 +10,7 @@ interface DashboardPageProps {
   searchParams?: Promise<{ wardId?: string }>;
 }
 
-export default async function DashboardPage({ searchParams }: DashboardPageProps) {
+async function DashboardContent({ searchParams }: DashboardPageProps) {
   const session = await getServerSession();
   const resolvedParams = searchParams ? await searchParams : {};
   const effectiveWardId = session.wardId || resolvedParams?.wardId || null;
@@ -118,5 +118,19 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         wardName={wardName}
       />
     </div>
+  );
+}
+
+export default function DashboardPage(props: DashboardPageProps) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex-1 flex items-center justify-center min-h-[60vh] text-xs text-muted-foreground">
+          Loading official operations dashboard...
+        </div>
+      }
+    >
+      <DashboardContent {...props} />
+    </Suspense>
   );
 }

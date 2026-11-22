@@ -3,8 +3,9 @@ import { z } from 'zod';
 
 const promoteRequestSchema = z.object({
   targetUserId: z.string().min(1, 'targetUserId is required'),
-  role: z.enum(['official', 'admin', 'citizen']),
+  role: z.enum(['official', 'admin', 'citizen', 'facility']),
   wardId: z.string().optional(),
+  facilityId: z.string().optional(),
 });
 
 type PromoteResponse = {
@@ -14,6 +15,7 @@ type PromoteResponse = {
     userId: string;
     role: string;
     wardId?: string;
+    facilityId?: string;
   };
 };
 
@@ -59,7 +61,7 @@ export async function POST(req: Request): Promise<Response> {
       );
     }
 
-    const { targetUserId, role, wardId } = parseResult.data;
+    const { targetUserId, role, wardId, facilityId } = parseResult.data;
 
     // Update user publicMetadata in Clerk
     const client = await clerkClient();
@@ -67,16 +69,18 @@ export async function POST(req: Request): Promise<Response> {
       publicMetadata: {
         role,
         ward_id: wardId ?? null,
+        facility_id: facilityId ?? null,
       },
     });
 
     return Response.json({
       success: true,
-      message: `User ${targetUserId} successfully promoted to ${role} with ward ${wardId ?? 'none'}`,
+      message: `User ${targetUserId} successfully promoted to ${role} with ward ${wardId ?? 'none'} and facility ${facilityId ?? 'none'}`,
       data: {
         userId: targetUserId,
         role,
         wardId,
+        facilityId,
       },
     } satisfies PromoteResponse);
   } catch (err: unknown) {

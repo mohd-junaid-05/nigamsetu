@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { Show, SignInButton, UserButton } from '@clerk/nextjs';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { getServerSession } from '@/lib/auth/session';
-import { MapPin, ShieldAlert, FileText } from 'lucide-react';
+import { MapPin, ShieldAlert, FileText, Building2 } from 'lucide-react';
 
 async function UserRoleClaimBadge() {
   const session = await getServerSession();
@@ -93,6 +93,16 @@ export function AppHeader() {
               <span>Official Dashboard</span>
               <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-600/10 text-blue-600 dark:text-blue-400 font-semibold">
                 Ops
+              </span>
+            </Link>
+            <Link
+              href="/facility"
+              className="px-3 py-1.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-surface-hover transition-colors flex items-center gap-1.5"
+            >
+              <Building2 className="w-4 h-4 text-emerald-500" />
+              <span>Facility Depot</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold">
+                Field
               </span>
             </Link>
           </nav>

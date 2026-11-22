@@ -12,12 +12,16 @@ import {
   AlertTriangle,
   ExternalLink,
   Users,
+  Camera,
+  Play,
 } from 'lucide-react';
 import Link from 'next/link';
 
 interface ComplaintDetailPanelProps {
   complaint: PriorityQueueItem | null;
   onOpenAssign: (item: PriorityQueueItem) => void;
+  onOpenResolve?: (item: PriorityQueueItem) => void;
+  onStartWork?: (item: PriorityQueueItem) => void;
   facilityName?: string | null;
 }
 
@@ -76,6 +80,8 @@ function formatFullDate(dateStr: string): string {
 export default function ComplaintDetailPanel({
   complaint,
   onOpenAssign,
+  onOpenResolve,
+  onStartWork,
   facilityName,
 }: ComplaintDetailPanelProps) {
   if (!complaint) {
@@ -221,14 +227,58 @@ export default function ComplaintDetailPanel({
         </div>
       </div>
 
-      {/* Action: Facility Assignment */}
+      {/* After Photo & Notes Preview (if resolved) */}
+      {complaint.resolution_image_url && (
+        <div className="p-3 rounded-xl border border-border bg-surface/50 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-foreground text-xs flex items-center gap-1.5">
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Resolution Proof Recorded</span>
+            </span>
+            <span className="text-[10px] font-mono text-muted-foreground">
+              {complaint.resolved_at ? new Date(complaint.resolved_at).toLocaleDateString('en-IN') : ''}
+            </span>
+          </div>
+          <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border bg-black/40">
+            <img
+              src={complaint.resolution_image_url}
+              alt="Resolution proof"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Action Buttons: Workflow transitions */}
       <div className="pt-1 flex flex-col gap-2">
+        {complaint.status === 'in_progress' && onOpenResolve && (
+          <button
+            type="button"
+            onClick={() => onOpenResolve(complaint)}
+            className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+          >
+            <Camera className="w-4 h-4" />
+            <span>Mark Resolved (Upload Proof)</span>
+          </button>
+        )}
+
+        {complaint.status === 'assigned' && onStartWork && (
+          <button
+            type="button"
+            onClick={() => onStartWork(complaint)}
+            className="w-full py-2 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+          >
+            <Play className="w-4 h-4" />
+            <span>Start Work (Mark In Progress)</span>
+          </button>
+        )}
+
         <button
           type="button"
           onClick={() => onOpenAssign(complaint)}
-          className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+          className="w-full py-2 px-4 rounded-xl border border-border hover:bg-surface text-foreground font-semibold text-xs shadow-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
         >
-          <Building2 className="w-4 h-4" />
+          <Building2 className="w-4 h-4 text-blue-600" />
           <span>
             {complaint.status === 'assigned'
               ? 'Reassign Municipal Facility'

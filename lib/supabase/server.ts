@@ -36,12 +36,17 @@ export async function createServerSupabaseClient() {
     (sessionClaims?.ward_id as string) ||
     ((sessionClaims?.public_metadata as Record<string, unknown>)?.ward_id as string) ||
     '';
+  const facilityId =
+    (sessionClaims?.facility_id as string) ||
+    ((sessionClaims?.public_metadata as Record<string, unknown>)?.facility_id as string) ||
+    '';
 
   const headers: Record<string, string> = {};
   if (token) headers['Authorization'] = `Bearer ${token}`;
   if (userId) headers['x-user-id'] = userId;
   if (role) headers['x-user-role'] = role;
   if (wardId) headers['x-user-ward-id'] = wardId;
+  if (facilityId) headers['x-user-facility-id'] = facilityId;
 
   return createClient(supabaseUrl, supabaseAnonKey, {
     global: {
@@ -77,12 +82,13 @@ export function createAnonymousSupabaseClient() {
 
 /**
  * Creates an authenticated Supabase client for a specific user ID and role.
- * Injects required PostgREST identity headers (x-user-id, x-user-role).
+ * Injects required PostgREST identity headers (x-user-id, x-user-role, x-user-ward-id, x-user-facility-id).
  */
 export function createAuthenticatedSupabaseClient(
   userId: string,
   role = 'citizen',
-  wardId?: string
+  wardId?: string,
+  facilityId?: string
 ) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xlagdiqtedflkigftwov.supabase.co';
   const supabaseAnonKey =
@@ -95,6 +101,7 @@ export function createAuthenticatedSupabaseClient(
     'x-user-role': role,
   };
   if (wardId) headers['x-user-ward-id'] = wardId;
+  if (facilityId) headers['x-user-facility-id'] = facilityId;
 
   return createClient(supabaseUrl, supabaseAnonKey, {
     global: {

@@ -66,11 +66,13 @@
 - [x] Supabase Realtime subscription for live dashboard ticket updates without refresh (`useLiveComplaints`)
 
 ## Phase 08: Resolution upload and routing
-- [ ] Municipal contractor resolution upload endpoint (`POST /api/complaints/[id]/resolve`)
-- [ ] Repair proof photo upload to Supabase Storage
-- [ ] GPS proximity and timestamp validation against original complaint
-- [ ] Status transition to `resolved` (grey / unverified state until evidence verification)
-- [ ] Facility work log and timeline update
+- [x] Municipal contractor resolution upload endpoint (`POST /api/complaints/[id]/resolve`)
+- [x] Repair proof photo upload to Supabase Storage at predictable path `resolutions/{id}/{timestamp}.jpg`
+- [x] GPS proximity and timestamp validation against original complaint ("Location required for verification.")
+- [x] Status transition to `resolved` (grey / unverified state until evidence verification)
+- [x] Facility work log and timeline update (`complaint_activity_logs`)
+- [x] Facility scoped view (`/facility`) with "In Progress" and "Mark Resolved" actions
+- [x] Status transition enforcement (only `in_progress` -> `resolved` permitted; direct from `open` rejected)
 
 ## Phase 09: AI Agent: Resolution verification
 - [ ] `verifyResolution` tool using Gemini Vision to compare before/after images

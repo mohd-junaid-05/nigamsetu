@@ -3,6 +3,7 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 // Protected routes: unauthenticated visitors are redirected to sign-in before HTML is sent
 const isProtectedRoute = createRouteMatcher([
   '/dashboard(.*)',
+  '/facility(.*)',
   '/report(.*)',
   '/complaint/(.*)',
 ]);

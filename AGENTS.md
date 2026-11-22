@@ -110,5 +110,8 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-22 | Implement `trg_complaints_sla_deadline` trigger and `calculate_complaint_sla_deadline()` | Automatically computes category-based SLA deadlines (sewage 12h, garbage 24h, healthcenter 48h, road/other 72h, school 168h) at complaint creation | Yes |
 | 2026-11-22 | Use SECURITY DEFINER RPC `assign_complaint_to_facility` for atomic depot assignment | Guarantees atomic update of `facility_id` and transition to status `assigned` in one database transaction | Yes |
 | 2026-11-22 | Implement `get_nearest_facilities` PostGIS KNN RPC | Uses `ST_Distance(f.location::geography, c.location::geography)` to rank nearest category-matched municipal facilities with meter/km distance | Yes |
+| 2026-11-22 | Extend `profiles` table with `facility_id` and add `facility` role | Enables municipal contractor/facility worker scoping, RLS policy checks, and depot dashboard view | Yes |
+| 2026-11-22 | Enforce strict status transitions via `trg_complaint_status_transition` | Guarantees database and API layer reject moving tickets directly to `resolved` unless previous state was `in_progress` | Yes |
+| 2026-11-22 | Introduce `complaint_activity_logs` table and `resolve_complaint` RPC | Atomically updates resolution image URL, GPS coordinates, notes, resolved timestamp, and logs activity timeline | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.
