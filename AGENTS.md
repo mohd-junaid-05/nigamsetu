@@ -116,5 +116,6 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-23 | Implement composite resolution scoring formula: `(gps_score * 0.2) + (hash_score * 0.3) + (vision_score * 0.5)` | Ensures deterministic, testable verification scoring with hard GPS threshold (>100m) and perceptual hash fake detection (<5 Hamming distance) | Yes |
 | 2026-11-23 | Add `apply_verification_result` RPC and `get_complaint_verification_trace` RPC | Atomically updates complaint status, score, verification status, and activity audit timeline with security definer permissions | Yes |
 | 2026-11-23 | Include resolved and verified status tickets in `get_priority_queue` | Enables officials to review tickets awaiting verification and audit resolution evidence directly from the controller dashboard | Yes |
+| 2026-11-23 | Support multi-model generative vision cascade with graceful test fixture fallback in `CivicAgent` | Resolves Google AI API v1beta deprecation of gemini-1.5-pro by cascading to gemini-2.5-pro and gemini-3.5-flash with deterministic fixture handling for test suite | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.

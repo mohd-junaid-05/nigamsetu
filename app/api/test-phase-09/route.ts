@@ -1,8 +1,6 @@
 import { createAuthenticatedSupabaseClient } from '@/lib/supabase/server';
 import { CivicAgent, VerifyResolutionOutput, haversineDistanceMeters } from '@/lib/agent/CivicAgent';
 
-export const dynamic = 'force-dynamic';
-
 export type AcceptanceTestItem = {
   checkNumber: number;
   title: string;

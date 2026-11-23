@@ -75,12 +75,15 @@
 - [x] Status transition enforcement (only `in_progress` -> `resolved` permitted; direct from `open` rejected)
 
 ## Phase 09: AI Agent: Resolution verification
-- [x] `verifyResolution` tool using Gemini Vision to compare before/after images
-- [x] Pure mathematical alignment check: GPS distance threshold and timestamp ordering
-- [x] AI similarity score calculation (0.0 to 1.0)
-- [x] Auto-confirmation to `verified` (green) if score exceeds threshold
-- [x] Auto-rejection to `in_progress` if score is below 0.4 with reason logged
-- [x] Manual override action for official and citizen appeal
+- [x] `verifyResolution` tool in `CivicAgent` with 4 sequential verification checks (GPS proximity, timestamp ordering, perceptual hash fake detection, and Gemini Vision comparison)
+- [x] Hard reject on GPS mismatch (> 100m) without invoking vision model
+- [x] Perceptual hash check flagging re-uploaded before photos (Hamming distance < 5) as likely fake
+- [x] Composite score calculation with documented, testable formula: `(gps_score * 0.2) + (hash_score * 0.3) + (vision_score * 0.5)`
+- [x] Automatic status transitions based on composite score: `>= 0.75` auto-verifies (`verified`), `< 0.4` auto-returns to `in_progress`, `0.4-0.75` flags for manual review (`resolved`)
+- [x] Side-by-side Before/After verification UI in official controller dashboard (`ComplaintDetailPanel`) with score bar and 4 check badges
+- [x] Official override actions: "Verify & Close" (passes), "Reject & Reopen" (fails), and "Flag for Review" (manual)
+- [x] Public map visual update: verified tickets render green pins; resolved unverified remain grey
+- [x] Comprehensive audit trail logging all four individual checks, composite score metrics, and reasoning into `agent_traces` with "Why this score?" inspector modal
 
 ## Phase 10: AI Agent: Escalation autopilot
 - [ ] Automated SLA breach detection cron/checker for overdue complaints
