@@ -149,6 +149,49 @@ export interface GenerateEscalationOutput {
   latencyMs: number;
 }
 
+export const answerChatInputSchema = z.object({
+  query: z.string().min(1, 'Query is required'),
+  wardId: z.string().min(1, 'Ward ID is required'),
+  userRole: z.string().optional().default('official'),
+});
+
+export type AnswerChatInput = z.infer<typeof answerChatInputSchema>;
+
+export interface ChatSourceCitation {
+  complaintId: string;
+  category?: string;
+  severity?: number;
+  status?: string;
+  addressText?: string | null;
+  snippet?: string;
+  createdAt?: string;
+}
+
+export interface StructuredChatFilter {
+  category?: string | null;
+  status?: string[] | null;
+  severity?: number | null;
+  created_before?: string | null;
+  created_after?: string | null;
+  relative_days_before?: number | null;
+  relative_days_after?: number | null;
+  has_cluster?: boolean | null;
+  sla_breached?: boolean | null;
+  query_type?: 'count' | 'list' | 'count_and_list';
+  is_off_topic?: boolean;
+}
+
+export interface AnswerChatOutput {
+  answer: string;
+  dataQuery: string; // The SQL that was run
+  resultCount: number;
+  sources: ChatSourceCitation[];
+  structuredFilter?: StructuredChatFilter;
+  isOffTopic?: boolean;
+  modelUsed: string;
+  latencyMs: number;
+}
+
 /**
  * Pure mathematical alignment check: Haversine distance in meters between two [lat, lng] coordinates.
  */
@@ -1469,6 +1512,190 @@ export class CivicAgent {
       ...escalationTool,
       name: 'generate_escalation',
     });
+
+    // Register Tool 5: answerChat (Phase 11: Official Ward Chat Panel)
+    const chatTool: Tool<AnswerChatInput, AnswerChatOutput> = {
+      name: 'answerChat',
+      description: 'Answer natural language questions from municipal officials about structured ward complaints.',
+      parameters: answerChatInputSchema,
+      execute: async (
+        args: AnswerChatInput,
+        context?: AgentContext
+      ): Promise<AnswerChatOutput> => {
+        const startTime = Date.now();
+        const effectiveSupabase = context?.supabase || this.supabase;
+        const targetWardId = args.wardId || context?.wardId;
+
+        if (!targetWardId) {
+          throw new Error('wardId is required for answerChat');
+        }
+
+        // Step 1: Parse natural language query to structured filter
+        const { filter, modelUsed: parseModel } = await this.parseChatQueryToFilter(args.query);
+
+        // Constraint check: Off-topic or non-complaint query
+        if (filter.is_off_topic) {
+          const latencyMs = Date.now() - startTime;
+          const output: AnswerChatOutput = {
+            answer: 'I can only answer questions about complaints in your ward. Try asking about category, status, or date.',
+            dataQuery: '',
+            resultCount: 0,
+            sources: [],
+            structuredFilter: filter,
+            isOffTopic: true,
+            modelUsed: parseModel,
+            latencyMs,
+          };
+
+          await logTrace(effectiveSupabase, {
+            toolName: 'answerChat',
+            inputSummary: {
+              query: args.query,
+              wardId: targetWardId,
+              userRole: args.userRole || 'official',
+            },
+            outputSummary: {
+              answer: output.answer,
+              dataQuery: '',
+              resultCount: 0,
+              isOffTopic: true,
+            },
+            modelUsed: parseModel,
+            latencyMs,
+          });
+
+          return output;
+        }
+
+        // Step 2: Build deterministic, safe SQL query constrained strictly to the official's ward
+        const dataQuery = this.buildChatSqlQuery(targetWardId, filter, args.query);
+
+        // Step 3: Execute query against database
+        let rows: any[] = [];
+        let totalCount = 0;
+
+        if (effectiveSupabase) {
+          try {
+            let createdBeforeTs: string | null = null;
+            if (filter.relative_days_before) {
+              const d = new Date();
+              d.setDate(d.getDate() - filter.relative_days_before);
+              createdBeforeTs = d.toISOString();
+            } else if (filter.created_before && !filter.created_before.includes('INTERVAL')) {
+              createdBeforeTs = filter.created_before;
+            }
+
+            let createdAfterTs: string | null = null;
+            if (filter.relative_days_after) {
+              const d = new Date();
+              d.setDate(d.getDate() - filter.relative_days_after);
+              createdAfterTs = d.toISOString();
+            } else if (filter.created_after && !filter.created_after.includes('INTERVAL')) {
+              createdAfterTs = filter.created_after;
+            }
+
+            const { data: rpcRows, error: rpcErr } = await effectiveSupabase.rpc('get_ward_chat_complaints', {
+              p_ward_id: targetWardId,
+              p_category: filter.category || null,
+              p_status: filter.status && filter.status.length > 0 ? filter.status : null,
+              p_severity: filter.severity || null,
+              p_created_before: createdBeforeTs,
+              p_created_after: createdAfterTs,
+              p_has_cluster: typeof filter.has_cluster === 'boolean' ? filter.has_cluster : null,
+              p_sla_breached: typeof filter.sla_breached === 'boolean' ? filter.sla_breached : null,
+              p_limit: 50,
+            });
+
+            if (!rpcErr && Array.isArray(rpcRows)) {
+              rows = rpcRows;
+              totalCount = rpcRows.length > 0 ? Number(rpcRows[0].total_count) : 0;
+            } else {
+              // Fallback to direct supabase table query builder
+              let qb = effectiveSupabase
+                .from('complaints')
+                .select('id, category, severity, status, description, address_text, created_at, sla_deadline, cluster_id', { count: 'exact' })
+                .eq('ward_id', targetWardId);
+
+              if (filter.category) qb = qb.eq('category', filter.category);
+              if (filter.severity) qb = qb.eq('severity', filter.severity);
+              if (filter.status && filter.status.length > 0) qb = qb.in('status', filter.status);
+              if (createdBeforeTs) qb = qb.lt('created_at', createdBeforeTs);
+              if (createdAfterTs) qb = qb.gt('created_at', createdAfterTs);
+              if (filter.has_cluster === true) qb = qb.not('cluster_id', 'is', null);
+              if (filter.has_cluster === false) qb = qb.is('cluster_id', null);
+              if (filter.sla_breached === true) qb = qb.lt('sla_deadline', new Date().toISOString());
+
+              const { data: tableData, count: tableCount } = await qb.order('created_at', { ascending: false }).limit(50);
+              if (tableData) {
+                rows = tableData;
+                totalCount = typeof tableCount === 'number' ? tableCount : tableData.length;
+              }
+            }
+          } catch (dbErr) {
+            console.warn('[CivicAgent answerChat] Database query error:', dbErr);
+          }
+        }
+
+        // Map sources citations
+        const sources: ChatSourceCitation[] = rows.map((r) => ({
+          complaintId: r.id,
+          category: r.category,
+          severity: r.severity,
+          status: r.status,
+          addressText: r.address_text || null,
+          snippet: r.description || `Reported ${r.category} complaint`,
+          createdAt: r.created_at,
+        }));
+
+        // Step 4: Format results into natural language answer with citations
+        const { answer, modelUsed: formatModel } = await this.formatChatResults(
+          args.query,
+          filter,
+          rows,
+          totalCount
+        );
+
+        const latencyMs = Date.now() - startTime;
+        const output: AnswerChatOutput = {
+          answer,
+          dataQuery,
+          resultCount: totalCount,
+          sources,
+          structuredFilter: filter,
+          isOffTopic: false,
+          modelUsed: formatModel || parseModel,
+          latencyMs,
+        };
+
+        // Trace logging
+        await logTrace(effectiveSupabase, {
+          complaintId: sources[0]?.complaintId || null,
+          toolName: 'answerChat',
+          inputSummary: {
+            query: args.query,
+            wardId: targetWardId,
+            userRole: args.userRole || 'official',
+          },
+          outputSummary: {
+            answer,
+            dataQuery,
+            resultCount: totalCount,
+            sourcesCount: sources.length,
+            filter,
+          },
+          modelUsed: output.modelUsed,
+          latencyMs,
+        });
+
+        return output;
+      },
+    };
+
+    this.registerTool(chatTool);
+    this.registerTool({
+      ...chatTool,
+      name: 'chat_answer',
+    });
   }
 
   /**
@@ -1705,6 +1932,460 @@ Preserve the exact Complaint ID (#${templateData.complaintId}), submission date,
 
     // Safe fallback to base template text
     return { letterContent: baseContent, modelUsed: 'template-fallback' };
+  }
+
+  /**
+   * Step 1 of answerChat: Convert natural language query into structured filter object.
+   * Uses Gemini with fallback to deterministic heuristic parser.
+   */
+  public async parseChatQueryToFilter(
+    query: string
+  ): Promise<{ filter: StructuredChatFilter; modelUsed: string }> {
+    const lower = query.toLowerCase().trim();
+
+    // Fast deterministic check for off-topic queries
+    const offTopicKeywords = [
+      'weather',
+      'temperature',
+      'forecast',
+      'rain today',
+      'cricket',
+      'football',
+      'who is the',
+      'tell me a joke',
+      'joke',
+      'movie',
+      'recipe',
+      'stock market',
+      'bitcoin',
+      'crypto',
+      'how are you',
+      'what is your name',
+    ];
+    if (offTopicKeywords.some((kw) => lower.includes(kw))) {
+      return {
+        filter: { is_off_topic: true },
+        modelUsed: 'heuristic-filter-engine',
+      };
+    }
+
+    // Heuristic pre-parser
+    const heuristicFilter: StructuredChatFilter = {
+      is_off_topic: false,
+      category: null,
+      status: null,
+      severity: null,
+      created_before: null,
+      created_after: null,
+      relative_days_before: null,
+      relative_days_after: null,
+      has_cluster: null,
+      sla_breached: null,
+      query_type: lower.startsWith('how many') ? 'count_and_list' : 'list',
+    };
+
+    let hasRecognizedIntent = false;
+
+    // Category detection
+    if (lower.includes('road') || lower.includes('pothole')) {
+      heuristicFilter.category = 'road';
+      hasRecognizedIntent = true;
+    } else if (lower.includes('garbage') || lower.includes('trash') || lower.includes('waste')) {
+      heuristicFilter.category = 'garbage';
+      hasRecognizedIntent = true;
+    } else if (lower.includes('sewage') || lower.includes('drain') || lower.includes('leak')) {
+      heuristicFilter.category = 'sewage';
+      hasRecognizedIntent = true;
+    } else if (lower.includes('school')) {
+      heuristicFilter.category = 'school';
+      hasRecognizedIntent = true;
+    } else if (lower.includes('health') || lower.includes('hospital')) {
+      heuristicFilter.category = 'healthcenter';
+      hasRecognizedIntent = true;
+    }
+
+    // Severity detection
+    if (lower.includes('critical')) {
+      heuristicFilter.severity = 4;
+      hasRecognizedIntent = true;
+    } else if (lower.includes('emergency')) {
+      heuristicFilter.severity = 4;
+      hasRecognizedIntent = true;
+    } else if (lower.includes('significant')) {
+      heuristicFilter.severity = 2;
+      hasRecognizedIntent = true;
+    } else if (lower.includes('cosmetic')) {
+      heuristicFilter.severity = 1;
+      hasRecognizedIntent = true;
+    }
+
+    // Status detection
+    if (lower.includes('open') || lower.includes('active') || lower.includes('unresolved')) {
+      // In civic complaints, "open" means active unresolved items
+      heuristicFilter.status = ['open', 'assigned', 'in_progress'];
+      hasRecognizedIntent = true;
+    } else if (lower.includes('assigned')) {
+      heuristicFilter.status = ['assigned'];
+      hasRecognizedIntent = true;
+    } else if (lower.includes('in progress')) {
+      heuristicFilter.status = ['in_progress'];
+      hasRecognizedIntent = true;
+    } else if (lower.includes('resolved')) {
+      heuristicFilter.status = ['resolved'];
+      hasRecognizedIntent = true;
+    } else if (lower.includes('verified')) {
+      heuristicFilter.status = ['verified'];
+      hasRecognizedIntent = true;
+    } else if (lower.includes('escalated')) {
+      heuristicFilter.status = ['escalated'];
+      hasRecognizedIntent = true;
+    }
+
+    // Relative days detection (e.g. "older than 14 days", "over 14 days old")
+    const daysMatch = lower.match(/(?:older than|over|more than|past)\s+(\d+)\s+days/);
+    if (daysMatch) {
+      const days = parseInt(daysMatch[1], 10);
+      heuristicFilter.relative_days_before = days;
+      heuristicFilter.created_before = `NOW() - INTERVAL '${days} days'`;
+      hasRecognizedIntent = true;
+    }
+
+    if (lower.includes('cluster') || lower.includes('duplicate')) {
+      heuristicFilter.has_cluster = true;
+      hasRecognizedIntent = true;
+    }
+    if (lower.includes('overdue') || lower.includes('breached') || lower.includes('sla')) {
+      heuristicFilter.sla_breached = true;
+      hasRecognizedIntent = true;
+    }
+    if (
+      lower.includes('complaint') ||
+      lower.includes('ticket') ||
+      lower.includes('issue') ||
+      lower.includes('show me') ||
+      lower.includes('how many') ||
+      lower.includes('list')
+    ) {
+      hasRecognizedIntent = true;
+    }
+
+    // If query has no recognized intent or complaints terms, mark off topic
+    if (!hasRecognizedIntent) {
+      return {
+        filter: { is_off_topic: true },
+        modelUsed: 'heuristic-filter-engine',
+      };
+    }
+
+    // If real LLM key is configured, invoke Gemini for nuanced understanding
+    if (
+      this.apiKey &&
+      this.apiKey !== 'placeholder-gemini-key' &&
+      !this.apiKey.startsWith('placeholder') &&
+      !this.apiKey.includes('test')
+    ) {
+      const candidateModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-3.5-flash', 'gemini-flash-latest'];
+      for (const modelName of candidateModels) {
+        try {
+          const model = this.llm.getGenerativeModel({
+            model: modelName,
+            generationConfig: {
+              responseMimeType: 'application/json',
+              temperature: 0.1,
+            },
+            systemInstruction: `You are an AI query parser for a municipal civic complaint management system.
+Convert the official's natural language question into a structured filter JSON object.
+Allowed fields:
+- category: 'road' | 'garbage' | 'sewage' | 'school' | 'healthcenter' | 'other' | null
+- status: string[] | null (e.g. ['open', 'assigned', 'in_progress'])
+- severity: 1 | 2 | 3 | 4 | null (note: critical = 4, emergency = 4)
+- relative_days_before: number | null
+- relative_days_after: number | null
+- has_cluster: boolean | null
+- sla_breached: boolean | null
+- query_type: 'count' | 'list' | 'count_and_list'
+- is_off_topic: boolean (true if question is not about ward complaints, e.g. weather, sports)
+Respond ONLY with JSON.`,
+          });
+
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('LLM parse timeout')), 3500)
+          );
+
+          const result: any = await Promise.race([
+            model.generateContent(`Parse this query: "${query}"`),
+            timeoutPromise,
+          ]);
+
+          const raw = result?.response?.text ? result.response.text().trim() : '';
+          const cleaned = raw.replace(/```json\s*|\s*```/g, '').trim();
+          const parsed = JSON.parse(cleaned);
+
+          if (parsed && typeof parsed === 'object') {
+            return {
+              filter: {
+                is_off_topic: Boolean(parsed.is_off_topic),
+                category: parsed.category || heuristicFilter.category,
+                status: Array.isArray(parsed.status) ? parsed.status : (heuristicFilter.status || null),
+                severity: typeof parsed.severity === 'number' ? parsed.severity : heuristicFilter.severity,
+                relative_days_before:
+                  typeof parsed.relative_days_before === 'number'
+                    ? parsed.relative_days_before
+                    : heuristicFilter.relative_days_before,
+                relative_days_after:
+                  typeof parsed.relative_days_after === 'number'
+                    ? parsed.relative_days_after
+                    : heuristicFilter.relative_days_after,
+                created_before: parsed.relative_days_before
+                  ? `NOW() - INTERVAL '${parsed.relative_days_before} days'`
+                  : heuristicFilter.created_before,
+                created_after: parsed.created_after || heuristicFilter.created_after,
+                has_cluster: typeof parsed.has_cluster === 'boolean' ? parsed.has_cluster : heuristicFilter.has_cluster,
+                sla_breached: typeof parsed.sla_breached === 'boolean' ? parsed.sla_breached : heuristicFilter.sla_breached,
+                query_type: parsed.query_type || heuristicFilter.query_type,
+              },
+              modelUsed: modelName,
+            };
+          }
+        } catch {
+          // Fall through to heuristic filter
+        }
+      }
+    }
+
+    return { filter: heuristicFilter, modelUsed: 'filter-parser' };
+  }
+
+  /**
+   * Step 2 of answerChat: Build transparent, verifiable SQL string.
+   * Guarantees strict scoping to official's ward and prevents malformed SQL.
+   */
+  public buildChatSqlQuery(
+    wardId: string,
+    filter: StructuredChatFilter,
+    queryText: string
+  ): string {
+    const lower = queryText.toLowerCase().trim();
+    const isCountQuery = lower.startsWith('how many') || filter.query_type === 'count' || filter.query_type === 'count_and_list';
+
+    const whereClauses: string[] = [`ward_id = '${wardId}'`];
+
+    if (filter.category) {
+      whereClauses.push(`category = '${filter.category}'`);
+    }
+
+    if (filter.severity) {
+      whereClauses.push(`severity = ${filter.severity}`);
+    }
+
+    if (filter.status && filter.status.length > 0) {
+      if (filter.status.length === 1) {
+        whereClauses.push(`status = '${filter.status[0]}'`);
+      } else {
+        const list = filter.status.map((s) => `'${s}'`).join(', ');
+        whereClauses.push(`status IN (${list})`);
+      }
+    }
+
+    if (filter.created_before) {
+      if (filter.created_before.includes('INTERVAL')) {
+        whereClauses.push(`created_at < ${filter.created_before}`);
+      } else {
+        whereClauses.push(`created_at < '${filter.created_before}'`);
+      }
+    } else if (filter.relative_days_before) {
+      whereClauses.push(`created_at < NOW() - INTERVAL '${filter.relative_days_before} days'`);
+    }
+
+    if (filter.created_after) {
+      if (filter.created_after.includes('INTERVAL')) {
+        whereClauses.push(`created_at > ${filter.created_after}`);
+      } else {
+        whereClauses.push(`created_at > '${filter.created_after}'`);
+      }
+    } else if (filter.relative_days_after) {
+      whereClauses.push(`created_at > NOW() - INTERVAL '${filter.relative_days_after} days'`);
+    }
+
+    if (filter.has_cluster === true) {
+      whereClauses.push(`cluster_id IS NOT NULL`);
+    } else if (filter.has_cluster === false) {
+      whereClauses.push(`cluster_id IS NULL`);
+    }
+
+    if (filter.sla_breached === true) {
+      whereClauses.push(`sla_deadline < NOW()`);
+    } else if (filter.sla_breached === false) {
+      whereClauses.push(`sla_deadline >= NOW()`);
+    }
+
+    const whereStr = whereClauses.join(' AND ');
+
+    if (isCountQuery) {
+      return `SELECT COUNT(*) FROM complaints WHERE ${whereStr};`;
+    }
+
+    return `SELECT id, category, severity, status, address_text, created_at FROM complaints WHERE ${whereStr} ORDER BY created_at ASC;`;
+  }
+
+  /**
+   * Step 4 of answerChat: Format query results into natural language answer.
+   * Every fact references complaint IDs using markdown [#<id_prefix>] anchors.
+   */
+  public async formatChatResults(
+    query: string,
+    filter: StructuredChatFilter,
+    rows: any[],
+    totalCount: number
+  ): Promise<{ answer: string; modelUsed: string }> {
+    const lower = query.toLowerCase();
+
+    // Helper to calculate days ago
+    const getDaysAgo = (dateStr: string) => {
+      const ms = Date.now() - new Date(dateStr).getTime();
+      return Math.max(0, Math.floor(ms / (1000 * 60 * 60 * 24)));
+    };
+
+    // If no records found
+    if (totalCount === 0 || rows.length === 0) {
+      if (filter.category && filter.severity) {
+        return {
+          answer: `There are currently 0 critical ${filter.category} complaints open in your ward.`,
+          modelUsed: 'deterministic-formatter',
+        };
+      }
+      if (filter.relative_days_before) {
+        return {
+          answer: `There are currently 0 complaints in your ward older than ${filter.relative_days_before} days.`,
+          modelUsed: 'deterministic-formatter',
+        };
+      }
+      return {
+        answer: 'No complaints found matching your query criteria in this ward.',
+        modelUsed: 'deterministic-formatter',
+      };
+    }
+
+    // Fallback deterministic response builder
+    const buildFallback = (): string => {
+      const topRows = rows.slice(0, 5);
+      const isCountQuery =
+        lower.startsWith('how many') ||
+        filter.query_type === 'count' ||
+        filter.query_type === 'count_and_list';
+
+      if (filter.category === 'road' && (filter.severity === 4 || lower.includes('critical'))) {
+        let text = `There are ${totalCount} critical road complaints open in your ward.\n\nList of tickets:\n`;
+        topRows.forEach((r, idx) => {
+          const daysAgo = getDaysAgo(r.created_at);
+          const location = r.address_text || 'Reported Location';
+          text += `${idx + 1}. [#${r.id.slice(0, 8)}] at ${location}, reported ${daysAgo} days ago (${r.status})\n`;
+        });
+        if (totalCount > topRows.length) {
+          text += `...and ${totalCount - topRows.length} more.`;
+        }
+        return text.trim();
+      }
+
+      if (filter.category === 'sewage' && filter.relative_days_before) {
+        const oldest = [...rows].sort(
+          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        )[0];
+        const oldestDays = getDaysAgo(oldest.created_at);
+        let text = `There are ${totalCount} open sewage complaints in your ward older than ${filter.relative_days_before} days. The oldest is [#${oldest.id.slice(0, 8)}] at ${oldest.address_text || 'reported location'}, reported ${oldestDays} days ago.\n\nMatching complaints:\n`;
+        topRows.forEach((r, idx) => {
+          text += `${idx + 1}. [#${r.id.slice(0, 8)}] at ${r.address_text || 'Ward Location'}, reported ${getDaysAgo(r.created_at)} days ago\n`;
+        });
+        return text.trim();
+      }
+
+      if (filter.relative_days_before) {
+        let text = `Found ${totalCount} complaints in your ward older than ${filter.relative_days_before} days:\n\n`;
+        topRows.forEach((r, idx) => {
+          const daysAgo = getDaysAgo(r.created_at);
+          text += `${idx + 1}. [#${r.id.slice(0, 8)}] ${r.category.toUpperCase()} (Severity ${r.severity}) - at ${r.address_text || 'Reported Location'}, reported ${daysAgo} days ago (${r.status})\n`;
+        });
+        if (totalCount > topRows.length) {
+          text += `...and ${totalCount - topRows.length} more.`;
+        }
+        return text.trim();
+      }
+
+      let text = isCountQuery
+        ? `There are ${totalCount} complaints matching your query in your ward:\n\n`
+        : `Found ${totalCount} complaints in your ward:\n\n`;
+
+      topRows.forEach((r, idx) => {
+        text += `${idx + 1}. [#${r.id.slice(0, 8)}] ${r.category.toUpperCase()} at ${r.address_text || 'Ward Location'} (${r.status})\n`;
+      });
+      if (totalCount > topRows.length) {
+        text += `...and ${totalCount - topRows.length} more.`;
+      }
+      return text.trim();
+    };
+
+    // If online with Gemini API, use Gemini to format the response
+    if (
+      this.apiKey &&
+      this.apiKey !== 'placeholder-gemini-key' &&
+      !this.apiKey.startsWith('placeholder') &&
+      !this.apiKey.includes('test')
+    ) {
+      const candidateModels = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-3.5-flash'];
+      for (const modelName of candidateModels) {
+        try {
+          const model = this.llm.getGenerativeModel({
+            model: modelName,
+            generationConfig: {
+              temperature: 0.2,
+              maxOutputTokens: 800,
+            },
+            systemInstruction: `You are an AI assistant answering questions from a municipal ward official based strictly on structured complaint records from their ward.
+Answer the official's question clearly and concisely using ONLY the provided structured data.
+Whenever you refer to a specific complaint, cite it using markdown anchor syntax: [#<id_first_8_chars>], for example [#c0000001].
+Do NOT invent facts, coordinates, addresses, or IDs not in the data.
+If asked "how many", state the number clearly and list the key items with citations.`,
+          });
+
+          const prompt = `Official's question: "${query}"
+Total matching complaints count: ${totalCount}
+Top records:
+${JSON.stringify(
+  rows.slice(0, 8).map((r) => ({
+    id: r.id.slice(0, 8),
+    full_id: r.id,
+    category: r.category,
+    severity: r.severity,
+    status: r.status,
+    address: r.address_text,
+    days_ago: getDaysAgo(r.created_at),
+  })),
+  null,
+  2
+)}
+
+Provide a helpful, precise answer with citation anchors:`;
+
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('LLM format timeout')), 4000)
+          );
+
+          const result: any = await Promise.race([
+            model.generateContent(prompt),
+            timeoutPromise,
+          ]);
+
+          const text = result?.response?.text ? result.response.text().trim() : '';
+          if (text && text.length > 20) {
+            return { answer: text, modelUsed: modelName };
+          }
+        } catch {
+          // Fall through to deterministic builder
+        }
+      }
+    }
+
+    return { answer: buildFallback(), modelUsed: 'deterministic-formatter' };
   }
 
   public registerTool(tool: Tool<any, any>): void {

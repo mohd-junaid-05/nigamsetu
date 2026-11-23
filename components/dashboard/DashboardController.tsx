@@ -7,12 +7,13 @@ import PriorityQueueTable from './PriorityQueueTable';
 import EscalationQueueTable from './EscalationQueueTable';
 import DashboardMap from './DashboardMap';
 import ComplaintDetailPanel from './ComplaintDetailPanel';
+import ChatPanel, { ChatMessage } from './ChatPanel';
 import AssignmentModal from './AssignmentModal';
 import ResolutionModal from '@/components/facility/ResolutionModal';
 import { useLiveComplaints } from '@/hooks/useLiveComplaints';
 import { EscalationQueueItem } from '@/app/api/escalations/route';
 import { EscalationStatus } from '@/lib/types/database';
-import { Layers, Map, FileText, Wifi, RefreshCw, AlertTriangle } from 'lucide-react';
+import { Layers, Map, FileText, Wifi, RefreshCw, AlertTriangle, Sparkles } from 'lucide-react';
 
 interface DashboardControllerProps {
   initialQueue: PriorityQueueItem[];
@@ -36,8 +37,17 @@ export default function DashboardController({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'queue' | 'map' | 'details'>('queue');
   const [queueView, setQueueView] = useState<'priority' | 'escalations'>('priority');
+  const [panelView, setPanelView] = useState<'details' | 'chat'>('details');
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [escalations, setEscalations] = useState<EscalationQueueItem[]>([]);
   const [isScanning, setIsScanning] = useState(false);
+
+  // Handle complaint citation selection from chat
+  const handleSelectComplaintFromChat = (complaintId: string) => {
+    setSelectedId(complaintId);
+    setPanelView('details');
+    setActiveTab('details');
+  };
 
   // Reload queue from database
   const refreshQueue = useCallback(async () => {
@@ -401,32 +411,60 @@ export default function DashboardController({
           </div>
         </section>
 
-        {/* Panel 3: Details & Workflow (25% -> 3 cols) */}
+        {/* Panel 3: Details & Workflow / Ward AI Chat (25% -> 3 cols) */}
         <section
           className={`lg:col-span-3 flex flex-col rounded-2xl border border-border bg-surface-card overflow-hidden shadow-sm ${
             activeTab === 'details' ? 'flex' : 'hidden lg:flex'
           }`}
         >
-          <div className="p-3.5 border-b border-border flex items-center justify-between bg-surface/40">
-            <div className="flex items-center gap-2">
-              <FileText className="w-4 h-4 text-blue-600" />
-              <h2 className="text-sm font-bold text-foreground">Ticket Details</h2>
+          <div className="p-2 border-b border-border flex items-center justify-between bg-surface/40">
+            <div className="flex items-center gap-1 w-full">
+              <button
+                type="button"
+                onClick={() => setPanelView('details')}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                  panelView === 'details'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-muted-foreground hover:bg-surface'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Details {selectedComplaint ? `(#${selectedComplaint.id.slice(0, 6)})` : ''}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPanelView('chat')}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                  panelView === 'chat'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-muted-foreground hover:bg-surface'
+                }`}
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>AI Copilot {chatMessages.length > 0 ? `(${chatMessages.length})` : ''}</span>
+              </button>
             </div>
-            {selectedComplaint && (
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-muted/20 border border-border font-bold">
-                #{selectedComplaint.id.slice(0, 6)}
-              </span>
-            )}
           </div>
 
-          <ComplaintDetailPanel
-            complaint={selectedComplaint}
-            onOpenAssign={(item) => setAssignTarget(item)}
-            onOpenResolve={(item) => setResolveTarget(item)}
-            onStartWork={handleStartWork}
-            onVerifyAction={handleVerifyAction}
-            onEscalateAction={handleEscalateAction}
-          />
+          {panelView === 'details' ? (
+            <ComplaintDetailPanel
+              complaint={selectedComplaint}
+              onOpenAssign={(item) => setAssignTarget(item)}
+              onOpenResolve={(item) => setResolveTarget(item)}
+              onStartWork={handleStartWork}
+              onVerifyAction={handleVerifyAction}
+              onEscalateAction={handleEscalateAction}
+            />
+          ) : (
+            <ChatPanel
+              wardId={wardId}
+              wardName={wardName}
+              onSelectComplaint={handleSelectComplaintFromChat}
+              messages={chatMessages}
+              setMessages={setChatMessages}
+            />
+          )}
         </section>
       </div>
 

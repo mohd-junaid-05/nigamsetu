@@ -120,6 +120,10 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-23 | Add 'manual' to `escalations.trigger_reason` check constraint and add `letter_url` and `previous_status` columns | Supports user-initiated and official-initiated manual escalations and stores generated PDF links alongside complaints while preserving initial state | Yes |
 | 2026-11-23 | Use `create_escalation_record` and `get_ward_escalations` SECURITY DEFINER RPCs | Atomically transitions complaint status to 'escalated', stores previous status, links PDF letter URL, and logs audit timeline | Yes |
 | 2026-11-23 | Implement 4s timeout with candidate cascade in `CivicAgent.polishEscalationLetter` | Guarantees rapid responsive PDF generation even if external LLM encounters network throttling or API deprecation | Yes |
+| 2026-11-23 | Add `get_ward_chat_complaints` SECURITY DEFINER RPC with windowed `COUNT(*) OVER() AS total_count` | Provides atomic execution of flexible municipal filters (`category`, `status`, `severity`, intervals, clusters, SLA) and accurate total count in one roundtrip | Yes |
+| 2026-11-23 | Implement two-step deterministic + generative NL-to-SQL architecture with strict ward isolation | Converts NL queries to structured filter JSON, programmatically generates exact SQL with hardcoded `ward_id`, and refuses off-topic questions | Yes |
+| 2026-11-23 | Use purely ephemeral React state for dashboard chat history with `agent_traces` audit logging | Complies with zero-database chat storage constraint while maintaining auditable logs of official queries in `agent_traces` | Yes |
+| 2026-11-23 | Add citation anchor regex parsing `[#id]` and source pills triggering detail panel switch | Satisfies clickable citation requirement: clicking any cited ticket ID in chat immediately focuses and opens that complaint's detail view | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.
 

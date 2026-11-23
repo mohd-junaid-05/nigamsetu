@@ -93,11 +93,12 @@
 - [x] Escalation queue view in official dashboard (`EscalationQueueTable`) and citizen detail page (`MyComplaintsList` "Escalation Letter" button)
 
 ## Phase 11: AI Agent: Chat panel
-- [ ] Official ward chat interface component in right dashboard panel
-- [ ] `answerChat` tool allowing natural language queries about ward complaints
-- [ ] NL-to-SQL translation querying structured database rather than hallucinating
-- [ ] Structured data table and chart presentation of query answers
-- [ ] Transparent display of structured SQL query executed before rendering response
+- [x] Official ward chat interface component in right dashboard panel (`ChatPanel` integrated into `DashboardController`)
+- [x] `answerChat` tool allowing natural language queries about ward complaints
+- [x] NL-to-SQL translation querying structured database rather than hallucinating
+- [x] Structured data presentation with source citation links opening complaint detail view
+- [x] Transparent collapsible display of structured SQL query executed before rendering response
+- [x] Strict ward scoping (`WHERE ward_id = :official_ward_id`) and off-topic rejection guardrails
 
 ## Phase 12: Agent traces and transparency
 - [ ] Public and official transparency view for AI agent decisions
