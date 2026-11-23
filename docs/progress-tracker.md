@@ -101,10 +101,10 @@
 - [x] Strict ward scoping (`WHERE ward_id = :official_ward_id`) and off-topic rejection guardrails
 
 ## Phase 12: Agent traces and transparency
-- [ ] Public and official transparency view for AI agent decisions
-- [ ] Audit trail panel showing all inputs, outputs, models, and timestamps from `agent_traces`
-- [ ] Step-by-step reasoning inspector for severity, duplicate clustering, and fix verification
-- [ ] Public auditability badge ensuring AI actions are evidence-derived
+- [x] Public and official transparency view for AI agent decisions
+- [x] Audit trail panel showing all inputs, outputs, models, and timestamps from `agent_traces`
+- [x] Step-by-step reasoning inspector for severity, duplicate clustering, and fix verification
+- [x] Public auditability badge ensuring AI actions are evidence-derived
 
 ## Phase 13: Demo data and polish
 - [ ] Comprehensive realistic seed script with real Indian ward scenarios (potholes, garbage, sewage)

@@ -124,6 +124,9 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-23 | Implement two-step deterministic + generative NL-to-SQL architecture with strict ward isolation | Converts NL queries to structured filter JSON, programmatically generates exact SQL with hardcoded `ward_id`, and refuses off-topic questions | Yes |
 | 2026-11-23 | Use purely ephemeral React state for dashboard chat history with `agent_traces` audit logging | Complies with zero-database chat storage constraint while maintaining auditable logs of official queries in `agent_traces` | Yes |
 | 2026-11-23 | Add citation anchor regex parsing `[#id]` and source pills triggering detail panel switch | Satisfies clickable citation requirement: clicking any cited ticket ID in chat immediately focuses and opens that complaint's detail view | Yes |
+| 2026-11-23 | Enforce strict citizen isolation in `agent_traces` RLS policy (`complaints.reporter_id = requesting_user_id()`) | Guarantees citizens can only view audit traces for their own complaints while admins maintain global audit capability and officials maintain ward scoping | Yes |
+| 2026-11-23 | Add `get_filtered_agent_traces` RPC function with dynamic multi-facet filtering | Enables fast server-side filtering by tool name, complaint ID, model architecture, and date boundaries with windowed total count | Yes |
+| 2026-11-23 | Provide polymorphic `AgentTraceModal` handling all 5 agent tools with multi-trace tab navigation | Supports unified audit inspection for severity scoring, perceptual duplicate checks, 4-check fix verification, escalation drafting, and chat answers | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.
 

@@ -16,8 +16,26 @@ import {
   Inbox,
   AlertCircle,
   FileText,
+  Sparkles,
+  ShieldCheck,
 } from 'lucide-react';
 import { ComplaintCategory, ComplaintStatus } from '@/lib/types/database';
+import AgentTraceModal, { VerificationTraceData } from '@/components/dashboard/AgentTraceModal';
+
+function getSeverityBadgeClasses(severity: number | null): string {
+  switch (severity) {
+    case 1:
+      return 'bg-severity-1/15 text-foreground border-severity-1/40';
+    case 2:
+      return 'bg-severity-2/15 text-severity-2 border-severity-2/40';
+    case 3:
+      return 'bg-severity-3/15 text-severity-3 border-severity-3/40 font-bold';
+    case 4:
+      return 'bg-severity-4/20 text-severity-4 border-severity-4/40 font-bold animate-pulse';
+    default:
+      return 'bg-severity-2/15 text-severity-2 border-severity-2/40';
+  }
+}
 
 interface MyComplaintsListProps {
   onSwitchToReport: () => void;
@@ -70,6 +88,38 @@ export function MyComplaintsList({ onSwitchToReport }: MyComplaintsListProps) {
   const [complaints, setComplaints] = useState<ComplaintItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Phase 12: Transparency Trace Inspector State
+  const [selectedTrace, setSelectedTrace] = useState<VerificationTraceData | null>(null);
+  const [allTraces, setAllTraces] = useState<VerificationTraceData[]>([]);
+  const [selectedComplaintId, setSelectedComplaintId] = useState<string>('');
+  const [isTraceModalOpen, setIsTraceModalOpen] = useState(false);
+  const [targetTool, setTargetTool] = useState<string | undefined>(undefined);
+  const [loadingTraceId, setLoadingTraceId] = useState<string | null>(null);
+
+  const handleOpenTrace = async (complaintId: string, tool?: string) => {
+    setSelectedComplaintId(complaintId);
+    setTargetTool(tool);
+    setLoadingTraceId(complaintId);
+    try {
+      const res = await fetch(
+        `/api/complaints/${complaintId}/trace${tool ? `?tool=${encodeURIComponent(tool)}` : ''}`
+      );
+      const data = await res.json();
+      if (data.success) {
+        setSelectedTrace(data.trace || null);
+        setAllTraces(data.allTraces || []);
+        setIsTraceModalOpen(true);
+      } else {
+        alert(data.error || 'Failed to load AI trace');
+      }
+    } catch (err: unknown) {
+      const e = err as Error;
+      alert(`Failed to load AI trace: ${e.message}`);
+    } finally {
+      setLoadingTraceId(null);
+    }
+  };
 
   const fetchComplaints = useCallback(async () => {
     setLoading(true);
@@ -240,6 +290,47 @@ export function MyComplaintsList({ onSwitchToReport }: MyComplaintsListProps) {
                       </p>
                     )}
 
+                    {/* Severity Badge & AI "Why this score?" Info Button (Phase 12) */}
+                    <div className="mt-2 flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className={`text-[10px] font-mono px-2 py-0.5 rounded-full border font-bold ${getSeverityBadgeClasses(
+                          item.severity
+                        )}`}
+                      >
+                        Severity {item.severity}
+                      </span>
+                      <button
+                        type="button"
+                        data-testid="why-this-score-btn"
+                        onClick={() => handleOpenTrace(item.id, 'scoreSeverity')}
+                        disabled={loadingTraceId === item.id}
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-600/10 hover:bg-purple-600/20 text-purple-600 dark:text-purple-400 border border-purple-500/25 text-[10px] font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                        title="Why this severity score? (Inspect AI Trace)"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        <span>Why this score?</span>
+                      </button>
+
+                      {item.status === 'verified' && (
+                        <button
+                          type="button"
+                          onClick={() => handleOpenTrace(item.id, 'verifyResolution')}
+                          disabled={loadingTraceId === item.id}
+                          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25 text-[10px] font-semibold transition-colors cursor-pointer"
+                          title="Inspect Resolution Verification Trace"
+                        >
+                          <ShieldCheck className="w-3 h-3" />
+                          <span>
+                            Verified{' '}
+                            {typeof item.verification_score === 'number'
+                              ? `(${Math.round(item.verification_score * 100)}%)`
+                              : ''}{' '}
+                            Trace
+                          </span>
+                        </button>
+                      )}
+                    </div>
+
                     {/* Escalation Letter Button for escalated complaints */}
                     {(item.escalation_letter_url || item.status === 'escalated') && (
                       <div className="mt-2 flex items-center gap-2">
@@ -260,6 +351,13 @@ export function MyComplaintsList({ onSwitchToReport }: MyComplaintsListProps) {
                             <span>Escalation Generating...</span>
                           </span>
                         )}
+                        <button
+                          type="button"
+                          onClick={() => handleOpenTrace(item.id, 'generateEscalation')}
+                          className="text-[10px] text-red-600 dark:text-red-400 underline font-medium cursor-pointer"
+                        >
+                          Audit Letter
+                        </button>
                       </div>
                     )}
                   </div>
@@ -289,6 +387,15 @@ export function MyComplaintsList({ onSwitchToReport }: MyComplaintsListProps) {
           })}
         </div>
       )}
+      {/* AI Trace Transparency Inspector Modal */}
+      <AgentTraceModal
+        isOpen={isTraceModalOpen}
+        onClose={() => setIsTraceModalOpen(false)}
+        trace={selectedTrace}
+        allTraces={allTraces}
+        complaintId={selectedComplaintId}
+        initialTool={targetTool}
+      />
     </div>
   );
 }

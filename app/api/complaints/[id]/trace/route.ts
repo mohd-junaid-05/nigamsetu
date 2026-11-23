@@ -1,26 +1,21 @@
-import { auth } from '@clerk/nextjs/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+
+export type AgentTraceItem = {
+  id: string;
+  complaint_id: string | null;
+  tool_name: string;
+  model_used: string;
+  latency_ms: number;
+  created_at: string;
+  input_summary: Record<string, unknown>;
+  output_summary: Record<string, unknown>;
+};
 
 export type ComplaintTraceResponse = {
   success: boolean;
   complaintId: string;
-  trace?: {
-    id: string;
-    tool_name: string;
-    model_used: string;
-    latency_ms: number;
-    created_at: string;
-    input_summary: Record<string, unknown>;
-    output_summary: Record<string, unknown>;
-  } | null;
-  allTraces?: Array<{
-    id: string;
-    tool_name: string;
-    model_used: string;
-    latency_ms: number;
-    created_at: string;
-    output_summary: Record<string, unknown>;
-  }>;
+  trace?: AgentTraceItem | null;
+  allTraces?: AgentTraceItem[];
   error?: string;
 };
 
@@ -39,43 +34,72 @@ export async function GET(
       );
     }
 
+    const { searchParams } = new URL(req.url);
+    const requestedTool = searchParams.get('tool');
+
     const supabase = await createServerSupabaseClient();
 
-    // 1. Fetch latest verification trace using the SECURITY DEFINER RPC
-    const { data: rpcData, error: rpcError } = await supabase.rpc(
-      'get_complaint_verification_trace',
-      { p_complaint_id: complaintId }
-    );
-
-    let latestTrace: any = null;
-    if (!rpcError && Array.isArray(rpcData) && rpcData.length > 0) {
-      latestTrace = rpcData[0];
-    } else {
-      // Fallback query directly from agent_traces
-      const { data: directData } = await supabase
-        .from('agent_traces')
-        .select('id, complaint_id, tool_name, input_summary, output_summary, model_used, latency_ms, created_at')
-        .eq('complaint_id', complaintId)
-        .in('tool_name', ['verifyResolution', 'verify_resolution'])
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      latestTrace = directData || null;
-    }
-
-    // 2. Also retrieve all trace history for this complaint
-    const { data: allTracesData } = await supabase
+    // 1. Fetch all traces recorded for this complaint, strictly governed by RLS
+    // Citizens will ONLY receive rows if they are the reporter of this complaint.
+    const { data: allTracesData, error: traceError } = await supabase
       .from('agent_traces')
-      .select('id, tool_name, model_used, latency_ms, created_at, output_summary')
+      .select('id, complaint_id, tool_name, input_summary, output_summary, model_used, latency_ms, created_at')
       .eq('complaint_id', complaintId)
       .order('created_at', { ascending: false });
+
+    if (traceError) {
+      console.warn('[ComplaintTraceRoute] Error fetching traces:', traceError);
+    }
+
+    const allTraces: AgentTraceItem[] = (allTracesData as AgentTraceItem[]) || [];
+
+    // 2. Select primary target trace:
+    let primaryTrace: AgentTraceItem | null = null;
+
+    if (requestedTool) {
+      // Find matching tool trace
+      const match = allTraces.find(
+        (t) =>
+          t.tool_name === requestedTool ||
+          (requestedTool === 'scoreSeverity' && t.tool_name === 'severity_score') ||
+          (requestedTool === 'verifyResolution' && t.tool_name === 'verify_resolution') ||
+          (requestedTool === 'checkDuplicate' && t.tool_name === 'duplicate_check') ||
+          (requestedTool === 'generateEscalation' && t.tool_name === 'generate_escalation') ||
+          (requestedTool === 'answerChat' && t.tool_name === 'chat_answer')
+      );
+      primaryTrace = match || null;
+    }
+
+    // Default to verification trace if available, else latest trace
+    if (!primaryTrace && allTraces.length > 0) {
+      const verificationMatch = allTraces.find((t) =>
+        ['verifyResolution', 'verify_resolution'].includes(t.tool_name)
+      );
+      primaryTrace = verificationMatch || allTraces[0];
+    }
+
+    // Fallback: If verification trace was requested or default, check RPC if not returned by direct query
+    if (!primaryTrace && (!requestedTool || ['verifyResolution', 'verify_resolution'].includes(requestedTool))) {
+      try {
+        const { data: rpcData } = await supabase.rpc('get_complaint_verification_trace', {
+          p_complaint_id: complaintId,
+        });
+        if (Array.isArray(rpcData) && rpcData.length > 0) {
+          primaryTrace = rpcData[0] as AgentTraceItem;
+          if (!allTraces.some((t) => t.id === primaryTrace?.id)) {
+            allTraces.unshift(primaryTrace);
+          }
+        }
+      } catch {
+        // Ignore RPC error
+      }
+    }
 
     return Response.json({
       success: true,
       complaintId,
-      trace: latestTrace,
-      allTraces: (allTracesData as any[]) || [],
+      trace: primaryTrace,
+      allTraces,
     } satisfies ComplaintTraceResponse);
   } catch (err: unknown) {
     const error = err as Error;

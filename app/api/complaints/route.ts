@@ -28,6 +28,8 @@ export type ComplaintItem = {
   address_text: string | null;
   escalation_letter_url?: string | null;
   previous_status?: string | null;
+  verification_score?: number | null;
+  verification_status?: string | null;
   created_at: string;
   ward_id: string | null;
   wards: {
@@ -296,6 +298,8 @@ export async function GET(): Promise<Response> {
         address_text,
         escalation_letter_url,
         previous_status,
+        verification_score,
+        verification_status,
         created_at,
         ward_id,
         wards (

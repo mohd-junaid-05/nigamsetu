@@ -223,6 +223,9 @@ const DUPLICATE_TIEBREAKER_PROMPT =
 const RESOLUTION_VERIFICATION_PROMPT =
   'Compare these two images of the same location. Image 1 was taken when the issue was reported. Image 2 was taken after a claimed fix. Has the issue been genuinely addressed? Respond ONLY with a JSON object: {"verified": boolean, "confidence": 0.0-1.0, "reason": "one sentence"}';
 
+const ESCALATION_SYSTEM_PROMPT =
+  'You are drafting a formal municipal grievance escalation letter. Use the provided template structure. Do NOT invent facts not in the input. Keep the tone formal, specific, and actionable. Include the complaint ID and dates.';
+
 /**
  * Helper to log all tool executions directly to agent_traces table.
  */
@@ -478,6 +481,7 @@ export class CivicAgent {
             reason,
             fallback,
             raw_response: rawResponse,
+            rawResponse: rawResponse,
           },
           modelUsed: 'gemini-1.5-flash',
           latencyMs,
@@ -859,8 +863,12 @@ export class CivicAgent {
               beforeTimestamp: args.beforeTimestamp,
               afterTimestamp: args.afterTimestamp,
               category: args.category,
+              prompt: RESOLUTION_VERIFICATION_PROMPT,
             },
-            outputSummary: { ...output },
+            outputSummary: {
+              ...output,
+              raw_response: output.rawResponse || output.reason,
+            },
             modelUsed: 'algorithm:geospatial-reject',
             latencyMs,
           });
@@ -930,8 +938,12 @@ export class CivicAgent {
               beforeTimestamp: args.beforeTimestamp,
               afterTimestamp: args.afterTimestamp,
               category: args.category,
+              prompt: RESOLUTION_VERIFICATION_PROMPT,
             },
-            outputSummary: { ...output },
+            outputSummary: {
+              ...output,
+              raw_response: output.rawResponse || output.reason,
+            },
             modelUsed: 'algorithm:timestamp-reject',
             latencyMs,
           });
@@ -1025,8 +1037,12 @@ export class CivicAgent {
               beforeTimestamp: args.beforeTimestamp,
               afterTimestamp: args.afterTimestamp,
               category: args.category,
+              prompt: RESOLUTION_VERIFICATION_PROMPT,
             },
-            outputSummary: { ...output },
+            outputSummary: {
+              ...output,
+              raw_response: output.rawResponse || output.reason,
+            },
             modelUsed: 'algorithm:phash-fake-detector',
             latencyMs,
           });
@@ -1210,8 +1226,13 @@ export class CivicAgent {
             beforeTimestamp: args.beforeTimestamp,
             afterTimestamp: args.afterTimestamp,
             category: args.category,
+            prompt: RESOLUTION_VERIFICATION_PROMPT,
           },
-          outputSummary: { ...output },
+          outputSummary: {
+            ...output,
+            raw_response: rawResponse,
+            rawResponse,
+          },
           modelUsed,
           latencyMs,
         });
@@ -1491,6 +1512,7 @@ export class CivicAgent {
             wardName,
             severity,
             format: template.format,
+            prompt: ESCALATION_SYSTEM_PROMPT,
           },
           outputSummary: {
             authority: template.authority,
@@ -1498,6 +1520,8 @@ export class CivicAgent {
             format: template.format,
             pdfUrl,
             letterLength: letterContent.length,
+            raw_response: letterContent,
+            rawResponse: letterContent,
           },
           modelUsed,
           latencyMs,

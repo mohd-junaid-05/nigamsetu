@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
+import Link from 'next/link';
 import { PriorityQueueItem } from '@/app/api/complaints/priority/route';
 import { FacilityItem } from '@/app/api/facilities/route';
 import PriorityQueueTable from './PriorityQueueTable';
@@ -272,11 +273,19 @@ export default function DashboardController({
             type="button"
             onClick={refreshQueue}
             disabled={isRefreshing}
-            className="p-1 rounded-lg border border-border hover:bg-muted/20 text-muted-foreground hover:text-foreground transition-colors"
+            className="p-1 rounded-lg border border-border hover:bg-muted/20 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             title="Manual sync with database"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
           </button>
+          <Link
+            href="/admin/traces"
+            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-600/10 hover:bg-purple-600/20 text-purple-600 dark:text-purple-400 font-bold border border-purple-500/20 text-xs transition-colors"
+            title="Inspect AI Transparency and Audit Traces"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>AI Audit Traces</span>
+          </Link>
         </div>
 
         {/* Mobile / Tablet Tab Switcher (visible on lg:hidden) */}

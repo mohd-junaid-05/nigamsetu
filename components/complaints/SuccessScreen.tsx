@@ -16,6 +16,7 @@ import {
   Bot,
 } from 'lucide-react';
 import { SeverityPostResponse, SeverityGetResponse } from '@/app/api/agent/severity/route';
+import AgentTraceModal, { VerificationTraceData } from '@/components/dashboard/AgentTraceModal';
 
 interface SuccessScreenProps {
   complaintId: string;
@@ -87,6 +88,32 @@ export function SuccessScreen({
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(true);
   const [fallback, setFallback] = useState<boolean>(false);
   const [latencyMs, setLatencyMs] = useState<number | null>(null);
+
+  // Phase 12: Transparency Trace Inspector State
+  const [isTraceModalOpen, setIsTraceModalOpen] = useState(false);
+  const [traceData, setTraceData] = useState<VerificationTraceData | null>(null);
+  const [allTraces, setAllTraces] = useState<VerificationTraceData[]>([]);
+  const [isLoadingTrace, setIsLoadingTrace] = useState(false);
+
+  const handleOpenTrace = async () => {
+    setIsLoadingTrace(true);
+    try {
+      const res = await fetch(`/api/complaints/${complaintId}/trace?tool=scoreSeverity`);
+      const data = await res.json();
+      if (data.success) {
+        setTraceData(data.trace || null);
+        setAllTraces(data.allTraces || []);
+        setIsTraceModalOpen(true);
+      } else {
+        alert(data.error || 'Failed to load severity trace');
+      }
+    } catch (err: unknown) {
+      const e = err as Error;
+      alert(`Failed to load trace: ${e.message}`);
+    } finally {
+      setIsLoadingTrace(false);
+    }
+  };
 
   const hasTriggeredRef = useRef(false);
 
@@ -213,12 +240,25 @@ export function SuccessScreen({
               <span>Analyzing photo...</span>
             </span>
           ) : (
-            <span
-              data-testid="severity-badge"
-              className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full border ${getSeverityBadgeClasses(severity)}`}
-            >
-              {getSeverityLabel(severity)}
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span
+                data-testid="severity-badge"
+                className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full border ${getSeverityBadgeClasses(severity)}`}
+              >
+                {getSeverityLabel(severity)}
+              </span>
+              <button
+                type="button"
+                data-testid="why-this-score-btn"
+                onClick={handleOpenTrace}
+                disabled={isLoadingTrace}
+                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-600/10 hover:bg-purple-600/20 text-purple-600 dark:text-purple-400 border border-purple-500/25 text-[10px] font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                title="Why this severity score? (Inspect AI Trace)"
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>Why this score?</span>
+              </button>
+            </div>
           )}
         </div>
 
@@ -317,6 +357,16 @@ export function SuccessScreen({
           <span>Report Another Issue</span>
         </button>
       </div>
+
+      {/* AI Trace Inspector Modal (Phase 12) */}
+      <AgentTraceModal
+        isOpen={isTraceModalOpen}
+        onClose={() => setIsTraceModalOpen(false)}
+        trace={traceData}
+        allTraces={allTraces}
+        complaintId={complaintId}
+        initialTool="scoreSeverity"
+      />
     </div>
   );
 }

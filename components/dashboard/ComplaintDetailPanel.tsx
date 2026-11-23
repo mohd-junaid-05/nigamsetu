@@ -98,6 +98,8 @@ export default function ComplaintDetailPanel({
 }: ComplaintDetailPanelProps) {
   const [isTraceModalOpen, setIsTraceModalOpen] = useState(false);
   const [traceData, setTraceData] = useState<VerificationTraceData | null>(null);
+  const [allTraces, setAllTraces] = useState<VerificationTraceData[]>([]);
+  const [targetTool, setTargetTool] = useState<string | undefined>(undefined);
   const [isLoadingTrace, setIsLoadingTrace] = useState(false);
   const [isPerformingAction, setIsPerformingAction] = useState<string | null>(null);
   const [isEscalating, setIsEscalating] = useState(false);
@@ -127,30 +129,34 @@ export default function ComplaintDetailPanel({
     }
   };
 
-  // Fetch latest verification trace for the selected complaint
+  // Fetch all audit traces for the selected complaint
   const fetchTrace = async (complaintId: string) => {
     setIsLoadingTrace(true);
     try {
       const res = await fetch(`/api/complaints/${complaintId}/trace`);
       const data = await res.json();
-      if (data.success && data.trace) {
-        setTraceData(data.trace);
+      if (data.success) {
+        setTraceData(data.trace || null);
+        setAllTraces(data.allTraces || []);
       } else {
         setTraceData(null);
+        setAllTraces([]);
       }
     } catch (err) {
       console.warn('[ComplaintDetailPanel] Failed to fetch trace:', err);
       setTraceData(null);
+      setAllTraces([]);
     } finally {
       setIsLoadingTrace(false);
     }
   };
 
   useEffect(() => {
-    if (complaint?.id && (complaint.resolution_image_url || complaint.status === 'resolved' || complaint.status === 'verified')) {
+    if (complaint?.id) {
       fetchTrace(complaint.id);
     } else {
       setTraceData(null);
+      setAllTraces([]);
     }
   }, [complaint?.id, complaint?.status, complaint?.resolution_image_url]);
 
@@ -179,20 +185,25 @@ export default function ComplaintDetailPanel({
   const verificationScore =
     typeof complaint.verification_score === 'number'
       ? complaint.verification_score
-      : typeof traceData?.output_summary?.score === 'number'
-      ? traceData.output_summary.score
+      : typeof (traceData?.output_summary as any)?.score === 'number'
+      ? (traceData?.output_summary as any).score
       : null;
 
-  const traceOutput = traceData?.output_summary;
-  const checks = traceOutput?.checks || {
+  const traceOutput = (traceData?.output_summary as Record<string, any>) || {};
+  const checks = (traceOutput.checks as {
+    gpsMatch?: boolean;
+    timestampValid?: boolean;
+    hashDifferent?: boolean;
+    visionVerdict?: boolean;
+  }) || {
     gpsMatch: true,
     timestampValid: true,
     hashDifferent: true,
     visionVerdict: verificationScore !== null ? verificationScore >= 0.75 : true,
   };
 
-  const reasonText =
-    traceOutput?.reason ||
+  const reasonText: string =
+    (traceOutput.reason as string) ||
     (verificationScore !== null && verificationScore >= 0.75
       ? 'Visual evidence confirms the reported infrastructure defect has been genuinely repaired and cleared.'
       : verificationScore !== null && verificationScore < 0.4
@@ -240,13 +251,28 @@ export default function ComplaintDetailPanel({
           <ExternalLink className="w-3.5 h-3.5" />
         </Link>
 
-        {/* Severity Badge on Image */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-          <span
-            className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border backdrop-blur-md ${sev.badge}`}
-          >
-            {sev.label}
-          </span>
+        {/* Severity Badge on Image with "Why this score?" button */}
+        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <span
+              className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border backdrop-blur-md ${sev.badge}`}
+            >
+              {sev.label}
+            </span>
+            <button
+              type="button"
+              data-testid="why-this-severity-btn"
+              onClick={() => {
+                setTargetTool('scoreSeverity');
+                setIsTraceModalOpen(true);
+              }}
+              className="px-2 py-0.5 rounded-lg bg-black/60 hover:bg-black/80 backdrop-blur-md text-[10px] text-white/90 border border-white/20 flex items-center gap-1 transition-colors cursor-pointer"
+              title="Why this severity score? (Inspect AI Trace)"
+            >
+              <Sparkles className="w-3 h-3 text-purple-400" />
+              <span>Why this score?</span>
+            </button>
+          </div>
           {isClustered && (
             <span className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-blue-600/90 text-white backdrop-blur-md border border-blue-400/30 flex items-center gap-1 shadow-sm">
               <Users className="w-3 h-3" />
@@ -489,8 +515,12 @@ export default function ComplaintDetailPanel({
           {/* "Why this score?" Button */}
           <button
             type="button"
-            onClick={() => setIsTraceModalOpen(true)}
-            className="w-full py-2 px-3 rounded-xl bg-purple-600/10 hover:bg-purple-600/20 text-purple-600 dark:text-purple-400 font-bold text-xs border border-purple-500/20 flex items-center justify-center gap-1.5 transition-colors"
+            data-testid="why-this-score-btn"
+            onClick={() => {
+              setTargetTool('verifyResolution');
+              setIsTraceModalOpen(true);
+            }}
+            className="w-full py-2 px-3 rounded-xl bg-purple-600/10 hover:bg-purple-600/20 text-purple-600 dark:text-purple-400 font-bold text-xs border border-purple-500/20 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Why this score? (Inspect Full AI Trace)</span>
@@ -696,7 +726,9 @@ export default function ComplaintDetailPanel({
         isOpen={isTraceModalOpen}
         onClose={() => setIsTraceModalOpen(false)}
         trace={traceData}
+        allTraces={allTraces}
         complaintId={complaint.id}
+        initialTool={targetTool}
       />
     </div>
   );
