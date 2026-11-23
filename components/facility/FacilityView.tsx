@@ -203,9 +203,9 @@ export default function FacilityView({
             <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
               <span>Field Repair Tasks & Depot Verification</span>
               {selectedFacility.contact_phone && (
-                <span className="flex items-center gap-1 font-mono">
+                <span className="flex items-center gap-1 font-mono text-[11px] text-muted-foreground">
                   <Phone className="w-3 h-3 text-muted-foreground" />
-                  {selectedFacility.contact_phone}
+                  Dispatch: +91 ••••• ••01
                 </span>
               )}
             </div>
@@ -276,7 +276,7 @@ export default function FacilityView({
             onClick={() => setActiveFilter('all')}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               activeFilter === 'all'
-                ? 'bg-blue-600 text-white shadow-2xs'
+                ? 'bg-[#071D49] text-white dark:bg-[#1d70b8] shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-surface border border-border'
             }`}
           >
@@ -307,7 +307,7 @@ export default function FacilityView({
             onClick={() => setActiveFilter('in_progress')}
             className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
               activeFilter === 'in_progress'
-                ? 'bg-blue-600 text-white shadow-2xs'
+                ? 'bg-[#071D49] text-white dark:bg-[#1d70b8] shadow-xs'
                 : 'text-muted-foreground hover:text-foreground hover:bg-surface border border-border'
             }`}
           >
@@ -406,7 +406,7 @@ export default function FacilityView({
                       type="button"
                       disabled={isLoading}
                       onClick={() => handleStartWork(c.id)}
-                      className="flex-1 min-h-[38px] py-1.5 px-3 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-[0.98] cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-accent"
+                      className="flex-1 min-h-[38px] py-1.5 px-3 rounded-md bg-[#071D49] hover:bg-[#093692] dark:bg-[#1d70b8] dark:hover:bg-[#144e82] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98] cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-accent"
                     >
                       {isLoading ? (
                         <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -421,7 +421,7 @@ export default function FacilityView({
                     <button
                       type="button"
                       onClick={() => setResolvingComplaint(c)}
-                      className="flex-1 min-h-[38px] py-1.5 px-3 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-2xs active:scale-[0.98] cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
+                      className="flex-1 min-h-[38px] py-1.5 px-3 rounded-md bg-[#00703c] hover:bg-[#005a30] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-[0.98] cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
                     >
                       <Camera className="w-3.5 h-3.5" />
                       <span>Upload Proof & Resolve</span>

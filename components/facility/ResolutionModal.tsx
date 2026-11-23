@@ -159,7 +159,7 @@ export default function ResolutionModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+      className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
     >
       <div className="w-full max-w-lg rounded-xl border border-border bg-surface shadow-lg flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
@@ -284,14 +284,14 @@ export default function ResolutionModal({
             <div className="grid grid-cols-2 gap-2 font-mono text-xs">
               <input
                 type="text"
-                placeholder="Latitude (e.g. 12.935000)"
+                placeholder="Latitude (e.g. 17.415600)"
                 value={lat}
                 onChange={(e) => setLat(e.target.value)}
                 className="px-3 py-2 rounded-md border border-border bg-surface-card text-foreground"
               />
               <input
                 type="text"
-                placeholder="Longitude (e.g. 77.675000)"
+                placeholder="Longitude (e.g. 78.435000)"
                 value={lng}
                 onChange={(e) => setLng(e.target.value)}
                 className="px-3 py-2 rounded-md border border-border bg-surface-card text-foreground"

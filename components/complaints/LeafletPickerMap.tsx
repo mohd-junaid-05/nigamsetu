@@ -89,9 +89,9 @@ export default function LeafletPickerMap({
   }, []);
 
   return (
-    <div className="relative w-full h-56 rounded-xl overflow-hidden border border-border shadow-inner">
+    <div className="relative w-full h-56 rounded-xl overflow-hidden border border-border shadow-inner isolation-isolate z-0">
       <div ref={mapContainerRef} className="w-full h-full" />
-      <div className="absolute top-2 left-2 z-[1000] bg-surface-card/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-border text-[10px] font-medium text-foreground shadow-sm">
+      <div className="absolute top-2 left-2 z-10 bg-surface-card/90 backdrop-blur-md px-2.5 py-1 rounded-lg border border-border text-[10px] font-medium text-foreground shadow-sm">
         Tap map or drag pin to position
       </div>
     </div>

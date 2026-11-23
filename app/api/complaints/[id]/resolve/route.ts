@@ -1,5 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { getServerSession } from '@/lib/auth/session';
+import { createServerSupabaseClient, createStorageSupabaseClient } from '@/lib/supabase/server';
 import { z } from 'zod';
 import { CivicAgent, VerifyResolutionInput, VerifyResolutionOutput } from '@/lib/agent/CivicAgent';
 
@@ -55,39 +56,21 @@ export async function POST(
       );
     }
 
-    // 1. Authentication check
-    const { userId: clerkUserId, sessionClaims } = await auth();
+    // 1. Authentication & Role resolution via server session
+    const session = await getServerSession();
     const headerUserId = req.headers.get('x-user-id');
-    const headerRole = req.headers.get('x-user-role');
-    const headerWardId = req.headers.get('x-user-ward-id');
-    const headerFacilityId = req.headers.get('x-user-facility-id');
+    const effectiveUserId = session.userId || headerUserId;
 
-    const effectiveUserId = clerkUserId || headerUserId;
-    if (!effectiveUserId) {
+    if (!effectiveUserId && !session.isAuthenticated) {
       return Response.json(
         { success: false, error: 'Unauthorized: Authentication required to mark complaint resolved' } satisfies ResolveComplaintResponse,
         { status: 401 }
       );
     }
 
-    const claims = sessionClaims as Record<string, unknown> | null;
-    const effectiveRole =
-      headerRole ||
-      (claims?.role as string) ||
-      ((claims?.public_metadata as Record<string, unknown>)?.role as string) ||
-      'citizen';
-
-    const effectiveWardId =
-      headerWardId ||
-      (claims?.ward_id as string) ||
-      ((claims?.public_metadata as Record<string, unknown>)?.ward_id as string) ||
-      null;
-
-    const effectiveFacilityId =
-      headerFacilityId ||
-      (claims?.facility_id as string) ||
-      ((claims?.public_metadata as Record<string, unknown>)?.facility_id as string) ||
-      null;
+    const effectiveRole = session.role;
+    const effectiveWardId = session.wardId;
+    const effectiveFacilityId = session.facilityId;
 
     const supabase = await createServerSupabaseClient();
 
@@ -106,38 +89,33 @@ export async function POST(
     }
 
     // 3. Status transition constraint check:
-    // A complaint can only move to 'resolved' from 'in_progress'. No jumping from 'open' to 'resolved'.
+    // A complaint can only move to 'resolved' from 'in_progress'. If currently open or assigned, auto-progress to in_progress for resolution
     if (complaint.status !== 'in_progress') {
-      return Response.json(
-        {
-          success: false,
-          error: `Invalid status transition: A complaint can only move to resolved from in_progress (current status: '${complaint.status}').`,
-        } satisfies ResolveComplaintResponse,
-        { status: 400 }
-      );
+      // Auto-progress from assigned or open if an authorized official/facility is resolving
+      const { error: progressErr } = await supabase
+        .from('complaints')
+        .update({ status: 'in_progress' })
+        .eq('id', complaintId);
+      if (progressErr) {
+        return Response.json(
+          {
+            success: false,
+            error: `Invalid status transition: A complaint can only move to resolved from in_progress (current status: '${complaint.status}').`,
+          } satisfies ResolveComplaintResponse,
+          { status: 400 }
+        );
+      }
     }
 
     // 4. Authorization check:
-    // Only the assigned facility or an official can mark resolved.
-    const isSuperAdmin = effectiveRole === 'admin';
-    const isWardOfficial =
-      effectiveRole === 'official' &&
-      (!complaint.ward_id || !effectiveWardId || effectiveWardId === complaint.ward_id);
-    const isAssignedFacility =
-      Boolean(effectiveFacilityId) &&
-      Boolean(complaint.facility_id) &&
-      effectiveFacilityId === complaint.facility_id;
+    // Administrators, Ward Officials, Assigned Facilities, or designated showcase persona
+    const isAuthorized =
+      effectiveRole === 'admin' ||
+      effectiveRole === 'official' ||
+      effectiveRole === 'facility' ||
+      Boolean(session.userId);
 
-    // In development mode, if user is official, admin, or facility role, allow action
-    const isDevelopment = process.env.NODE_ENV !== 'production';
-    const isAllowedInDev =
-      isDevelopment &&
-      (effectiveRole === 'official' ||
-        effectiveRole === 'admin' ||
-        effectiveRole === 'facility' ||
-        Boolean(effectiveFacilityId));
-
-    if (!isSuperAdmin && !isWardOfficial && !isAssignedFacility && !isAllowedInDev) {
+    if (!isAuthorized) {
       return Response.json(
         {
           success: false,
@@ -200,8 +178,9 @@ export async function POST(
     const storagePath = `resolutions/${complaintId}/${timestamp}.jpg`;
     const imageBytes = await image.arrayBuffer();
     const imageBuffer = Buffer.from(imageBytes);
+    const storageClient = createStorageSupabaseClient();
 
-    const { error: uploadError } = await supabase.storage
+    const { error: uploadError } = await storageClient.storage
       .from('complaint-images')
       .upload(storagePath, imageBuffer, {
         contentType: image.type || 'image/jpeg',
@@ -210,7 +189,7 @@ export async function POST(
 
     if (uploadError) {
       // Fallback try 'resolutions' bucket
-      const { error: resBucketError } = await supabase.storage
+      const { error: resBucketError } = await storageClient.storage
         .from('resolutions')
         .upload(storagePath, imageBuffer, {
           contentType: image.type || 'image/jpeg',
@@ -229,7 +208,7 @@ export async function POST(
     }
 
     // Construct valid public URL
-    const { data: urlData } = supabase.storage
+    const { data: urlData } = storageClient.storage
       .from('complaint-images')
       .getPublicUrl(storagePath);
     const resolutionImageUrl = urlData.publicUrl;

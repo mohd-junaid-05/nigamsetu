@@ -15,6 +15,7 @@ import {
   Loader2,
   Bot,
   ShieldCheck,
+  Mail,
 } from 'lucide-react';
 import { SeverityPostResponse, SeverityGetResponse } from '@/app/api/agent/severity/route';
 import AgentTraceModal, { VerificationTraceData } from '@/components/dashboard/AgentTraceModal';
@@ -285,6 +286,23 @@ export function SuccessScreen({
             </div>
           </div>
         )}
+      </div>
+
+      {/* Official Email Dispatch Notification */}
+      <div className="w-full bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3.5 text-left space-y-1.5 shadow-2xs">
+        <div className="flex items-center justify-between">
+          <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+            <Mail className="w-3.5 h-3.5" />
+            Official Grievance Dossier Dispatched
+          </span>
+          <span className="text-[9px] font-mono px-2 py-0.5 rounded bg-emerald-600 text-white font-bold uppercase">
+            Dispatched
+          </span>
+        </div>
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          The full complaint report and evidentiary photos have been dispatched to the designated official authority inbox:
+          <span className="block font-mono font-bold text-foreground mt-0.5">sessionbyilder7@gmail.com</span>
+        </p>
       </div>
 
       {/* Ticket Details Box */}

@@ -34,11 +34,11 @@ interface LocationPickerProps {
   disabled?: boolean;
 }
 
-// Seeded Ward Coordinates for Bangalore Test Wards
+// Seeded Ward Coordinates for Hyderabad GHMC Test Wards
 const WARD_PRESETS = [
-  { name: 'Ward 150 - Bellandur', lat: 12.935, lng: 77.675 },
-  { name: 'Ward 174 - HSR Layout', lat: 12.915, lng: 77.645 },
-  { name: 'Ward 112 - Koramangala', lat: 12.935, lng: 77.625 },
+  { name: 'Ward 104 - Banjara Hills', lat: 17.4156, lng: 78.4350 },
+  { name: 'Ward 107 - Gachibowli', lat: 17.4401, lng: 78.3489 },
+  { name: 'Ward 69 - Charminar', lat: 17.3616, lng: 78.4747 },
 ];
 
 export function LocationPicker({
@@ -257,8 +257,8 @@ export function LocationPicker({
             </div>
 
             <LeafletPickerMap
-              lat={lat ?? 12.935}
-              lng={lng ?? 77.675}
+              lat={lat ?? 17.4156}
+              lng={lng ?? 78.4350}
               onPositionChange={handleManualMapSelect}
             />
           </div>

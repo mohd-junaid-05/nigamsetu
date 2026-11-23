@@ -54,54 +54,50 @@ export function MapStatsBanner({ visiblePins, className = '' }: MapStatsBannerPr
   return (
     <div
       data-testid="map-stats-banner"
-      className={`grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-lg bg-surface/95 border border-border shadow-xs backdrop-blur-md ${className}`}
+      className={`grid grid-cols-3 divide-x divide-white/15 rounded-xl bg-[#071D49] dark:bg-black border-2 border-[#FFB81D]/50 shadow-xl overflow-hidden backdrop-blur-md ${className}`}
     >
       {/* Metric 1: Total Open */}
-      <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-md bg-surface-card border border-border">
-        <div className="w-8 h-8 rounded-md bg-status-open/10 text-status-open flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5">
+        <div className="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center shrink-0">
           <AlertCircle className="w-4 h-4" />
         </div>
-        <div>
-          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Total Open Issues
+        <div className="min-w-0">
+          <div className="text-[9px] sm:text-[10px] font-bold text-white/70 uppercase tracking-wider truncate">
+            Open Issues
           </div>
-          <div className="text-xl font-black text-foreground tracking-tight font-mono">
+          <div className="text-base sm:text-xl font-black text-white tracking-tight leading-tight font-mono">
             {openCount}
-            <span className="text-xs font-normal text-muted-foreground ml-1.5 font-sans">
-              active
-            </span>
+            <span className="text-[10px] font-normal text-white/60 ml-1 hidden sm:inline font-sans">active</span>
           </div>
         </div>
       </div>
 
       {/* Metric 2: Resolved This Month */}
-      <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-md bg-surface-card border border-border">
-        <div className="w-8 h-8 rounded-md bg-status-verified/10 text-status-verified flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5">
+        <div className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
           <CheckCircle2 className="w-4 h-4" />
         </div>
-        <div>
-          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Resolved This Month
+        <div className="min-w-0">
+          <div className="text-[9px] sm:text-[10px] font-bold text-white/70 uppercase tracking-wider truncate">
+            Resolved
           </div>
-          <div className="text-xl font-black text-foreground tracking-tight font-mono">
+          <div className="text-base sm:text-xl font-black text-white tracking-tight leading-tight font-mono">
             {resolvedThisMonthCount}
-            <span className="text-xs font-normal text-muted-foreground ml-1.5 font-sans">
-              verified
-            </span>
+            <span className="text-[10px] font-normal text-white/60 ml-1 hidden sm:inline font-sans">verified</span>
           </div>
         </div>
       </div>
 
       {/* Metric 3: Avg Resolution Time */}
-      <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-md bg-surface-card border border-border">
-        <div className="w-8 h-8 rounded-md bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5">
+        <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
           <Clock className="w-4 h-4" />
         </div>
-        <div>
-          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-            Avg. Resolution Time
+        <div className="min-w-0">
+          <div className="text-[9px] sm:text-[10px] font-bold text-white/70 uppercase tracking-wider truncate">
+            Avg Time
           </div>
-          <div className="text-xl font-black text-foreground tracking-tight font-mono">
+          <div className="text-base sm:text-xl font-black text-white tracking-tight leading-tight font-mono truncate">
             {avgResolutionDaysText}
           </div>
         </div>

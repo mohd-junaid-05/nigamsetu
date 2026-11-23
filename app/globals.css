@@ -2,14 +2,33 @@
 
 @layer base {
   :root {
-    --background: #f8fafc;
-    --foreground: #0f172a;
-    --surface: #ffffff;
-    --surface-hover: #f1f5f9;
-    --surface-card: #ffffff;
-    --border: #e2e8f0;
-    --muted: #64748b;
-    --muted-foreground: #64748b;
+    /* === NigamSetu Government Design System v2 ===
+     * Inspired by: Utah.gov (#071D49 civic navy), GOV.UK (#1d70b8 blue),
+     * NASA (dark hero overlays, Inter type), Colorado.gov (modular banding)
+     * All colors meet WCAG 2.2 Level AA (4.5:1 text, 3:1 UI controls)
+     */
+
+    /* Core palette — civic navy + clean white/slate + Frosted Aura */
+    --civic-navy:        #071D49;  /* Utah.gov brand navy — institutional trust */
+    --civic-navy-mid:    #093692;  /* Utah.gov medium blue */
+    --civic-blue:        #1d70b8;  /* GOV.UK primary blue */
+    --civic-gold:        #ca8a04;  /* Utah.gov gold — accent actions */
+    --civic-gold-light:  #FFB81D;  /* Utah.gov gold light */
+
+    /* Frosted Aura palette tokens (from official design spec) */
+    --frosted-teal:      #5C7E8F;  /* Slate teal / steel blue */
+    --frosted-gray:      #A2A2A2;  /* Neutral slate gray */
+    --frosted-ice:       #D4DDE2;  /* Frost light gray-blue */
+
+    /* Page tokens — Light mode (Frosted aura + crisp white) */
+    --background:        #f4f7f9;  /* Soft frosted light background */
+    --foreground:        #0b0c0c;  /* GOV.UK near-black — maximum legibility */
+    --surface:           #ffffff;  /* Pure white surface in light mode */
+    --surface-hover:     #edf2f5;
+    --surface-card:      #ffffff;
+    --border:            #D4DDE2;  /* Frosted light gray border */
+    --muted:             #5C7E8F;  /* Frosted teal muted metadata */
+    --muted-foreground:  #505a5f;
 
     /* Semantic Severity Colors (WCAG 2.2 AA compliant contrast) */
     --severity-1: #64748b; /* Cosmetic - slate */
@@ -18,52 +37,52 @@
     --severity-4: #b91c1c; /* Emergency - dark red */
 
     /* Semantic Status Colors */
-    --status-open: #dc2626;       /* Open - red */
-    --status-assigned: #d97706;   /* Assigned - amber */
-    --status-in-progress: #2563eb; /* In Progress - blue */
-    --status-resolved: #64748b;   /* Resolved (unverified) - slate */
-    --status-verified: #16a34a;   /* Verified - green */
-    --status-escalated: #9333ea;  /* Escalated - purple */
+    --status-open:        #dc2626;
+    --status-assigned:    #d97706;
+    --status-in-progress: #1d70b8;
+    --status-resolved:    #505a5f;
+    --status-verified:    #00703c;  /* GOV.UK success green */
+    --status-escalated:   #9333ea;
 
-    --sla-breached: #b91c1c;
-    --accent: #2563eb;
-    --accent-hover: #1d4ed8;
-    --ring: #2563eb;
+    --sla-breached:  #d4351c;      /* GOV.UK error red */
+    --accent:        #1d70b8;      /* GOV.UK blue — primary actions */
+    --accent-hover:  #144e82;
+    --ring:          #1d70b8;
 
-    /* Standard Radius Scale */
-    --radius-sm: 0.375rem; /* 6px */
-    --radius-md: 0.5rem;   /* 8px */
-    --radius-lg: 0.75rem;  /* 12px */
-    --radius-xl: 1rem;     /* 16px */
+    /* Standard Radius Scale — restrained, professional */
+    --radius-sm: 0.25rem;  /* 4px  — tight, gov-style */
+    --radius-md: 0.375rem; /* 6px */
+    --radius-lg: 0.5rem;   /* 8px */
+    --radius-xl: 0.75rem;  /* 12px — max on cards */
   }
 
   .dark {
-    --background: #090d16;
-    --foreground: #f8fafc;
-    --surface: #111827;
-    --surface-hover: #1f2937;
-    --surface-card: #0f172a;
-    --border: #1e293b;
-    --muted: #94a3b8;
-    --muted-foreground: #94a3b8;
+    /* Dark Mode — white replaced with deep black per design spec */
+    --background:       #000000;  /* Pure black background */
+    --foreground:       #f1f5f9;
+    --surface:          #080c12;  /* Near-black surface */
+    --surface-hover:    #111824;
+    --surface-card:     #05080d;  /* True black card base */
+    --border:           #1b2533;
+    --muted:            #A2A2A2;  /* Frosted neutral slate gray */
+    --muted-foreground: #A2A2A2;
 
-    /* Dark Mode Adjusted Accents for high contrast */
     --severity-1: #94a3b8;
     --severity-2: #fbbf24;
     --severity-3: #f87171;
     --severity-4: #ef4444;
 
-    --status-open: #f87171;
-    --status-assigned: #fbbf24;
+    --status-open:        #f87171;
+    --status-assigned:    #fbbf24;
     --status-in-progress: #60a5fa;
-    --status-resolved: #94a3b8;
-    --status-verified: #4ade80;
-    --status-escalated: #c084fc;
+    --status-resolved:    #94a3b8;
+    --status-verified:    #34d399;
+    --status-escalated:   #c084fc;
 
     --sla-breached: #ef4444;
-    --accent: #3b82f6;
-    --accent-hover: #60a5fa;
-    --ring: #3b82f6;
+    --accent:       #3b82f6;
+    --accent-hover: #2563eb;
+    --ring:         #3b82f6;
   }
 }
 
@@ -76,6 +95,17 @@
   --color-border: var(--border);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+
+  /* Civic brand tokens */
+  --color-civic-navy:     var(--civic-navy);
+  --color-civic-navy-mid: var(--civic-navy-mid);
+  --color-civic-blue:     var(--civic-blue);
+  --color-civic-gold:     var(--civic-gold);
+
+  /* Frosted Aura tokens */
+  --color-frosted-teal:   var(--frosted-teal);
+  --color-frosted-gray:   var(--frosted-gray);
+  --color-frosted-ice:    var(--frosted-ice);
 
   --color-severity-1: var(--severity-1);
   --color-severity-2: var(--severity-2);
@@ -98,10 +128,14 @@
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* Inter for professional government interface — GOV.UK / NASA style */
+  font-family: var(--font-geist-sans), 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   min-height: 100vh;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
+  /* GOV.UK base: 16px body, comfortable line height */
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 /* Global Focus-Visible Accessibility Ring (WCAG 2.2 AA SC 2.4.7) */
@@ -126,6 +160,21 @@ textarea:focus-visible,
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Leaflet Stacking Context Isolation (Fixes all navbar overlapping issues) */
+.leaflet-container {
+  isolation: isolate;
+  z-index: 0 !important;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 300 !important;
+}
+
+.leaflet-pane {
+  z-index: 100 !important;
 }
 
 /* OpenStreetMap Dark Mode Tile Inversion (Phase 4 Spec) */
@@ -209,4 +258,119 @@ textarea:focus-visible,
 
 .leaflet-container a.leaflet-popup-close-button:hover {
   background: rgba(15, 23, 42, 0.85) !important;
+}
+
+/* ============================================================
+ * GOVERNMENT DESIGN SYSTEM — Utility Classes
+ * Patterns from Utah.gov, GOV.UK, NASA, Colorado.gov
+ * ============================================================ */
+
+/* Civic Hero — full-width immersive section */
+.civic-hero {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--civic-navy, #071D49);
+}
+
+/* GOV.UK-style phase banner — top notification stripe */
+.gov-phase-banner {
+  background-color: #0b0c0c;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.375rem 0;
+  letter-spacing: 0.01em;
+}
+
+/* Utah.gov-style section banding — alternating content zones */
+.section-band {
+  padding: 3rem 0;
+}
+.section-band-alt {
+  background-color: #f0f4f8;
+  padding: 3rem 0;
+}
+.dark .section-band-alt {
+  background-color: #0d1420;
+}
+
+/* GOV.UK task card — clean, bordered action tiles */
+.task-card {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1.5rem;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  cursor: pointer;
+}
+.task-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(29, 112, 184, 0.12);
+}
+.dark .task-card:hover {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* NASA-style metric pill — glassmorphism live stats */
+.metric-pill {
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(12px) saturate(1.4);
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+  padding: 0.4rem 1rem;
+  color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+/* GOV.UK-style focus ring — high-visibility keyboard navigation */
+.gov-focus:focus-visible {
+  outline: 3px solid #ffdd00;
+  outline-offset: 0;
+  box-shadow: 0 0 0 3px #0b0c0c;
+}
+
+/* Civic status strip — compact horizontal KPI row */
+.civic-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+}
+.civic-stat-value {
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: var(--foreground);
+}
+.civic-stat-label {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* Georgia.gov-style content band divider */
+.section-rule {
+  border: none;
+  border-top: 3px solid var(--civic-navy, #071D49);
+  width: 3rem;
+  margin: 0;
+}
+.dark .section-rule {
+  border-top-color: var(--civic-blue, #1d70b8);
+}
+
+/* Utah.gov gold accent line — visual brand accent */
+.gold-accent-bar {
+  display: block;
+  height: 4px;
+  background: linear-gradient(90deg, #ca8a04 0%, #FFB81D 100%);
+  border-radius: 9999px;
+  width: 2.5rem;
 }

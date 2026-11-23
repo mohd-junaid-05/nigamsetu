@@ -36,12 +36,12 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
-  road: '🛣️ Road',
-  garbage: '🗑️ Garbage',
-  sewage: '🚰 Sewage',
-  school: '🏫 School',
-  healthcenter: '🏥 Health',
-  other: '📦 Other',
+  road: 'Roads & Potholes',
+  garbage: 'Garbage & Waste',
+  sewage: 'Drainage & Sewage',
+  school: 'Schools',
+  healthcenter: 'Health Clinics',
+  other: 'Other Civic Defect',
 };
 
 const SEVERITY_INFO: Record<number, { label: string; scale: number; badgeColor: string }> = {
@@ -54,7 +54,7 @@ const SEVERITY_INFO: Record<number, { label: string; scale: number; badgeColor: 
 export default function PublicMapClient({
   pins,
   className = '',
-  initialCenter = [12.935, 77.65],
+  initialCenter = [17.4156, 78.4350],
   initialZoom = 13,
 }: PublicMapClientProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);

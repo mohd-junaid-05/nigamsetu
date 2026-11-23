@@ -2,7 +2,21 @@
 
 import React, { useState } from 'react';
 import { PriorityQueueItem } from '@/app/api/complaints/priority/route';
-import { Layers, AlertTriangle, Clock, ArrowRight, UserCheck, Sparkles, CheckCircle2 } from 'lucide-react';
+import {
+  Layers,
+  AlertTriangle,
+  Clock,
+  ArrowRight,
+  UserCheck,
+  Sparkles,
+  CheckCircle2,
+  Construction,
+  Trash2,
+  Droplets,
+  GraduationCap,
+  HeartPulse,
+  HelpCircle,
+} from 'lucide-react';
 
 interface PriorityQueueTableProps {
   items: PriorityQueueItem[];
@@ -37,13 +51,16 @@ const SEVERITY_CONFIG: Record<
   },
 };
 
-const CATEGORY_ICONS: Record<string, string> = {
-  road: '🛣️ Road',
-  garbage: '🗑️ Garbage',
-  sewage: '🚰 Sewage',
-  school: '🏫 School',
-  healthcenter: '🏥 Health',
-  other: '📦 Other',
+const CATEGORY_CONFIG: Record<
+  string,
+  { label: string; icon: React.ComponentType<{ className?: string }> }
+> = {
+  road: { label: 'Road', icon: Construction },
+  garbage: { label: 'Garbage', icon: Trash2 },
+  sewage: { label: 'Sewage', icon: Droplets },
+  school: { label: 'School', icon: GraduationCap },
+  healthcenter: { label: 'Health', icon: HeartPulse },
+  other: { label: 'Other', icon: HelpCircle },
 };
 
 // Formats age into hours or minutes ago
@@ -86,15 +103,15 @@ export default function PriorityQueueTable({
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
-      {/* Queue Filter Bar */}
+      {/* Queue Filter Bar (Government data-table style) */}
       <div className="p-2 border-b border-border bg-surface flex items-center justify-between gap-1 text-[11px] font-semibold">
         <button
           type="button"
           onClick={() => setFilterTab('all')}
-          className={`flex-1 py-1.5 px-2 rounded-md text-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
+          className={`flex-1 py-1.5 px-2 rounded text-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
             filterTab === 'all'
-              ? 'bg-surface-card text-foreground font-bold shadow-2xs border border-border'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'bg-[#071D49] text-white dark:bg-[#1d70b8] font-bold shadow-xs'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-hover'
           }`}
         >
           All ({items.length})
@@ -102,10 +119,10 @@ export default function PriorityQueueTable({
         <button
           type="button"
           onClick={() => setFilterTab('active')}
-          className={`flex-1 py-1.5 px-2 rounded-md text-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
+          className={`flex-1 py-1.5 px-2 rounded text-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
             filterTab === 'active'
-              ? 'bg-surface-card text-foreground font-bold shadow-2xs border border-border'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'bg-[#071D49] text-white dark:bg-[#1d70b8] font-bold shadow-xs'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-hover'
           }`}
         >
           Active ({activeCount})
@@ -113,10 +130,10 @@ export default function PriorityQueueTable({
         <button
           type="button"
           onClick={() => setFilterTab('review')}
-          className={`flex-1 py-1.5 px-2 rounded-md text-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
+          className={`flex-1 py-1.5 px-2 rounded text-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
             filterTab === 'review'
-              ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400 font-bold shadow-2xs border border-amber-500/30'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'bg-amber-600 text-white font-bold shadow-xs'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-hover'
           }`}
         >
           Verify ({reviewCount})
@@ -124,10 +141,10 @@ export default function PriorityQueueTable({
         <button
           type="button"
           onClick={() => setFilterTab('verified')}
-          className={`flex-1 py-1.5 px-2 rounded-md text-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
+          className={`flex-1 py-1.5 px-2 rounded text-center transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
             filterTab === 'verified'
-              ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-bold shadow-2xs border border-emerald-500/30'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'bg-[#00703c] text-white font-bold shadow-xs'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-hover'
           }`}
         >
           Done ({verifiedCount})
@@ -145,7 +162,8 @@ export default function PriorityQueueTable({
           {filteredItems.map((item) => {
             const isSelected = item.id === selectedId;
             const sev = SEVERITY_CONFIG[item.severity] || SEVERITY_CONFIG[2];
-            const catLabel = CATEGORY_ICONS[item.category] || '📦 Other';
+            const catCfg = CATEGORY_CONFIG[item.category] || CATEGORY_CONFIG.other;
+            const CatIcon = catCfg.icon;
             const age = formatAge(item.created_at);
 
             return (
@@ -154,15 +172,16 @@ export default function PriorityQueueTable({
                 onClick={() => onSelect(item)}
                 className={`p-3 text-left transition-colors cursor-pointer flex flex-col gap-2 ${
                   isSelected
-                    ? 'bg-blue-50/70 dark:bg-blue-950/30 border-l-3 border-l-blue-600'
+                    ? 'bg-[#071D49]/5 dark:bg-[#1d70b8]/15 border-l-4 border-l-[#071D49] dark:border-l-[#1d70b8]'
                     : 'hover:bg-surface-hover/60 bg-surface'
                 }`}
               >
                 {/* Top Row: Category, Cluster Weight, Age, Status */}
                 <div className="flex items-center justify-between gap-1 text-[11px]">
                   <div className="flex items-center gap-1.5 min-w-0">
-                    <span className="font-semibold text-foreground truncate">
-                      {catLabel}
+                    <span className="font-semibold text-foreground truncate flex items-center gap-1.5">
+                      <CatIcon className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+                      <span>{catCfg.label}</span>
                     </span>
 
                     {/* Duplicate Cluster Weight Pill */}
@@ -231,7 +250,7 @@ export default function PriorityQueueTable({
                         e.stopPropagation();
                         onOpenAssign(item);
                       }}
-                      className="px-2 py-1 rounded-md bg-blue-600 text-white text-[10px] font-bold hover:bg-blue-700 transition-colors shadow-2xs flex items-center gap-1 shrink-0 focus-visible:ring-2 focus-visible:ring-accent"
+                      className="px-2 py-1 rounded bg-[#071D49] hover:bg-[#093692] text-white dark:bg-[#1d70b8] dark:hover:bg-[#144e82] text-[10px] font-bold transition-colors shadow-xs flex items-center gap-1 shrink-0 focus-visible:ring-2 focus-visible:ring-accent"
                     >
                       <UserCheck className="w-3 h-3" />
                       <span>Assign</span>

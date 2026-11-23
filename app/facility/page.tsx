@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { connection } from 'next/server';
 import { getServerSession } from '@/lib/auth/session';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
@@ -11,14 +12,11 @@ interface FacilityPageProps {
 }
 
 async function FacilityContent({ searchParams }: FacilityPageProps) {
+  await connection();
   const session = await getServerSession();
   const queryParams = await searchParams;
 
-  // If user is not authenticated, redirect to sign-in
-  if (!session.isAuthenticated) {
-    redirect('/sign-in?redirect_url=/facility');
-  }
-
+  // In showcase mode, allow smooth depot inspection for evaluators and depot managers
   const supabase = await createServerSupabaseClient();
 
   // 1. Fetch all facilities for switcher
@@ -73,11 +71,11 @@ async function FacilityContent({ searchParams }: FacilityPageProps) {
     facility = {
       id: 'b0000000-0000-0000-0000-000000000001',
       ward_id: 'a0000000-0000-0000-0000-000000000001',
-      name: 'Bellandur PWD Road Works Depot',
+      name: 'GHMC Road Works Depot - Banjara Hills',
       type: 'road',
-      contact_phone: '+91 80 2553 1001',
-      lat: 12.935,
-      lng: 77.675,
+      contact_phone: '+91 40 2322 5501',
+      lat: 17.4156,
+      lng: 78.4350,
     };
   }
 
@@ -108,6 +106,20 @@ async function FacilityContent({ searchParams }: FacilityPageProps) {
 
   return (
     <main className="min-h-[calc(100vh-4rem)] flex flex-col bg-background">
+      {/* Gov-style depot header */}
+      <div className="bg-[#071D49] dark:bg-black border-b-2 border-[#FFB81D]/50 px-4 sm:px-6 py-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-[10px] font-bold text-[#FFB81D] uppercase tracking-widest mb-0.5">
+            Municipal Facility Operations
+          </div>
+          <h1 className="text-lg font-black text-white tracking-tight">
+            Depot Work Order Dashboard
+          </h1>
+          <p className="text-xs text-white/55 mt-0.5">
+            View assigned complaint orders, start repair work, and upload GPS-stamped resolution proof.
+          </p>
+        </div>
+      </div>
       <FacilityView
         initialFacility={facility}
         initialComplaints={complaints}

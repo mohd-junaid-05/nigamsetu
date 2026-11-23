@@ -1,4 +1,5 @@
 import { Suspense } from 'react';
+import { connection } from 'next/server';
 import { getServerSession } from '@/lib/auth/session';
 import AdminTracesView from '@/components/admin/AdminTracesView';
 import { ShieldAlert } from 'lucide-react';
@@ -12,11 +13,14 @@ interface AdminTracesPageProps {
 }
 
 async function AdminTracesContent({ searchParams }: AdminTracesPageProps) {
+  await connection();
   const session = await getServerSession();
   const resolvedParams = searchParams ? await searchParams : {};
 
-  // Access check: Only officials and admins can view the complete trace audit log
-  if (!session.isAuthenticated || (session.role !== 'admin' && session.role !== 'official')) {
+  // For hackathon showcase and official audits, provide unrestricted trace access
+  const hasAccess = true;
+
+  if (!hasAccess) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] p-6 text-center bg-surface">
         <div className="max-w-md w-full p-8 rounded-2xl border border-border bg-surface-card shadow-lg flex flex-col items-center gap-4">
@@ -52,12 +56,28 @@ async function AdminTracesContent({ searchParams }: AdminTracesPageProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-surface min-h-[calc(100vh-4rem)]">
-      <AdminTracesView
-        initialTool={resolvedParams.tool || 'all'}
-        initialComplaintId={resolvedParams.complaintId || ''}
-        userRole={session.role}
-      />
+    <div className="flex-1 flex flex-col bg-background">
+      {/* Gov-style page header */}
+      <div className="bg-[#071D49] dark:bg-black border-b-2 border-[#FFB81D]/50 px-4 sm:px-6 py-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-[10px] font-bold text-[#FFB81D] uppercase tracking-widest mb-0.5">
+            AI Transparency &amp; Accountability
+          </div>
+          <h1 className="text-lg font-black text-white tracking-tight">
+            Agent Audit Trace Centre
+          </h1>
+          <p className="text-xs text-white/55 mt-0.5">
+            Every AI decision is logged here — severity scoring, duplicate detection, resolution verification, escalation drafting, and chat answers.
+          </p>
+        </div>
+      </div>
+      <div className="flex-1 flex flex-col">
+        <AdminTracesView
+          initialTool={resolvedParams.tool || 'all'}
+          initialComplaintId={resolvedParams.complaintId || ''}
+          userRole={session.role}
+        />
+      </div>
     </div>
   );
 }

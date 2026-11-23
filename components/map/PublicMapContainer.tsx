@@ -178,7 +178,7 @@ export function PublicMapContainer({
           <div className="flex flex-wrap items-center justify-between gap-2 pointer-events-auto">
             {/* Stats Banner Floating */}
             <div className="w-full lg:w-auto lg:max-w-2xl">
-              <MapStatsBanner visiblePins={filteredPins} className="bg-surface-card/95 backdrop-blur-md" />
+              <MapStatsBanner visiblePins={filteredPins} />
             </div>
 
             {/* Quick Action Buttons */}

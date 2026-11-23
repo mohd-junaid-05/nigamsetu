@@ -6,15 +6,25 @@ import {
   RotateCcw,
   SlidersHorizontal,
   Layers,
+  Construction,
+  Trash2,
+  Droplets,
+  GraduationCap,
+  HeartPulse,
+  HelpCircle,
 } from 'lucide-react';
 
-export const CATEGORY_OPTIONS: { id: ComplaintCategory; label: string; icon: string }[] = [
-  { id: 'road', label: 'Roads & Potholes', icon: '🛣️' },
-  { id: 'garbage', label: 'Garbage & Waste', icon: '🗑️' },
-  { id: 'sewage', label: 'Drainage & Sewage', icon: '🚰' },
-  { id: 'school', label: 'Schools', icon: '🏫' },
-  { id: 'healthcenter', label: 'Health Clinics', icon: '🏥' },
-  { id: 'other', label: 'Other', icon: '📦' },
+export const CATEGORY_OPTIONS: {
+  id: ComplaintCategory;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}[] = [
+  { id: 'road', label: 'Roads & Potholes', icon: Construction },
+  { id: 'garbage', label: 'Garbage & Waste', icon: Trash2 },
+  { id: 'sewage', label: 'Drainage & Sewage', icon: Droplets },
+  { id: 'school', label: 'Schools', icon: GraduationCap },
+  { id: 'healthcenter', label: 'Health Clinics', icon: HeartPulse },
+  { id: 'other', label: 'Other', icon: HelpCircle },
 ];
 
 export const STATUS_OPTIONS: { id: ComplaintStatus; label: string; colorClass: string; dotColor: string }[] = [
@@ -72,18 +82,18 @@ export function MapFilterBar({
   return (
     <div
       data-testid="map-filter-bar"
-      className={`rounded-lg bg-surface/95 border border-border p-3.5 shadow-xs space-y-3.5 backdrop-blur-md ${className}`}
+      className={`rounded-lg bg-surface border-2 border-border p-4 shadow-sm space-y-4 ${className}`}
     >
       {/* Top Header Row */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-md bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+          <div className="w-6 h-6 rounded bg-[#071D49] dark:bg-[#1d70b8] text-[#FFB81D] flex items-center justify-center">
             <SlidersHorizontal className="w-3.5 h-3.5" />
           </div>
           <span className="text-xs font-bold uppercase tracking-wider text-foreground">
             Filter Map Pins
           </span>
-          <span className="text-xs text-muted-foreground ml-1">
+          <span className="text-xs text-muted-foreground">
             (Showing{' '}
             <strong className="text-foreground font-mono">{totalFilteredCount}</strong> of{' '}
             <span className="font-mono">{totalAvailableCount}</span> pins)
@@ -94,7 +104,7 @@ export function MapFilterBar({
           <button
             type="button"
             onClick={onResetFilters}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-surface-hover text-foreground hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded bg-surface-hover text-foreground hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset All</span>
@@ -103,15 +113,15 @@ export function MapFilterBar({
       </div>
 
       {/* Row 1: Category Toggles */}
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
-          <span className="flex items-center gap-1.5 font-semibold text-[11px] uppercase tracking-wider">
+          <span className="flex items-center gap-1.5 font-bold text-[11px] uppercase tracking-wider text-foreground">
             <Layers className="w-3.5 h-3.5" /> Categories
           </span>
           <button
             type="button"
             onClick={onSelectAllCategories}
-            className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+            className="text-[11px] text-[#1d70b8] dark:text-blue-400 hover:underline cursor-pointer font-semibold"
           >
             {allCategoriesSelected ? 'Clear' : 'Select All'}
           </button>
@@ -119,19 +129,20 @@ export function MapFilterBar({
         <div className="flex flex-wrap gap-1.5">
           {CATEGORY_OPTIONS.map((cat) => {
             const isSelected = selectedCategories.has(cat.id);
+            const CatIcon = cat.icon;
             return (
               <button
                 key={cat.id}
                 type="button"
                 onClick={() => onToggleCategory(cat.id)}
                 data-testid={`filter-category-${cat.id}`}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all border cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all border cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
                   isSelected
-                    ? 'bg-foreground text-background border-foreground shadow-xs'
+                    ? 'bg-[#071D49] dark:bg-[#1d70b8] text-white border-[#071D49] dark:border-[#1d70b8] shadow-sm'
                     : 'bg-surface text-muted-foreground border-border hover:bg-surface-hover hover:text-foreground'
                 }`}
               >
-                <span>{cat.icon}</span>
+                <CatIcon className="w-3.5 h-3.5 shrink-0" />
                 <span>{cat.label}</span>
               </button>
             );
@@ -140,15 +151,15 @@ export function MapFilterBar({
       </div>
 
       {/* Row 2: Status Toggles */}
-      <div className="space-y-1.5 pt-1 border-t border-border">
+      <div className="space-y-2 pt-1 border-t border-border">
         <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
-          <span className="font-semibold text-[11px] uppercase tracking-wider">
+          <span className="font-bold text-[11px] uppercase tracking-wider text-foreground">
             Complaint Status
           </span>
           <button
             type="button"
             onClick={onSelectAllStatuses}
-            className="text-[11px] text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+            className="text-[11px] text-[#1d70b8] dark:text-blue-400 hover:underline cursor-pointer font-semibold"
           >
             {allStatusesSelected ? 'Clear' : 'Select All'}
           </button>
@@ -161,9 +172,9 @@ export function MapFilterBar({
                 key={status.id}
                 type="button"
                 onClick={() => onToggleStatus(status.id)}
-                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all border cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium transition-all border cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
                   isSelected
-                    ? 'bg-surface-card text-foreground border-foreground/50 shadow-xs ring-1 ring-border'
+                    ? 'bg-surface-card text-foreground border-foreground/40 shadow-sm ring-1 ring-border'
                     : 'bg-surface text-muted-foreground border-border hover:bg-surface-hover hover:text-foreground'
                 }`}
               >
@@ -175,12 +186,12 @@ export function MapFilterBar({
         </div>
       </div>
 
-      {/* Row 3: Date Range Slider / Buttons */}
-      <div className="space-y-1.5 pt-1 border-t border-border">
-        <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+      {/* Row 3: Date Range */}
+      <div className="space-y-2 pt-1 border-t border-border">
+        <div className="text-[11px] font-bold text-foreground uppercase tracking-wider">
           Reporting Period
         </div>
-        <div className="grid grid-cols-4 gap-1 p-1 bg-surface-card rounded-md border border-border">
+        <div className="grid grid-cols-4 gap-1 p-1 bg-surface-hover rounded border border-border">
           {DATE_RANGES.map((range, index) => {
             const isSelected = dateRangeIndex === index;
             return (
@@ -188,10 +199,10 @@ export function MapFilterBar({
                 key={range.label}
                 type="button"
                 onClick={() => onChangeDateRange(index)}
-                className={`py-1 text-center text-xs font-semibold rounded transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
+                className={`py-1.5 text-center text-xs font-bold rounded transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
                   isSelected
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground'
+                    ? 'bg-[#071D49] dark:bg-[#1d70b8] text-white shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-surface'
                 }`}
               >
                 {range.label}

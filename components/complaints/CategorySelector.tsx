@@ -94,9 +94,9 @@ export function CategorySelector({
               type="button"
               disabled={disabled}
               onClick={() => onSelect(cat.id)}
-              className={`relative flex flex-col items-start p-3 rounded-lg border text-left transition-all cursor-pointer min-h-[96px] focus-visible:ring-2 focus-visible:ring-accent ${
+              className={`relative flex flex-col items-start p-3 rounded-lg border-2 text-left transition-all cursor-pointer min-h-[96px] focus-visible:ring-2 focus-visible:ring-accent ${
                 isSelected
-                  ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/20 shadow-xs text-foreground ring-1 ring-blue-600'
+                  ? 'border-[#071D49] bg-[#071D49]/5 dark:border-[#1d70b8] dark:bg-[#1d70b8]/15 shadow-sm text-foreground ring-2 ring-[#071D49] dark:ring-[#1d70b8]'
                   : 'border-border bg-surface hover:bg-surface-hover text-foreground/90'
               } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >

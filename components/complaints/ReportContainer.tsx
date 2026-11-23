@@ -122,21 +122,21 @@ export function ReportContainer({ userRole }: ReportContainerProps) {
 
   return (
     <div className="space-y-4">
-      {/* Refined Segmented Navigation */}
-      <div className="grid grid-cols-3 gap-1 p-1 bg-surface border border-border rounded-lg text-center text-xs font-semibold shadow-2xs">
+      {/* Refined Segmented Navigation (GOV.UK style) */}
+      <div className="grid grid-cols-3 gap-1 p-1 bg-surface border-2 border-border rounded-lg text-center text-xs font-semibold shadow-xs">
         <button
           type="button"
           onClick={() => {
             setSubmittedData(null);
             setActiveTab('report');
           }}
-          className={`py-2 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[40px] focus-visible:ring-2 focus-visible:ring-accent ${
+          className={`py-2 px-3 rounded flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[40px] focus-visible:ring-2 focus-visible:ring-accent ${
             activeTab === 'report'
-              ? 'bg-surface-card text-foreground font-bold shadow-xs border border-border'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'bg-[#071D49] dark:bg-[#1d70b8] text-white font-bold shadow-xs'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-hover'
           }`}
         >
-          <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+          <FileText className="w-3.5 h-3.5 text-[#FFB81D]" />
           <span>Report</span>
         </button>
 
@@ -146,19 +146,19 @@ export function ReportContainer({ userRole }: ReportContainerProps) {
             setSubmittedData(null);
             setActiveTab('my-complaints');
           }}
-          className={`py-2 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[40px] focus-visible:ring-2 focus-visible:ring-accent ${
+          className={`py-2 px-3 rounded flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[40px] focus-visible:ring-2 focus-visible:ring-accent ${
             activeTab === 'my-complaints'
-              ? 'bg-surface-card text-foreground font-bold shadow-xs border border-border'
-              : 'text-muted-foreground hover:text-foreground'
+              ? 'bg-[#071D49] dark:bg-[#1d70b8] text-white font-bold shadow-xs'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-hover'
           }`}
         >
-          <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+          <MapPin className="w-3.5 h-3.5 text-blue-400" />
           <span>My Complaints</span>
         </button>
 
         <Link
           href="/"
-          className="py-2 px-3 rounded-md text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors min-h-[40px]"
+          className="py-2 px-3 rounded text-muted-foreground hover:text-foreground hover:bg-surface-hover flex items-center justify-center gap-1.5 transition-colors min-h-[40px]"
         >
           <MapIcon className="w-3.5 h-3.5" />
           <span>Map</span>
@@ -227,15 +227,15 @@ export function ReportContainer({ userRole }: ReportContainerProps) {
             </div>
           )}
 
-          {/* Sticky Mobile Submit Button */}
-          <div className="pt-2 sticky bottom-4 z-10">
+          {/* Form Submit Button (In document flow, non-sticky) */}
+          <div className="pt-4">
             <button
               type="submit"
               disabled={submitting || !imageFile || !selectedCategory || lat === null}
-              className={`w-full min-h-[48px] py-3 px-4 rounded-lg text-white font-bold text-sm shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
+              className={`w-full min-h-[48px] py-3.5 px-4 rounded-lg text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
                 submitting || !imageFile || !selectedCategory || lat === null
-                  ? 'bg-slate-400 text-slate-100 dark:bg-slate-700 dark:text-slate-400 cursor-not-allowed opacity-60'
-                  : 'bg-blue-600 hover:bg-blue-700 active:scale-[0.99]'
+                  ? 'bg-slate-400 text-slate-100 dark:bg-slate-700 dark:text-slate-400 cursor-not-allowed opacity-60 shadow-none'
+                  : 'bg-[#00703c] hover:bg-[#005a30] active:scale-[0.99] border-b-2 border-[#002d18]'
               }`}
             >
               {submitting ? (

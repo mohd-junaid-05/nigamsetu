@@ -127,3 +127,28 @@
 - [x] Live presentation deck: Polished `/demo` presentation runner with synchronized speech synthesis, clean chapter tabs, and cheat sheet cards
 - [x] Functional preservation & zero-regression build: Verified Next.js 16 Turbopack production build compiles with zero TypeScript errors and all API route contracts, database policies, PostGIS queries, and AI algorithms 100% intact
 
+
+## Phase 15: Government-Grade Visual Redesign (Blog-Inspired)
+- [x] Deep research on Utah.gov, GOV.UK, NASA.gov, Georgia.gov, Colorado.gov, Oregon.gov design systems — extracted exact color palettes, typography scales, navigation patterns, hero formulas, card styles, and trust signal patterns
+- [x] Upgraded `app/globals.css` design tokens: Utah.gov civic navy (`#071D49`), GOV.UK primary blue (`#1d70b8`), Utah gold accent (`#FFB81D`), GOV.UK success green (`#00703c`), GOV.UK error red (`#d4351c`); added `.civic-hero`, `.metric-pill`, `.task-card`, `.gold-accent-bar`, `.section-band-alt`, `.civic-stat`, and `.gov-phase-banner` utility classes
+- [x] AppHeader redesigned with 2-tier GOV.UK pattern: slim `#0b0c0c` utility identity bar (official municipal portal declaration) + main `#071D49` Utah.gov navy nav bar with `#FFB81D` bottom accent border and gold CTA "Demo" pill
+- [x] Home page fully replaced with Utah.gov-style immersive civic hero: deep navy overlay with SVG texture, gold accent bar + H1 "Report. Track. Verify Fixed." at display scale, NASA-style glassmorphism metric pills, two primary CTAs (gold Report Issue + frosted View Map)
+- [x] Colorado.gov-style "How It Works" section: 6-step modular banding (alternating `section-band-alt`), numbered step cards with navy badge icons
+- [x] GOV.UK task grid: 6 service access cards with icon, description, and chevron CTA; "Report an Issue" card highlighted with gold ring; task-card hover = navy border + 3px ring
+- [x] Live map preview section with gov-style sub-header and navy "Full Map" action button
+- [x] Utah.gov-style trust band with 4 civic pillars (Evidence-Based, Fully Auditable, SLA Tracked, Multi-Role) on dark navy background with gold icons
+- [x] MapStatsBanner redesigned: single dark navy bar (`#071D49`) with divided metric columns, white typography, and colored metric icons — matches Georgia.gov-style dashboard header stats
+- [x] MapFilterBar updated: navy selected chip state (`#071D49` bg for selected categories), GOV.UK-style "Select All" links in civic blue, navy date range selected button
+- [x] DashboardController header replaced: full-width gov command bar with ward name, Realtime badge, Refresh, AI Traces shortcut; mobile tab switcher uses navy active state; panel headers use navy panel sub-tabs
+- [x] Admin Traces page: Utah.gov-style dark nav header added with "AI Transparency & Accountability" eyebrow + H1 "Agent Audit Trace Centre"
+- [x] Facility Depot page: navy header added with "Municipal Facility Operations" eyebrow + H1 "Depot Work Order Dashboard"
+- [x] Map page: breadcrumb nav (Home > Public Map) added inside navy header with MapPin icon — matches Georgia.gov interior page pattern
+- [x] Citizen Report flow (`app/report/page.tsx`): Utah/GOV.UK-style navy header with breadcrumbs (`Home > Report Issue`), civic evidence notice box, high-contrast segmented navigation, and GOV.UK-green submit button (`#00703c`)
+- [x] Category selection (`components/complaints/CategorySelector.tsx`): high-contrast authoritative navy focus/selection border ring
+- [x] Priority queue & escalations (`PriorityQueueTable.tsx`, `EscalationQueueTable.tsx`): data-table status filter tabs, active row border accents, and action triggers aligned with gov palette
+- [x] Facility view (`components/facility/FacilityView.tsx`): high-contrast status tabs, tactical "Start Work" and "Upload Proof & Resolve" buttons aligned with gov standards
+- [x] Chat panel (`components/dashboard/ChatPanel.tsx`): civic navy focus rings and high-contrast query dispatch button
+- [x] Hero Background & Resource Imagery: Integrated authentic Indian municipal cityscape (`/images/hero-cityscape.webp`) as hero background with dual-mode dark wash; added 6-sector infrastructure photo showcase (`category-road`, `category-garbage`, `category-sewage`, `category-school`, `category-health`, `civic-action`)
+- [x] Lucide Icons Standardization: Systematically eliminated all remaining emoji strings (`🛣️`, `🗑️`, `🚰`, `🏫`, `🏥`, `📦`) across `MapFilterBar`, `PriorityQueueTable`, and `PublicMapClient`, replacing them with pure Lucide SVG components (`Construction`, `Trash2`, `Droplets`, `GraduationCap`, `HeartPulse`, `HelpCircle`)
+- [x] Frosted Aura Palette & Dark Mode: Integrated `--frosted-teal` (`#5C7E8F`), `--frosted-gray` (`#A2A2A2`), and `--frosted-ice` (`#D4DDE2`) tokens; replaced white with true black (`#000000` / `#080c12`) in dark mode across all headers, cards, and page shells
+- [x] Build verified: Next.js 16 Turbopack production build passes with zero TypeScript errors (32/32 routes compiled)

@@ -151,7 +151,7 @@ export function AgentTraceModal({
   return (
     <div
       data-testid="agent-trace-modal"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150"
+      className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150"
     >
       <div className="bg-surface border border-border w-full max-w-3xl rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Header */}

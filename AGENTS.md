@@ -130,6 +130,15 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-23 | Generate 192x192, 512x512, and 180x180 PNG PWA icons with `sharp` alongside SVGs | Meets strict mobile PWA standalone installation standards across iOS Safari and Android Chrome | Yes |
 | 2026-11-23 | Pre-seed real Clerk persona accounts (`demo.citizen`, `demo.official.*`, `demo.admin`) with synced `profiles` | Ensures live stage presentation works with actual Clerk credentials and synchronized JWT claims without manual account setup | Yes |
 | 2026-11-23 | Build interactive 6-minute presentation and walkthrough engine at `/demo` with Web Speech API audio synthesis | Guarantees failsafe demo execution on stage with synchronized chapters, timed speaker narration, and backup video playback | Yes |
+| 2026-11-23 | Grant `admin` role and sync Supabase profile for `junaid03mo22@gmail.com` with default ward fallback | Gives the user unrestricted administrative authority across all municipal wards, AI audit traces, and depot operations | Yes |
+| 2026-11-23 | Assign global `admin` role + Ward 150 (Bellandur) to `sessionbyilder7@gmail.com` and embed as official authority | Connects all complaints, dashboard controller, and statutory escalation notices directly to user hackathon testing email | Yes |
+| 2026-11-23 | Migrate core municipal jurisdiction and spatial data from Bengaluru (BBMP) to Hyderabad (GHMC) | Updates wards (Banjara Hills, Gachibowli, Charminar), depots, PostGIS coordinates, and statutory redressal templates to Telangana | Yes |
+| 2026-11-23 | Route all statutory escalations and grievance notices strictly to `sessionbyilder7@gmail.com` with full PII redaction | Guarantees zero contact with real municipal endpoints and masks citizen names and phone numbers to `+91 ••••••••••` for privacy | Yes |
+| 2026-11-23 | Enable seamless showcase access for `/dashboard`, `/admin/traces`, and `/facility` with service-role profile resolution | Prevents 'Ward Access Required' and 'Auditor Access Required' lockout screens for hackathon evaluators and tester sessions | Yes |
+| 2026-11-24 | Use dedicated `createStorageSupabaseClient` and omit Clerk RS256 JWT from Supabase Storage headers | Eliminates `"alg" (Algorithm) Header Parameter value not allowed` upload rejection by using native Supabase keys | Yes |
+| 2026-11-24 | Elevate `AppHeader` to `z-[1000]`, isolate Leaflet contexts (`isolation: isolate; z-0`), and lift modals to `z-[2000]` | Prevents Leaflet map pins, controls, and page content from overlapping the navbar when scrolling | Yes |
+| 2026-11-24 | Dispatch formal civic complaint dossier to `sessionbyilder7@gmail.com` and `sessionbyilder@gmail.com` | Automatically dispatches registered civic complaint reports to official showcase recipient mailbox with mail client integration | Yes |
+| 2026-11-24 | Unify hero section into single contiguous layout and remove `.civic-hero > *` relative override | Eliminates accidental empty image block pushing down hero text and seamlessly blends Hyderabad cityscape behind hero copy | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.
 

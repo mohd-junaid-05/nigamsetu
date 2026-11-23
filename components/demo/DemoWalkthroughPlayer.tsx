@@ -114,7 +114,7 @@ export const DEMO_CHAPTERS: DemoChapter[] = [
     targetUrl: '/dashboard?wardId=a0000000-0000-0000-0000-000000000002',
     targetLabel: 'Open Ward Chat & Escalations',
     evidencePoints: [
-      'State-specific municipal appeal templates (Maharashtra & Karnataka RTI formats)',
+      'State-specific municipal appeal templates (Telangana / GHMC & Central RTI formats)',
       'Generated PDF stored in Supabase Storage with download link',
       'NL-to-SQL architecture with strict ward isolation (no cross-ward leakage)',
       'Collapsible SQL audit box ensures complete transparency on every chat reply',

@@ -21,6 +21,7 @@ import {
   Flag,
   CheckCheck,
   FileText,
+  Mail,
 } from 'lucide-react';
 import Link from 'next/link';
 import VerificationTraceModal, { VerificationTraceData } from './VerificationTraceModal';
@@ -599,7 +600,7 @@ export default function ComplaintDetailPanel({
           </div>
 
           <p className="text-[11px] text-muted-foreground leading-relaxed">
-            Statutory grievance letter generated with evidentiary audit trail and legal response timeline.
+            Statutory grievance letter generated with evidentiary audit trail and legal response timeline. Routed strictly to designated authority inbox (<strong className="text-foreground font-mono">sessionbyilder7@gmail.com</strong>).
           </p>
 
           {complaint.escalation_letter_url ? (
@@ -661,13 +662,38 @@ export default function ComplaintDetailPanel({
         </div>
       </div>
 
+      {/* Official Evidentiary Dossier Recipient Info */}
+      <div className="p-3 rounded-lg bg-surface-card border border-border flex flex-col gap-2 shadow-2xs">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1.5 text-xs font-bold text-foreground">
+            <Mail className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+            <span>Evidentiary Report Recipient</span>
+          </div>
+          <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-blue-600/10 text-blue-600 font-bold border border-blue-500/20">
+            Showcase Target
+          </span>
+        </div>
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          Case reports, AI verification scores, and statutory appeals for this ticket are routed to:
+          <strong className="block text-foreground font-mono mt-0.5">sessionbyilder7@gmail.com & sessionbyilder@gmail.com</strong>
+        </p>
+        <a
+          href={`mailto:sessionbyilder7@gmail.com,sessionbyilder@gmail.com?subject=${encodeURIComponent(`[NigamSetu Report] Ticket #${complaint.id}: ${complaint.category.toUpperCase()}`)}&body=${encodeURIComponent(`NigamSetu Municipal Grievance Report\nTicket ID: #${complaint.id}\nCategory: ${complaint.category}\nStatus: ${complaint.status}\nSeverity: ${complaint.severity}\nLocation: ${complaint.address_text || 'Ward'}\nProof: ${complaint.image_url || 'N/A'}`)}`}
+          className="mt-0.5 inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md border border-border bg-surface hover:bg-surface-hover text-foreground text-xs font-semibold transition-all cursor-pointer"
+        >
+          <Mail className="w-3 h-3 text-blue-600" />
+          <span>Open Dispatched Report in Mail Client</span>
+          <ExternalLink className="w-3 h-3 opacity-60" />
+        </a>
+      </div>
+
       {/* Action Buttons: Workflow transitions */}
       <div className="pt-1 flex flex-col gap-2">
         {complaint.status === 'in_progress' && onOpenResolve && (
           <button
             type="button"
             onClick={() => onOpenResolve(complaint)}
-            className="w-full min-h-[40px] py-2 px-4 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
+            className="w-full min-h-[40px] py-2 px-4 rounded-md bg-[#00703c] hover:bg-[#005a30] text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
           >
             <Camera className="w-4 h-4" />
             <span>Mark Resolved (Upload Proof)</span>
@@ -678,7 +704,7 @@ export default function ComplaintDetailPanel({
           <button
             type="button"
             onClick={() => onStartWork(complaint)}
-            className="w-full min-h-[40px] py-2 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
+            className="w-full min-h-[40px] py-2 px-4 rounded-md bg-[#071D49] hover:bg-[#093692] dark:bg-[#1d70b8] dark:hover:bg-[#144e82] text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
           >
             <Play className="w-4 h-4" />
             <span>Start Work (Mark In Progress)</span>

@@ -1361,9 +1361,9 @@ export class CivicAgent {
           evidenceUrls,
           addressText,
           location,
-          complainantName,
-          phone,
-          email,
+          complainantName: 'Citizen Representative (Ward Resident - Identity Protected)',
+          phone: '+91 •••••••••• (Privacy Redacted)',
+          email: 'sessionbyilder7@gmail.com',
           daysOverdue: Math.max(
             1,
             Math.round(

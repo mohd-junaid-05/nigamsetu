@@ -140,7 +140,7 @@ export default function AssignmentModal({
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
+      className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
     >
       <div className="w-full max-w-lg rounded-xl border border-border bg-surface shadow-lg flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Modal Header */}
@@ -234,7 +234,7 @@ export default function AssignmentModal({
                       <div className="flex items-center gap-2 text-[11px] text-muted-foreground mt-0.5">
                         <span className="capitalize">{fac.type} Depot</span>
                         {fac.contact_phone && (
-                          <span>&bull; {fac.contact_phone}</span>
+                          <span className="font-mono text-[10px] text-muted-foreground/80">&bull; Dispatch: +91 ••••• ••01</span>
                         )}
                       </div>
                     </div>

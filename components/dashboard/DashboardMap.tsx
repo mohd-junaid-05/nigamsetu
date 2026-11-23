@@ -37,7 +37,7 @@ export default function DashboardMap({
   selectedId,
   onSelectComplaint,
   className = '',
-  initialCenter = [12.935, 77.65],
+  initialCenter = [17.4156, 78.4350],
   initialZoom = 13,
 }: DashboardMapProps) {
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
@@ -129,8 +129,8 @@ export default function DashboardMap({
     // 2. Render Complaint Pins
     items.forEach((item) => {
       // Parse coordinates from location string or GeoJSON
-      let lat = 12.935;
-      let lng = 77.65;
+      let lat = 17.4156;
+      let lng = 78.4350;
       if (typeof item.location === 'string') {
         const match = item.location.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
         if (match) {
@@ -208,8 +208,8 @@ export default function DashboardMap({
     const selectedItem = items.find((i) => i.id === selectedId);
     if (!selectedItem) return;
 
-    let lat = 12.935;
-    let lng = 77.65;
+    let lat = 17.4156;
+    let lng = 78.4350;
     if (typeof selectedItem.location === 'string') {
       const match = selectedItem.location.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
       if (match) {

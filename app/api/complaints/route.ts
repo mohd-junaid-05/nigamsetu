@@ -1,7 +1,8 @@
 import { auth } from '@clerk/nextjs/server';
-import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { createServerSupabaseClient, createStorageSupabaseClient } from '@/lib/supabase/server';
 import { ComplaintCategory, ComplaintStatus } from '@/lib/types/database';
 import { CivicAgent, CheckDuplicateInput, CheckDuplicateOutput } from '@/lib/agent/CivicAgent';
+import { dispatchComplaintReport, SHOWCASE_RECIPIENT_EMAILS } from '@/lib/notifications/reportMailer';
 import sharp from 'sharp';
 
 export type SubmitComplaintResponse = {
@@ -137,10 +138,11 @@ export async function POST(req: Request): Promise<Response> {
     }
 
     const supabase = await createServerSupabaseClient();
+    const storageClient = createStorageSupabaseClient();
     const fileName = `${userId}/${Date.now()}.jpg`;
 
-    // 5. Upload to Supabase Storage complaint-images bucket
-    const { error: uploadError } = await supabase.storage
+    // 5. Upload to Supabase Storage complaint-images bucket using clean storage client
+    const { error: uploadError } = await storageClient.storage
       .from('complaint-images')
       .upload(fileName, compressedBuffer, {
         contentType: 'image/jpeg',
@@ -156,7 +158,7 @@ export async function POST(req: Request): Promise<Response> {
 
     const {
       data: { publicUrl },
-    } = supabase.storage.from('complaint-images').getPublicUrl(fileName);
+    } = storageClient.storage.from('complaint-images').getPublicUrl(fileName);
 
     // 6. Ensure reporter profile exists to satisfy foreign key constraint
     await supabase.from('profiles').upsert(
@@ -252,6 +254,22 @@ export async function POST(req: Request): Promise<Response> {
       }
     ).catch((agentErr) => {
       console.warn('[Complaint Submission] Background severity scoring warning:', agentErr);
+    });
+
+    // 12. Dispatch civic grievance dossier directly to session email
+    dispatchComplaintReport({
+      id: complaint.id,
+      category,
+      description: description.trim() || undefined,
+      addressText: addressText.trim() || undefined,
+      wardName: matchedWard?.name || undefined,
+      lat,
+      lng,
+      imageUrl: publicUrl,
+      severity: 2,
+      createdAt: complaint.created_at,
+    }).catch((mailErr) => {
+      console.warn('[Complaint Submission] Showcase email dispatch warning:', mailErr);
     });
 
     return Response.json({

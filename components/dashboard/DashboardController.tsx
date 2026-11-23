@@ -260,108 +260,117 @@ export default function DashboardController({
   };
 
   return (
-    <div className="flex-1 flex flex-col w-full h-full max-w-7xl mx-auto p-4 sm:p-6 gap-4">
-      {/* Real-time Indicator & Responsive Tab Navigation */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-2 text-xs">
-          <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold border border-emerald-500/20">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <Wifi className="w-3.5 h-3.5" />
-            <span>Supabase Realtime Live</span>
-          </span>
-          <button
-            type="button"
-            onClick={refreshQueue}
-            disabled={isRefreshing}
-            className="p-1 rounded-lg border border-border hover:bg-muted/20 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            title="Manual sync with database"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-          </button>
-          <Link
-            href="/admin/traces"
-            className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-purple-600/10 hover:bg-purple-600/20 text-purple-600 dark:text-purple-400 font-bold border border-purple-500/20 text-xs transition-colors"
-            title="Inspect AI Transparency and Audit Traces"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>AI Audit Traces</span>
-          </Link>
-        </div>
+    <div className="flex-1 flex flex-col w-full bg-background">
+      {/* ── Dashboard Page Header (Utah.gov civic navy bar) ──────────────── */}
+      <div className="bg-[#071D49] dark:bg-black border-b-2 border-[#FFB81D]/50 px-4 sm:px-6 py-4">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-[10px] font-bold text-[#FFB81D] uppercase tracking-widest mb-0.5">
+              Municipal Operations Centre
+            </div>
+            <h1 className="text-lg font-black text-white tracking-tight">
+              {wardName} — Complaint Command Dashboard
+            </h1>
+          </div>
 
-        {/* Mobile / Tablet Tab Switcher (visible on lg:hidden) */}
-        <div className="flex lg:hidden items-center bg-surface-card rounded-xl p-1 border border-border text-xs font-semibold">
-          <button
-            onClick={() => setActiveTab('queue')}
-            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
-              activeTab === 'queue'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>Queue ({queue.length})</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('map')}
-            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
-              activeTab === 'map'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <Map className="w-3.5 h-3.5" />
-            <span>Ward Map</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('details')}
-            className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
-              activeTab === 'details'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Details</span>
-          </button>
+          <div className="flex items-center gap-2 text-xs flex-wrap">
+            <span className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-emerald-500/15 text-emerald-300 font-bold border border-emerald-500/25">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <Wifi className="w-3.5 h-3.5" />
+              <span>Realtime Live</span>
+            </span>
+            <button
+              type="button"
+              onClick={refreshQueue}
+              disabled={isRefreshing}
+              className="p-1.5 rounded border border-white/20 hover:bg-white/10 text-white/60 hover:text-white transition-colors cursor-pointer"
+              title="Manual sync with database"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+            </button>
+            <Link
+              href="/admin/traces"
+              className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-purple-500/15 hover:bg-purple-500/25 text-purple-300 font-bold border border-purple-500/25 transition-colors"
+              title="Inspect AI Transparency and Audit Traces"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>AI Audit Traces</span>
+            </Link>
+          </div>
         </div>
       </div>
 
-      {/* 3-Panel Desktop Layout (25% Queue | 50% Map | 25% Details) */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[580px]">
-        {/* Panel 1: Priority / Escalation Queue (25% -> 3 cols) */}
+      {/* ── Mobile Tab Switcher ───────────────────────────────────────────── */}
+      <div className="flex lg:hidden items-center bg-surface border-b border-border px-4 py-2 gap-1 text-xs font-semibold">
+        <button
+          onClick={() => setActiveTab('queue')}
+          className={`flex-1 py-2 rounded flex items-center justify-center gap-1.5 transition-all ${
+            activeTab === 'queue'
+              ? 'bg-[#071D49] dark:bg-[#1d70b8] text-white shadow-sm'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-hover'
+          }`}
+        >
+          <Layers className="w-3.5 h-3.5" />
+          <span>Queue ({queue.length})</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('map')}
+          className={`flex-1 py-2 rounded flex items-center justify-center gap-1.5 transition-all ${
+            activeTab === 'map'
+              ? 'bg-[#071D49] dark:bg-[#1d70b8] text-white shadow-sm'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-hover'
+          }`}
+        >
+          <Map className="w-3.5 h-3.5" />
+          <span>Ward Map</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('details')}
+          className={`flex-1 py-2 rounded flex items-center justify-center gap-1.5 transition-all ${
+            activeTab === 'details'
+              ? 'bg-[#071D49] dark:bg-[#1d70b8] text-white shadow-sm'
+              : 'text-muted-foreground hover:text-foreground hover:bg-surface-hover'
+          }`}
+        >
+          <FileText className="w-3.5 h-3.5" />
+          <span>Details</span>
+        </button>
+      </div>
+
+      {/* ── 3-Panel Desktop Grid ──────────────────────────────────────────── */}
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-4 p-0 lg:p-4 max-w-7xl w-full mx-auto min-h-[600px]">
+        {/* Panel 1: Priority / Escalation Queue (25% → 3 cols) */}
         <section
-          className={`lg:col-span-3 flex flex-col rounded-xl border border-border bg-surface overflow-hidden shadow-xs ${
+          className={`lg:col-span-3 flex flex-col border border-border bg-surface overflow-hidden rounded-none lg:rounded-lg shadow-sm ${
             activeTab === 'queue' ? 'flex' : 'hidden lg:flex'
           }`}
         >
-          <div className="p-2 border-b border-border flex items-center justify-between bg-surface-card">
-            <div className="flex items-center gap-1 w-full">
-              <button
-                type="button"
-                onClick={() => setQueueView('priority')}
-                className={`flex-1 py-1.5 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
-                  queueView === 'priority'
-                    ? 'bg-blue-600 text-white shadow-2xs'
-                    : 'text-muted-foreground hover:bg-surface-hover'
-                }`}
-              >
-                <Layers className="w-3.5 h-3.5" />
-                <span>Priority ({queue.length})</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setQueueView('escalations')}
-                className={`flex-1 py-1.5 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
-                  queueView === 'escalations'
-                    ? 'bg-red-600 text-white shadow-2xs'
-                    : 'text-muted-foreground hover:bg-surface-hover'
-                }`}
-              >
-                <AlertTriangle className="w-3.5 h-3.5" />
-                <span>Escalated ({escalations.length})</span>
-              </button>
-            </div>
+          {/* Panel sub-nav */}
+          <div className="p-2 border-b border-border flex items-center gap-1 bg-surface-card">
+            <button
+              type="button"
+              onClick={() => setQueueView('priority')}
+              className={`flex-1 py-1.5 rounded text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                queueView === 'priority'
+                  ? 'bg-[#071D49] dark:bg-[#1d70b8] text-white shadow-sm'
+                  : 'text-muted-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5" />
+              <span>Priority ({queue.length})</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setQueueView('escalations')}
+              className={`flex-1 py-1.5 rounded text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                queueView === 'escalations'
+                  ? 'bg-red-700 text-white shadow-sm'
+                  : 'text-muted-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>Escalated ({escalations.length})</span>
+            </button>
           </div>
 
           <div className="flex-1 overflow-hidden">
@@ -391,21 +400,23 @@ export default function DashboardController({
           </div>
         </section>
 
-        {/* Panel 2: Ward Map (50% -> 6 cols) */}
+        {/* Panel 2: Ward Map (50% → 6 cols) */}
         <section
-          className={`lg:col-span-6 flex flex-col rounded-xl border border-border bg-surface overflow-hidden shadow-xs min-h-[460px] ${
+          className={`lg:col-span-6 flex flex-col border border-border bg-surface overflow-hidden rounded-none lg:rounded-lg shadow-sm min-h-[460px] ${
             activeTab === 'map' ? 'flex' : 'hidden lg:flex'
           }`}
         >
           <div className="p-3 border-b border-border flex items-center justify-between bg-surface-card z-10">
             <div className="flex items-center gap-2">
-              <Map className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <div className="w-6 h-6 rounded bg-[#071D49] dark:bg-[#1d70b8] text-[#FFB81D] dark:text-white flex items-center justify-center">
+                <Map className="w-3.5 h-3.5" />
+              </div>
               <h2 className="text-xs font-bold text-foreground">
-                {wardName} Geospatial Operations
+                {wardName} — Geospatial Operations
               </h2>
             </div>
             <span className="text-[10px] text-muted-foreground font-mono">
-              {facilities.length} Facilities • {queue.length} Incidents
+              {facilities.length} Facilities · {queue.length} Incidents
             </span>
           </div>
 
@@ -422,40 +433,37 @@ export default function DashboardController({
           </div>
         </section>
 
-        {/* Panel 3: Details & Workflow / Ward AI Chat (25% -> 3 cols) */}
+        {/* Panel 3: Details & Chat (25% → 3 cols) */}
         <section
-          className={`lg:col-span-3 flex flex-col rounded-xl border border-border bg-surface overflow-hidden shadow-xs ${
+          className={`lg:col-span-3 flex flex-col border border-border bg-surface overflow-hidden rounded-none lg:rounded-lg shadow-sm ${
             activeTab === 'details' ? 'flex' : 'hidden lg:flex'
           }`}
         >
-          <div className="p-2 border-b border-border flex items-center justify-between bg-surface-card">
-            <div className="flex items-center gap-1 w-full">
-              <button
-                type="button"
-                onClick={() => setPanelView('details')}
-                className={`flex-1 py-1.5 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
-                  panelView === 'details'
-                    ? 'bg-blue-600 text-white shadow-2xs'
-                    : 'text-muted-foreground hover:bg-surface-hover'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5" />
-                <span>Details {selectedComplaint ? `(#${selectedComplaint.id.slice(0, 6)})` : ''}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setPanelView('chat')}
-                className={`flex-1 py-1.5 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
-                  panelView === 'chat'
-                    ? 'bg-blue-600 text-white shadow-2xs'
-                    : 'text-muted-foreground hover:bg-surface-hover'
-                }`}
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>AI Copilot {chatMessages.length > 0 ? `(${chatMessages.length})` : ''}</span>
-              </button>
-            </div>
+          <div className="p-2 border-b border-border flex items-center gap-1 bg-surface-card">
+            <button
+              type="button"
+              onClick={() => setPanelView('details')}
+              className={`flex-1 py-1.5 rounded text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                panelView === 'details'
+                  ? 'bg-[#071D49] dark:bg-[#1d70b8] text-white shadow-sm'
+                  : 'text-muted-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Details {selectedComplaint ? `(#${selectedComplaint.id.slice(0, 6)})` : ''}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPanelView('chat')}
+              className={`flex-1 py-1.5 rounded text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                panelView === 'chat'
+                  ? 'bg-[#071D49] dark:bg-[#1d70b8] text-white shadow-sm'
+                  : 'text-muted-foreground hover:bg-surface-hover'
+              }`}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>AI Copilot {chatMessages.length > 0 ? `(${chatMessages.length})` : ''}</span>
+            </button>
           </div>
 
           {panelView === 'details' ? (

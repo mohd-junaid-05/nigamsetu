@@ -367,13 +367,13 @@ export default function ChatPanel({
             onKeyDown={handleKeyDown}
             disabled={isLoading}
             placeholder={`Ask about complaints in ${wardName}...`}
-            className="flex-1 px-3 py-2 text-xs rounded-md border border-border bg-surface text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50"
+            className="flex-1 px-3 py-2 text-xs rounded-md border border-border bg-surface text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#071D49] dark:focus:ring-[#1d70b8] disabled:opacity-50"
           />
           <button
             type="button"
             onClick={() => handleSend()}
             disabled={isLoading || !inputValue.trim()}
-            className="px-3.5 py-2 rounded-md bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-2xs flex items-center gap-1 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-accent"
+            className="px-3.5 py-2 rounded-md bg-[#071D49] hover:bg-[#093692] dark:bg-[#1d70b8] dark:hover:bg-[#1557a0] disabled:opacity-50 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-accent"
           >
             <Send className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Send</span>

@@ -49,21 +49,24 @@ export class MaharashtraRTITemplate extends EscalationTemplate {
   generate(data: TemplateData): string {
     const lat = data.location ? data.location[0].toFixed(5) : 'N/A';
     const lng = data.location ? data.location[1].toFixed(5) : 'N/A';
-    const complainantName = data.complainantName || 'Concerned Citizen / Ward Resident';
+    const complainantName = 'Citizen Representative (Ward Resident - Identity Protected)';
     const address = data.addressText || `${data.wardName}, ${data.city}, ${data.state}`;
-    const phone = data.phone || 'Provided via NigamSetu Citizen Portal';
-    const email = data.email || 'records@nigamsetu.org.in';
+    const phone = '+91 •••••••••• (Privacy Redacted)';
+    const email = 'sessionbyilder7@gmail.com';
     const today = new Date().toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'long',
       year: 'numeric',
     });
 
-    return `To,
-The Public Information Officer,
+    return `[HACKATHON DEMO & SHOWCASE MODE — NO EXTERNAL GOVERNMENT BODIES OR ENDPOINTS CONTACTED]
+[All statutory notices and grievance reports are routed exclusively to: sessionbyilder7@gmail.com]
+
+To,
+The Public Information Officer / Designated Authority (sessionbyilder7@gmail.com),
 Department of Municipal Grievance Redressal,
-Municipal Corporation of ${data.city || 'Greater Mumbai'},
-${data.city || 'Mumbai'}, ${data.state || 'Maharashtra'}.
+Greater Hyderabad Municipal Corporation (GHMC), CC Complex, Tank Bund Road, Hyderabad, Telangana — 500063,
+Official Recipient Inbox: sessionbyilder7@gmail.com.
 
 Subject: Application under Section 6(1) of the Right to Information Act, 2005
 
@@ -83,13 +86,13 @@ Description: ${data.description || 'Public infrastructure defect posing continuo
 4. Please provide the name and designation of the officer responsible for addressing complaints in the above category for ${data.wardName}.
 5. Please provide the Standard Operating Procedure (SOP) and Service Level Agreement (SLA) for addressing ${data.category} complaints in ${data.wardName}.
 
-I am enclosing the fee of Rs. 10/- as per the RTI Act.
+I am enclosing the statutory fee of Rs. 10/- as per the RTI Act.
 
 Thank you,
 
 ${complainantName}
 ${phone}
-${email}
+Official Copy: ${email}
 Date: ${today}
 
 Enclosures:
@@ -112,10 +115,10 @@ export class GeneralCommissionerTemplate extends EscalationTemplate {
   statutoryDays = 15;
 
   generate(data: TemplateData): string {
-    const complainantName = data.complainantName || 'Ward Resident / Civic Redressal Applicant';
+    const complainantName = 'Citizen Representative (Ward Resident - Identity Protected)';
     const address = data.addressText || `${data.wardName}, ${data.city}, ${data.state}`;
-    const phone = data.phone || 'Provided via NigamSetu Citizen Portal';
-    const email = data.email || 'records@nigamsetu.org.in';
+    const phone = '+91 •••••••••• (Privacy Redacted)';
+    const email = 'sessionbyilder7@gmail.com';
     const today = new Date().toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'long',
@@ -143,10 +146,13 @@ export class GeneralCommissionerTemplate extends EscalationTemplate {
         ? 'High public hazard posing immediate traffic, health, or infrastructure safety jeopardy.'
         : 'Ongoing civic impairment impacting residents, daily transit, and municipal hygiene.');
 
-    return `To,
-The Municipal Commissioner,
-Municipal Corporation of ${data.city || 'Greater Mumbai'},
-${data.city || 'Mumbai'}, ${data.state || 'Maharashtra'} — 400001
+    return `[HACKATHON DEMO & SHOWCASE MODE — NO EXTERNAL GOVERNMENT BODIES OR ENDPOINTS CONTACTED]
+[All statutory notices and grievance reports are routed exclusively to: sessionbyilder7@gmail.com]
+
+To,
+The Municipal Commissioner / Designated Authority (sessionbyilder7@gmail.com),
+Greater Hyderabad Municipal Corporation (GHMC), CC Complex, Tank Bund Road, Hyderabad, Telangana — 500063,
+Official Recipient Inbox: sessionbyilder7@gmail.com.
 
 Subject: Appeal regarding non-redressal of civic complaint ${data.complaintId}
 
@@ -184,7 +190,7 @@ Sincerely,
 ${complainantName}
 ${address}
 ${phone}
-${email}
+Official Copy: ${email}
 Date: ${today}`;
   }
 }
@@ -201,7 +207,7 @@ export class WardOfficerTemplate extends EscalationTemplate {
   statutoryDays = 7;
 
   generate(data: TemplateData): string {
-    const complainantName = data.complainantName || 'Concerned Ward Resident';
+    const complainantName = 'Citizen Representative (Ward Resident - Identity Protected)';
     const address = data.addressText || `${data.wardName}, ${data.city}, ${data.state}`;
     const today = new Date().toLocaleDateString('en-IN', {
       day: 'numeric',
@@ -209,11 +215,14 @@ export class WardOfficerTemplate extends EscalationTemplate {
       year: 'numeric',
     });
 
-    return `To,
-The Ward Officer / Assistant Commissioner,
+    return `[HACKATHON DEMO & SHOWCASE MODE — NO EXTERNAL GOVERNMENT BODIES OR ENDPOINTS CONTACTED]
+[All statutory notices and grievance reports are routed exclusively to: sessionbyilder7@gmail.com]
+
+To,
+The Ward Officer / Assistant Commissioner (sessionbyilder7@gmail.com),
 ${data.wardName},
-Municipal Corporation of ${data.city || 'Greater Mumbai'},
-${data.city || 'Mumbai'}, ${data.state || 'Maharashtra'}.
+Greater Hyderabad Municipal Corporation (GHMC), CC Complex, Tank Bund Road, Hyderabad, Telangana — 500063,
+Official Recipient Inbox: sessionbyilder7@gmail.com.
 
 Subject: Urgent Grievance Notice: Overdue civic complaint #${data.complaintId}
 
@@ -239,6 +248,7 @@ Kindly confirm initiation of corrective action within 48 hours.
 Respectfully,
 ${complainantName}
 ${address}
+Official Recipient: sessionbyilder7@gmail.com
 Date: ${today}`;
   }
 }

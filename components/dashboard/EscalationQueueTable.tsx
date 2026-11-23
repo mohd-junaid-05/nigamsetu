@@ -144,9 +144,9 @@ export default function EscalationQueueTable({
               key={st}
               type="button"
               onClick={() => setStatusFilter(st)}
-              className={`px-2 py-0.5 rounded-md font-semibold capitalize transition-colors cursor-pointer ${
+              className={`px-2 py-0.5 rounded font-semibold capitalize transition-colors cursor-pointer ${
                 statusFilter === st
-                  ? 'bg-blue-600 text-white shadow-2xs'
+                  ? 'bg-[#071D49] text-white dark:bg-[#1d70b8] shadow-xs'
                   : 'bg-surface text-muted-foreground hover:bg-surface-hover border border-border'
               }`}
             >
@@ -179,7 +179,7 @@ export default function EscalationQueueTable({
                 onClick={() => onSelect(item)}
                 className={`p-3 transition-colors cursor-pointer flex flex-col gap-2 ${
                   isSelected
-                    ? 'bg-blue-50/70 dark:bg-blue-950/30 border-l-3 border-l-blue-600'
+                    ? 'bg-[#071D49]/5 dark:bg-[#1d70b8]/15 border-l-4 border-l-[#071D49] dark:border-l-[#1d70b8]'
                     : 'hover:bg-surface-hover/60 bg-surface'
                 }`}
               >
