@@ -1,15 +1,18 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { PriorityQueueItem } from '@/app/api/complaints/priority/route';
 import { FacilityItem } from '@/app/api/facilities/route';
 import PriorityQueueTable from './PriorityQueueTable';
+import EscalationQueueTable from './EscalationQueueTable';
 import DashboardMap from './DashboardMap';
 import ComplaintDetailPanel from './ComplaintDetailPanel';
 import AssignmentModal from './AssignmentModal';
 import ResolutionModal from '@/components/facility/ResolutionModal';
 import { useLiveComplaints } from '@/hooks/useLiveComplaints';
-import { Layers, Map, FileText, Wifi, RefreshCw } from 'lucide-react';
+import { EscalationQueueItem } from '@/app/api/escalations/route';
+import { EscalationStatus } from '@/lib/types/database';
+import { Layers, Map, FileText, Wifi, RefreshCw, AlertTriangle } from 'lucide-react';
 
 interface DashboardControllerProps {
   initialQueue: PriorityQueueItem[];
@@ -32,6 +35,9 @@ export default function DashboardController({
   const [resolveTarget, setResolveTarget] = useState<PriorityQueueItem | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<'queue' | 'map' | 'details'>('queue');
+  const [queueView, setQueueView] = useState<'priority' | 'escalations'>('priority');
+  const [escalations, setEscalations] = useState<EscalationQueueItem[]>([]);
+  const [isScanning, setIsScanning] = useState(false);
 
   // Reload queue from database
   const refreshQueue = useCallback(async () => {
@@ -52,8 +58,86 @@ export default function DashboardController({
     }
   }, [wardId]);
 
+  // Fetch escalations from API
+  const fetchEscalations = useCallback(async () => {
+    try {
+      const url = wardId
+        ? `/api/escalations?wardId=${encodeURIComponent(wardId)}`
+        : '/api/escalations';
+      const res = await fetch(url);
+      const data = await res.json();
+      if (data.success && Array.isArray(data.escalations)) {
+        setEscalations(data.escalations);
+      }
+    } catch (err) {
+      console.warn('[DashboardController] Failed to fetch escalations:', err);
+    }
+  }, [wardId]);
+
+  useEffect(() => {
+    fetchEscalations();
+  }, [fetchEscalations]);
+
+  // Update escalation letter status
+  const handleStatusChange = async (escalationId: string, newStatus: EscalationStatus) => {
+    try {
+      const res = await fetch(`/api/escalations/${escalationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setEscalations((prev) =>
+          prev.map((e) => (e.id === escalationId ? { ...e, status: newStatus } : e))
+        );
+      }
+    } catch (err) {
+      console.error('[DashboardController] Status update error:', err);
+    }
+  };
+
+  // Run autopilot cron scan
+  const handleTriggerCronScan = async () => {
+    setIsScanning(true);
+    try {
+      const res = await fetch('/api/agent/escalate/cron', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        await Promise.all([refreshQueue(), fetchEscalations()]);
+      }
+    } catch (err) {
+      console.error('[DashboardController] Cron scan error:', err);
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
+  // Trigger manual escalation from detail panel
+  const handleEscalateAction = async (item: PriorityQueueItem) => {
+    try {
+      const res = await fetch(`/api/complaints/${item.id}/escalate`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      const data = await res.json();
+      if (data.success) {
+        await Promise.all([refreshQueue(), fetchEscalations()]);
+      } else {
+        alert(`Escalation failed: ${data.error || 'Unknown error'}`);
+      }
+    } catch (err: unknown) {
+      const e = err as Error;
+      alert(`Escalation error: ${e.message}`);
+    }
+  };
+
   // Subscribe to live Postgres changes on complaints in this ward
-  useLiveComplaints(wardId, refreshQueue);
+  useLiveComplaints(wardId, () => {
+    refreshQueue();
+    fetchEscalations();
+  });
 
   // Selected complaint object
   const selectedComplaint = queue.find((i) => i.id === selectedId) || null;
@@ -225,31 +309,65 @@ export default function DashboardController({
 
       {/* 3-Panel Desktop Layout (25% Queue | 50% Map | 25% Details) */}
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[580px]">
-        {/* Panel 1: Priority Queue (25% -> 3 cols) */}
+        {/* Panel 1: Priority / Escalation Queue (25% -> 3 cols) */}
         <section
           className={`lg:col-span-3 flex flex-col rounded-2xl border border-border bg-surface-card overflow-hidden shadow-sm ${
             activeTab === 'queue' ? 'flex' : 'hidden lg:flex'
           }`}
         >
-          <div className="p-3.5 border-b border-border flex items-center justify-between bg-surface/40">
-            <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-blue-600" />
-              <h2 className="text-sm font-bold text-foreground">Priority Queue</h2>
+          <div className="p-2 border-b border-border flex items-center justify-between bg-surface/40">
+            <div className="flex items-center gap-1 w-full">
+              <button
+                type="button"
+                onClick={() => setQueueView('priority')}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                  queueView === 'priority'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-muted-foreground hover:bg-surface'
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Priority ({queue.length})</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setQueueView('escalations')}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                  queueView === 'escalations'
+                    ? 'bg-red-600 text-white shadow-xs'
+                    : 'text-muted-foreground hover:bg-surface'
+                }`}
+              >
+                <AlertTriangle className="w-3.5 h-3.5" />
+                <span>Escalated ({escalations.length})</span>
+              </button>
             </div>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-600/10 text-blue-600 border border-blue-500/20 font-bold">
-              {queue.length} Tickets
-            </span>
           </div>
 
-          <PriorityQueueTable
-            items={queue}
-            selectedId={selectedId}
-            onSelect={(item) => {
-              setSelectedId(item.id);
-              setActiveTab('details');
-            }}
-            onOpenAssign={(item) => setAssignTarget(item)}
-          />
+          {queueView === 'priority' ? (
+            <PriorityQueueTable
+              items={queue}
+              selectedId={selectedId}
+              onSelect={(item) => {
+                setSelectedId(item.id);
+                setActiveTab('details');
+              }}
+              onOpenAssign={(item) => setAssignTarget(item)}
+            />
+          ) : (
+            <EscalationQueueTable
+              items={escalations}
+              selectedId={selectedId}
+              onSelect={(item) => {
+                setSelectedId(item.complaint_id);
+                setActiveTab('details');
+              }}
+              onStatusChange={handleStatusChange}
+              onTriggerCronScan={handleTriggerCronScan}
+              isScanning={isScanning}
+            />
+          )}
         </section>
 
         {/* Panel 2: Ward Map (50% -> 6 cols) */}
@@ -307,6 +425,7 @@ export default function DashboardController({
             onOpenResolve={(item) => setResolveTarget(item)}
             onStartWork={handleStartWork}
             onVerifyAction={handleVerifyAction}
+            onEscalateAction={handleEscalateAction}
           />
         </section>
       </div>

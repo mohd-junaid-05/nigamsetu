@@ -117,5 +117,18 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-23 | Add `apply_verification_result` RPC and `get_complaint_verification_trace` RPC | Atomically updates complaint status, score, verification status, and activity audit timeline with security definer permissions | Yes |
 | 2026-11-23 | Include resolved and verified status tickets in `get_priority_queue` | Enables officials to review tickets awaiting verification and audit resolution evidence directly from the controller dashboard | Yes |
 | 2026-11-23 | Support multi-model generative vision cascade with graceful test fixture fallback in `CivicAgent` | Resolves Google AI API v1beta deprecation of gemini-1.5-pro by cascading to gemini-2.5-pro and gemini-3.5-flash with deterministic fixture handling for test suite | Yes |
+| 2026-11-23 | Add 'manual' to `escalations.trigger_reason` check constraint and add `letter_url` and `previous_status` columns | Supports user-initiated and official-initiated manual escalations and stores generated PDF links alongside complaints while preserving initial state | Yes |
+| 2026-11-23 | Use `create_escalation_record` and `get_ward_escalations` SECURITY DEFINER RPCs | Atomically transitions complaint status to 'escalated', stores previous status, links PDF letter URL, and logs audit timeline | Yes |
+| 2026-11-23 | Implement 4s timeout with candidate cascade in `CivicAgent.polishEscalationLetter` | Guarantees rapid responsive PDF generation even if external LLM encounters network throttling or API deprecation | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+## This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

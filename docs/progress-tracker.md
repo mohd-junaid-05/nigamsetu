@@ -86,11 +86,11 @@
 - [x] Comprehensive audit trail logging all four individual checks, composite score metrics, and reasoning into `agent_traces` with "Why this score?" inspector modal
 
 ## Phase 10: AI Agent: Escalation autopilot
-- [ ] Automated SLA breach detection cron/checker for overdue complaints
-- [ ] Ghost closure detector flagging unverified fixes marked resolved without photo evidence
-- [ ] `generateEscalation` tool auto-generating formal RTI / Municipal Appeal letters
-- [ ] Adapter pattern for state-specific municipal escalation letter formats
-- [ ] Escalation queue view in official dashboard and citizen detail page
+- [x] Automated SLA breach detection cron/checker for overdue complaints (`/api/agent/escalate/cron`)
+- [x] Ghost closure detector flagging unverified fixes marked resolved without photo evidence or with failed verification
+- [x] `generateEscalation` tool auto-generating formal RTI / Municipal Appeal letters with `pdf-lib` and Supabase Storage
+- [x] Adapter pattern for state-specific municipal escalation letter formats (`MaharashtraRTITemplate`, `GeneralCommissionerTemplate`, `WardOfficerTemplate`)
+- [x] Escalation queue view in official dashboard (`EscalationQueueTable`) and citizen detail page (`MyComplaintsList` "Escalation Letter" button)
 
 ## Phase 11: AI Agent: Chat panel
 - [ ] Official ward chat interface component in right dashboard panel

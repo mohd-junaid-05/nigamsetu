@@ -11,7 +11,7 @@ export type FacilityType = 'road' | 'sanitation' | 'education' | 'health' | 'sew
 export type ComplaintCategory = 'road' | 'garbage' | 'sewage' | 'school' | 'healthcenter' | 'other';
 export type ComplaintStatus = 'open' | 'assigned' | 'in_progress' | 'resolved' | 'verified' | 'escalated' | 'rejected';
 export type VerificationStatus = 'pending' | 'passed' | 'failed';
-export type EscalationTrigger = 'sla_breach' | 'verification_failed' | 'ghost_closure';
+export type EscalationTrigger = 'sla_breach' | 'verification_failed' | 'ghost_closure' | 'manual';
 export type EscalationAuthority = 'municipal_commissioner' | 'ward_officer' | 'rti';
 export type EscalationStatus = 'draft' | 'submitted' | 'acknowledged' | 'resolved';
 export type AgentToolName =
@@ -133,6 +133,7 @@ export interface Database {
           verification_score: number | null;
           verification_status: VerificationStatus | null;
           escalation_letter_url: string | null;
+          previous_status: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -158,6 +159,7 @@ export interface Database {
           verification_score?: number | null;
           verification_status?: VerificationStatus | null;
           escalation_letter_url?: string | null;
+          previous_status?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -183,6 +185,7 @@ export interface Database {
           verification_score?: number | null;
           verification_status?: VerificationStatus | null;
           escalation_letter_url?: string | null;
+          previous_status?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -242,6 +245,7 @@ export interface Database {
           authority: EscalationAuthority;
           deadline: string;
           status: EscalationStatus;
+          letter_url: string | null;
           created_at: string;
         };
         Insert: {
@@ -252,6 +256,7 @@ export interface Database {
           authority: EscalationAuthority;
           deadline: string;
           status?: EscalationStatus;
+          letter_url?: string | null;
           created_at?: string;
         };
         Update: {
@@ -262,6 +267,7 @@ export interface Database {
           authority?: EscalationAuthority;
           deadline?: string;
           status?: EscalationStatus;
+          letter_url?: string | null;
           created_at?: string;
         };
       };

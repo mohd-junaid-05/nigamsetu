@@ -20,6 +20,7 @@ import {
   RotateCcw,
   Flag,
   CheckCheck,
+  FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 import VerificationTraceModal, { VerificationTraceData } from './VerificationTraceModal';
@@ -30,6 +31,7 @@ interface ComplaintDetailPanelProps {
   onOpenResolve?: (item: PriorityQueueItem) => void;
   onStartWork?: (item: PriorityQueueItem) => void;
   onVerifyAction?: (complaintId: string, action: 'verify' | 'reject' | 'flag', notes?: string) => Promise<void>;
+  onEscalateAction?: (item: PriorityQueueItem) => Promise<void>;
   facilityName?: string | null;
 }
 
@@ -91,12 +93,39 @@ export default function ComplaintDetailPanel({
   onOpenResolve,
   onStartWork,
   onVerifyAction,
+  onEscalateAction,
   facilityName,
 }: ComplaintDetailPanelProps) {
   const [isTraceModalOpen, setIsTraceModalOpen] = useState(false);
   const [traceData, setTraceData] = useState<VerificationTraceData | null>(null);
   const [isLoadingTrace, setIsLoadingTrace] = useState(false);
   const [isPerformingAction, setIsPerformingAction] = useState<string | null>(null);
+  const [isEscalating, setIsEscalating] = useState(false);
+
+  const handleEscalate = async () => {
+    if (!complaint) return;
+    setIsEscalating(true);
+    try {
+      if (onEscalateAction) {
+        await onEscalateAction(complaint);
+      } else {
+        const res = await fetch(`/api/complaints/${complaint.id}/escalate`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
+        const data = await res.json();
+        if (!data.success) {
+          alert(`Escalation failed: ${data.error || 'Unknown error'}`);
+        }
+      }
+    } catch (err: unknown) {
+      const e = err as Error;
+      alert(`Escalation failed: ${e.message}`);
+    } finally {
+      setIsEscalating(false);
+    }
+  };
 
   // Fetch latest verification trace for the selected complaint
   const fetchTrace = async (complaintId: string) => {
@@ -526,6 +555,43 @@ export default function ComplaintDetailPanel({
         </div>
       )}
 
+      {/* Statutory Escalation Card (if letter generated or ticket escalated) */}
+      {(complaint.escalation_letter_url || complaint.status === 'escalated') && (
+        <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 flex flex-col gap-2 shadow-xs">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-400">
+              <FileText className="w-4 h-4" />
+              <span>Statutory Escalation Letter</span>
+            </div>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-red-600 text-white font-bold uppercase tracking-wider">
+              Escalated
+            </span>
+          </div>
+
+          <p className="text-[11px] text-muted-foreground leading-relaxed">
+            Statutory grievance letter generated with evidentiary audit trail and legal response timeline.
+          </p>
+
+          {complaint.escalation_letter_url ? (
+            <a
+              href={complaint.escalation_letter_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-1 inline-flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-sm active:scale-[0.99] cursor-pointer"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>View Escalation Letter (PDF)</span>
+              <ExternalLink className="w-3.5 h-3.5 opacity-80" />
+            </a>
+          ) : (
+            <div className="text-[10px] text-amber-600 font-semibold flex items-center gap-1">
+              <RefreshCw className="w-3 h-3 animate-spin" />
+              <span>Generating legal document in background...</span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Status History Timeline */}
       <div className="p-3 rounded-xl bg-surface border border-border flex flex-col gap-2.5">
         <h5 className="font-bold text-foreground text-xs">Resolution Workflow</h5>
@@ -601,6 +667,28 @@ export default function ComplaintDetailPanel({
               : 'Assign to nearest facility'}
           </span>
         </button>
+
+        {/* Escalation Letter Button for overdue, failed verification, or manual trigger */}
+        {!complaint.escalation_letter_url && complaint.status !== 'verified' && (
+          <button
+            type="button"
+            disabled={isEscalating}
+            onClick={handleEscalate}
+            className="w-full py-2 px-4 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-bold text-xs shadow-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+            title="Generate formal RTI or Commissioner appeal letter"
+          >
+            {isEscalating ? (
+              <RefreshCw className="w-4 h-4 animate-spin" />
+            ) : (
+              <FileText className="w-4 h-4" />
+            )}
+            <span>
+              {complaint.verification_status === 'failed'
+                ? 'Generate Commissioner Appeal'
+                : 'Generate Escalation Letter'}
+            </span>
+          </button>
+        )}
       </div>
 
       {/* Trace Inspector Modal */}

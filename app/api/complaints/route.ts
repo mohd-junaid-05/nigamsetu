@@ -26,6 +26,8 @@ export type ComplaintItem = {
   description: string | null;
   image_url: string;
   address_text: string | null;
+  escalation_letter_url?: string | null;
+  previous_status?: string | null;
   created_at: string;
   ward_id: string | null;
   wards: {
@@ -292,6 +294,8 @@ export async function GET(): Promise<Response> {
         description,
         image_url,
         address_text,
+        escalation_letter_url,
+        previous_status,
         created_at,
         ward_id,
         wards (

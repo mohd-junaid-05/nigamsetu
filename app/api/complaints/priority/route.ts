@@ -20,6 +20,8 @@ export interface PriorityQueueItem {
   resolution_notes?: string | null;
   verification_score?: number | null;
   verification_status?: string | null;
+  escalation_letter_url?: string | null;
+  sla_deadline?: string | null;
 }
 
 export interface PriorityQueueResponse {
@@ -71,6 +73,8 @@ export async function GET(req: Request): Promise<Response> {
       resolution_notes: r.resolution_notes || null,
       verification_score: typeof r.verification_score === 'number' ? r.verification_score : null,
       verification_status: r.verification_status || null,
+      escalation_letter_url: r.escalation_letter_url || null,
+      sla_deadline: r.sla_deadline || null,
     }));
 
     return Response.json({

@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Inbox,
   AlertCircle,
+  FileText,
 } from 'lucide-react';
 import { ComplaintCategory, ComplaintStatus } from '@/lib/types/database';
 
@@ -237,6 +238,29 @@ export function MyComplaintsList({ onSwitchToReport }: MyComplaintsListProps) {
                       <p className="text-xs text-foreground/90 mt-1 line-clamp-2 leading-relaxed">
                         {item.description}
                       </p>
+                    )}
+
+                    {/* Escalation Letter Button for escalated complaints */}
+                    {(item.escalation_letter_url || item.status === 'escalated') && (
+                      <div className="mt-2 flex items-center gap-2">
+                        {item.escalation_letter_url ? (
+                          <a
+                            href={item.escalation_letter_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-500/30 text-[11px] font-semibold transition-colors cursor-pointer"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            <span>Escalation Letter</span>
+                            <ExternalLink className="w-3 h-3 opacity-70" />
+                          </a>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/25 text-[10px] font-medium">
+                            <FileText className="w-3 h-3" />
+                            <span>Escalation Generating...</span>
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
 
