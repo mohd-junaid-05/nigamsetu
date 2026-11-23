@@ -77,13 +77,13 @@ export function CategorySelector({
           <span className="text-status-open font-bold">*</span>
         </label>
         {selectedCategory && (
-          <span className="text-[11px] font-mono text-accent font-medium">
+          <span className="text-[11px] font-mono text-blue-600 dark:text-blue-400 font-semibold">
             1 selected
           </span>
         )}
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {CATEGORIES.map((cat) => {
           const Icon = cat.icon;
           const isSelected = selectedCategory === cat.id;
@@ -94,30 +94,30 @@ export function CategorySelector({
               type="button"
               disabled={disabled}
               onClick={() => onSelect(cat.id)}
-              className={`relative flex flex-col items-start p-3 rounded-xl border text-left transition-all cursor-pointer ${
+              className={`relative flex flex-col items-start p-3 rounded-lg border text-left transition-all cursor-pointer min-h-[96px] focus-visible:ring-2 focus-visible:ring-accent ${
                 isSelected
-                  ? 'border-accent bg-accent/10 shadow-sm ring-1 ring-accent text-foreground'
-                  : 'border-border bg-surface-card hover:border-surface-hover hover:bg-surface text-foreground/80'
+                  ? 'border-blue-600 bg-blue-50/50 dark:bg-blue-950/20 shadow-xs text-foreground ring-1 ring-blue-600'
+                  : 'border-border bg-surface hover:bg-surface-hover text-foreground/90'
               } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               {isSelected && (
-                <div className="absolute top-2 right-2 text-accent">
-                  <CheckCircle2 className="w-4 h-4 fill-accent text-white dark:text-black" />
+                <div className="absolute top-2.5 right-2.5 text-blue-600 dark:text-blue-400">
+                  <CheckCircle2 className="w-4 h-4 fill-blue-600 text-white dark:text-slate-950" />
                 </div>
               )}
               <div
-                className={`w-8 h-8 rounded-lg flex items-center justify-center mb-2 ${
+                className={`w-7 h-7 rounded-md flex items-center justify-center mb-2 ${
                   isSelected
-                    ? 'bg-accent text-white shadow-sm'
-                    : 'bg-surface text-muted-foreground'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'bg-surface-hover text-muted-foreground'
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-3.5 h-3.5" />
               </div>
               <span className="text-xs font-bold leading-tight line-clamp-1">
                 {cat.label}
               </span>
-              <span className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2 leading-snug">
+              <span className="text-[10px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
                 {cat.description}
               </span>
             </button>

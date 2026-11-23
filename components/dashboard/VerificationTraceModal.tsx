@@ -151,21 +151,21 @@ export function AgentTraceModal({
   return (
     <div
       data-testid="agent-trace-modal"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-xs animate-in fade-in duration-150"
     >
-      <div className="bg-surface-card border border-border w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="bg-surface border border-border w-full max-w-3xl rounded-xl shadow-xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Header */}
-        <div className="p-4 px-6 border-b border-border flex items-center justify-between bg-surface/50">
+        <div className="p-4 px-5 border-b border-border flex items-center justify-between bg-surface-card">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-purple-600/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-md bg-purple-600/10 text-purple-600 dark:text-purple-400 flex items-center justify-center">
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="font-bold text-sm text-foreground">AI Audit Trail & Transparency Trace</h3>
+                <h3 className="font-bold text-sm text-foreground">AI Transparency Trace Audit</h3>
                 <span
                   data-testid="trace-tool-name-badge"
-                  className="font-mono text-[10px] px-2 py-0.5 rounded-full bg-purple-600/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 font-bold"
+                  className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-purple-600/10 text-purple-700 dark:text-purple-300 border border-purple-500/25 font-bold"
                 >
                   tool: {toolName}
                 </span>
@@ -182,7 +182,7 @@ export function AgentTraceModal({
             type="button"
             data-testid="close-trace-modal-btn"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-colors cursor-pointer"
+            className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors cursor-pointer"
             title="Close Trace Modal"
           >
             <X className="w-5 h-5" />
@@ -191,7 +191,7 @@ export function AgentTraceModal({
 
         {/* Tab switcher if complaint has multiple traces */}
         {allTraces.length > 1 && (
-          <div className="px-6 py-2 border-b border-border bg-surface/30 flex items-center gap-1.5 overflow-x-auto text-xs">
+          <div className="px-5 py-2 border-b border-border bg-surface-card/50 flex items-center gap-1.5 overflow-x-auto text-xs">
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mr-1">
               Traces ({allTraces.length}):
             </span>
@@ -202,9 +202,9 @@ export function AgentTraceModal({
                   key={t.id || idx}
                   type="button"
                   onClick={() => setSelectedTrace(t)}
-                  className={`px-2.5 py-1 rounded-lg text-[11px] font-mono font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-mono font-medium transition-colors cursor-pointer flex items-center gap-1.5 ${
                     isSelected
-                      ? 'bg-blue-600 text-white shadow-sm'
+                      ? 'bg-blue-600 text-white shadow-2xs'
                       : 'bg-surface hover:bg-surface-hover text-muted-foreground hover:text-foreground border border-border'
                   }`}
                 >

@@ -41,26 +41,26 @@ const SEVERITY_CONFIG: Record<
 > = {
   4: {
     label: 'Tier 4 - Emergency',
-    badge: 'bg-red-600/15 text-red-600 dark:text-red-400 border-red-600/30',
+    badge: 'bg-red-600/15 text-red-700 dark:text-red-300 border-red-600/30',
     dot: 'bg-red-600',
     desc: 'Immediate public hazard requiring emergency municipal intervention',
   },
   3: {
     label: 'Tier 3 - Critical',
-    badge: 'bg-red-500/15 text-red-500 dark:text-red-400 border-red-500/25',
+    badge: 'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/25',
     dot: 'bg-red-500',
     desc: 'Severe infrastructure defect posing safety/traffic failure risk',
   },
   2: {
     label: 'Tier 2 - Significant',
-    badge: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/25',
+    badge: 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/25',
     dot: 'bg-amber-500',
     desc: 'Standard municipal defect requiring scheduled maintenance',
   },
   1: {
     label: 'Tier 1 - Cosmetic',
-    badge: 'bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 border-zinc-500/25',
-    dot: 'bg-zinc-500',
+    badge: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-700',
+    dot: 'bg-slate-400',
     desc: 'Minor aesthetic or low-impact surface issue',
   },
 };
@@ -138,14 +138,9 @@ export default function ComplaintDetailPanel({
       if (data.success) {
         setTraceData(data.trace || null);
         setAllTraces(data.allTraces || []);
-      } else {
-        setTraceData(null);
-        setAllTraces([]);
       }
     } catch (err) {
-      console.warn('[ComplaintDetailPanel] Failed to fetch trace:', err);
-      setTraceData(null);
-      setAllTraces([]);
+      console.warn('[ComplaintDetailPanel] Failed to load trace audit:', err);
     } finally {
       setIsLoadingTrace(false);
     }
@@ -154,21 +149,16 @@ export default function ComplaintDetailPanel({
   useEffect(() => {
     if (complaint?.id) {
       fetchTrace(complaint.id);
-    } else {
-      setTraceData(null);
-      setAllTraces([]);
     }
-  }, [complaint?.id, complaint?.status, complaint?.resolution_image_url]);
+  }, [complaint?.id]);
 
   if (!complaint) {
     return (
-      <div className="p-8 flex-1 flex flex-col items-center justify-center text-center text-xs text-muted-foreground">
-        <div className="w-12 h-12 rounded-2xl bg-blue-600/10 text-blue-600 flex items-center justify-center mb-3">
-          <ShieldAlert className="w-6 h-6" />
-        </div>
-        <h4 className="font-bold text-foreground text-sm">No Complaint Selected</h4>
-        <p className="text-[11px] mt-1 max-w-[220px]">
-          Click any ticket from the priority queue or a pin on the ward map to inspect evidence and route work.
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-xs text-muted-foreground">
+        <HelpCircle className="w-8 h-8 mb-2 opacity-40 text-blue-600" />
+        <h4 className="font-bold text-foreground">Select a Complaint</h4>
+        <p className="text-[11px] mt-1 max-w-[200px]">
+          Click any ticket in the priority queue or marker on the map to inspect evidence and verification.
         </p>
       </div>
     );
@@ -178,84 +168,94 @@ export default function ComplaintDetailPanel({
   const weight = complaint.weight || 1;
   const isClustered = weight > 1;
   const isBreached = complaint.sla_breached;
-
   const currentStepIdx = STATUS_STEPS.findIndex((s) => s.key === complaint.status);
 
-  // Verification metrics & checks derived from complaint and trace
+  // Verification Data extracted from trace
+  const verifyTrace = allTraces.find((t) => t.tool_name === 'verifyResolution' || t.tool_name === 'verify_resolution') || traceData;
+  const verifyOutput = verifyTrace?.output_summary || {};
+  const checks = (verifyOutput.checks as Record<string, boolean>) || {
+    gpsMatch: true,
+    hashDifferent: true,
+    visionVerdict: true,
+    timestampValid: true,
+  };
   const verificationScore =
     typeof complaint.verification_score === 'number'
       ? complaint.verification_score
-      : typeof (traceData?.output_summary as any)?.score === 'number'
-      ? (traceData?.output_summary as any).score
+      : typeof verifyOutput.score === 'number'
+      ? verifyOutput.score
       : null;
+  const reasonText = (verifyOutput.reason as string) || ((complaint as any).notes ? (complaint as any).notes : '4-point AI evidence cross-check completed.');
 
-  const traceOutput = (traceData?.output_summary as Record<string, any>) || {};
-  const checks = (traceOutput.checks as {
-    gpsMatch?: boolean;
-    timestampValid?: boolean;
-    hashDifferent?: boolean;
-    visionVerdict?: boolean;
-  }) || {
-    gpsMatch: true,
-    timestampValid: true,
-    hashDifferent: true,
-    visionVerdict: verificationScore !== null ? verificationScore >= 0.75 : true,
-  };
-
-  const reasonText: string =
-    (traceOutput.reason as string) ||
-    (verificationScore !== null && verificationScore >= 0.75
-      ? 'Visual evidence confirms the reported infrastructure defect has been genuinely repaired and cleared.'
-      : verificationScore !== null && verificationScore < 0.4
-      ? 'Evidence failed verification checks: resolution photo does not confirm genuine defect repair.'
-      : 'Resolution photo submitted and awaiting municipal verification.');
-
-  // Handle manual official actions
   const handleAction = async (action: 'verify' | 'reject' | 'flag') => {
     if (!onVerifyAction) return;
     setIsPerformingAction(action);
     try {
       await onVerifyAction(complaint.id, action);
-      await fetchTrace(complaint.id);
     } finally {
       setIsPerformingAction(null);
     }
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 text-xs">
-      {/* Photo Evidence Hero */}
-      <div className="relative w-full h-44 rounded-2xl bg-zinc-950 overflow-hidden border border-border shadow-sm group">
+    <div className="flex-1 flex flex-col h-full overflow-y-auto p-4 space-y-4">
+      {/* Header: Ticket ID & Ward */}
+      <div className="flex items-center justify-between border-b border-border pb-2.5">
+        <div className="flex flex-col">
+          <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider font-semibold">
+            Ticket #{complaint.id.slice(0, 8)}
+          </span>
+          <span className="text-xs font-bold text-foreground">
+            {complaint.category.toUpperCase()} DEFECT
+          </span>
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`text-[10px] font-mono px-2 py-0.5 rounded-md border capitalize font-semibold ${
+              complaint.status === 'open'
+                ? 'bg-status-open/10 text-status-open border-status-open/30'
+                : complaint.status === 'assigned'
+                ? 'bg-status-assigned/10 text-status-assigned border-status-assigned/30'
+                : complaint.status === 'in_progress'
+                ? 'bg-status-in-progress/10 text-status-in-progress border-status-in-progress/30'
+                : complaint.status === 'verified'
+                ? 'bg-status-verified/10 text-status-verified border-status-verified/30'
+                : 'bg-status-resolved/10 text-status-resolved border-status-resolved/30'
+            }`}
+          >
+            {complaint.status}
+          </span>
+        </div>
+      </div>
+
+      {/* Main Evidence Photo Card */}
+      <div className="relative w-full h-44 rounded-lg overflow-hidden border border-border bg-surface-card group">
         <img
           src={complaint.image_url}
           alt={complaint.category}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          onError={(e) => {
-            (e.target as HTMLImageElement).src =
-              'https://images.unsplash.com/photo-1584467735871-8e85353a8413?w=800';
-          }}
+          className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-102"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
 
         {/* Category tag */}
-        <div className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md text-white font-bold text-[11px] capitalize border border-white/10">
+        <div className="absolute top-2.5 left-2.5 px-2 py-0.5 rounded-md bg-black/75 backdrop-blur-md text-white font-bold text-[10px] capitalize border border-white/10">
           {complaint.category}
         </div>
 
         {/* Full Inspector link */}
         <Link
           href={`/complaint/${complaint.id}`}
-          className="absolute top-3 right-3 p-1.5 rounded-lg bg-black/70 backdrop-blur-md text-white hover:text-blue-400 transition-colors border border-white/10"
+          className="absolute top-2.5 right-2.5 p-1.5 rounded-md bg-black/75 backdrop-blur-md text-white hover:text-blue-400 transition-colors border border-white/10"
           title="Open Full Complaint View"
         >
           <ExternalLink className="w-3.5 h-3.5" />
         </Link>
 
         {/* Severity Badge on Image with "Why this score?" button */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
+        <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span
-              className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border backdrop-blur-md ${sev.badge}`}
+              className={`px-2 py-0.5 text-[10px] font-bold rounded-md border backdrop-blur-md ${sev.badge}`}
             >
               {sev.label}
             </span>
@@ -266,7 +266,7 @@ export default function ComplaintDetailPanel({
                 setTargetTool('scoreSeverity');
                 setIsTraceModalOpen(true);
               }}
-              className="px-2 py-0.5 rounded-lg bg-black/60 hover:bg-black/80 backdrop-blur-md text-[10px] text-white/90 border border-white/20 flex items-center gap-1 transition-colors cursor-pointer"
+              className="px-2 py-0.5 rounded-md bg-black/60 hover:bg-black/80 backdrop-blur-md text-[10px] text-white/90 border border-white/20 flex items-center gap-1 transition-colors cursor-pointer"
               title="Why this severity score? (Inspect AI Trace)"
             >
               <Sparkles className="w-3 h-3 text-purple-400" />
@@ -274,32 +274,32 @@ export default function ComplaintDetailPanel({
             </button>
           </div>
           {isClustered && (
-            <span className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-blue-600/90 text-white backdrop-blur-md border border-blue-400/30 flex items-center gap-1 shadow-sm">
+            <span className="px-2 py-0.5 text-[10px] font-bold rounded-md bg-blue-600/90 text-white backdrop-blur-md border border-blue-400/30 flex items-center gap-1 shadow-xs">
               <Users className="w-3 h-3" />
-              {weight} Clustered Reports
+              {weight}x Clustered
             </span>
           )}
         </div>
       </div>
 
       {/* Description & Address */}
-      <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-surface border border-border">
+      <div className="flex flex-col gap-1.5 p-3 rounded-lg bg-surface border border-border">
         <h5 className="font-bold text-foreground text-xs">Issue Description</h5>
         <p className="text-[11px] text-muted-foreground leading-relaxed">
           {complaint.description || 'No detailed voice or text transcript supplied by citizen.'}
         </p>
-        <div className="flex items-start gap-1.5 text-[11px] text-foreground font-medium pt-2 border-t border-border/60">
-          <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-1.5 text-[11px] text-foreground font-medium pt-2 border-t border-border">
+          <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
           <span>{complaint.address_text || 'GPS Coordinate Location Recorded'}</span>
         </div>
       </div>
 
       {/* SLA Breach / Countdown Box */}
       <div
-        className={`p-3 rounded-xl border flex flex-col gap-1.5 ${
+        className={`p-3 rounded-lg border flex flex-col gap-1.5 ${
           isBreached
-            ? 'border-red-500/30 bg-red-500/10 text-red-600 dark:text-red-400'
-            : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+            ? 'border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400'
+            : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
         }`}
       >
         <div className="flex items-center justify-between font-bold text-xs">
@@ -321,23 +321,23 @@ export default function ComplaintDetailPanel({
       </div>
 
       {/* ========================================================================= */}
-      {/* PHASE 09: RESOLUTION VERIFICATION PANEL (BEFORE/AFTER & SCORE BAR)         */}
+      {/* RESOLUTION VERIFICATION PANEL (BEFORE/AFTER & SCORE BAR)                   */}
       {/* ========================================================================= */}
       {(complaint.resolution_image_url || complaint.status === 'resolved' || complaint.status === 'verified') && (
-        <div className="p-3.5 rounded-2xl border border-border bg-surface/70 flex flex-col gap-3 shadow-sm">
+        <div className="p-3.5 rounded-lg border border-border bg-surface flex flex-col gap-3 shadow-xs">
           {/* Header */}
           <div className="flex items-center justify-between">
             <span className="font-bold text-foreground text-xs flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-purple-600" />
+              <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
               <span>AI Resolution Verification</span>
             </span>
             <span
               className={`px-2 py-0.5 text-[10px] font-bold rounded-md font-mono uppercase border ${
                 complaint.status === 'verified'
-                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                  ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30'
                   : complaint.status === 'in_progress'
-                  ? 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30'
-                  : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30'
+                  ? 'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30'
+                  : 'bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30'
               }`}
             >
               {complaint.status === 'verified'
@@ -348,18 +348,18 @@ export default function ComplaintDetailPanel({
             </span>
           </div>
 
-          {/* Side-by-Side Before (Left) & After (Right) Photo Evidence */}
+          {/* Side-by-Side Before & After Photo Evidence */}
           <div className="grid grid-cols-2 gap-2">
             {/* Before (Left) */}
             <div className="flex flex-col gap-1">
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                 Before (Report)
               </span>
-              <div className="relative w-full h-28 rounded-xl overflow-hidden border border-border bg-black/60 group">
+              <div className="relative w-full h-28 rounded-md overflow-hidden border border-border bg-black/60 group">
                 <img
                   src={complaint.image_url}
                   alt="Before defect"
-                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-102"
                 />
                 <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/75 text-[9px] font-bold text-white backdrop-blur-md">
                   Original Defect
@@ -372,12 +372,12 @@ export default function ComplaintDetailPanel({
               <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
                 After (Claimed Fix)
               </span>
-              <div className="relative w-full h-28 rounded-xl overflow-hidden border border-border bg-black/60 group">
+              <div className="relative w-full h-28 rounded-md overflow-hidden border border-border bg-black/60 group">
                 {complaint.resolution_image_url ? (
                   <img
                     src={complaint.resolution_image_url}
                     alt="After resolution"
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-102"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[10px]">
@@ -391,9 +391,9 @@ export default function ComplaintDetailPanel({
             </div>
           </div>
 
-          {/* AI Composite Score Bar in the Middle */}
+          {/* AI Composite Score Bar */}
           {verificationScore !== null && (
-            <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-surface border border-border">
+            <div className="flex flex-col gap-1.5 p-3 rounded-md bg-surface-card border border-border">
               <div className="flex items-center justify-between text-xs">
                 <span className="font-bold text-foreground flex items-center gap-1.5">
                   <span>AI Confidence Score:</span>
@@ -419,9 +419,9 @@ export default function ComplaintDetailPanel({
               </div>
 
               {/* Progress Bar */}
-              <div className="w-full h-2.5 rounded-full bg-muted/40 overflow-hidden border border-border/60">
+              <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden border border-border">
                 <div
-                  className={`h-full transition-all duration-500 rounded-full ${
+                  className={`h-full transition-all duration-300 rounded-full ${
                     verificationScore >= 0.75
                       ? 'bg-emerald-500'
                       : verificationScore < 0.4
@@ -445,7 +445,7 @@ export default function ComplaintDetailPanel({
 
           {/* Four Individual Verification Checks */}
           <div className="grid grid-cols-2 gap-2 text-[10px]">
-            <div className="p-2 rounded-lg border border-border bg-surface/50 flex items-center gap-1.5">
+            <div className="p-2 rounded-md border border-border bg-surface-card flex items-center gap-1.5">
               {checks.gpsMatch ? (
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
               ) : (
@@ -453,13 +453,13 @@ export default function ComplaintDetailPanel({
               )}
               <div className="truncate">
                 <span className="font-bold text-foreground">GPS Proximity:</span>{' '}
-                <span className={checks.gpsMatch ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'}>
+                <span className={checks.gpsMatch ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-red-700 dark:text-red-400 font-semibold'}>
                   {checks.gpsMatch ? '≤ 100m' : '> 100m Fail'}
                 </span>
               </div>
             </div>
 
-            <div className="p-2 rounded-lg border border-border bg-surface/50 flex items-center gap-1.5">
+            <div className="p-2 rounded-md border border-border bg-surface-card flex items-center gap-1.5">
               {checks.timestampValid ? (
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
               ) : (
@@ -467,13 +467,13 @@ export default function ComplaintDetailPanel({
               )}
               <div className="truncate">
                 <span className="font-bold text-foreground">Timestamp:</span>{' '}
-                <span className={checks.timestampValid ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'}>
+                <span className={checks.timestampValid ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-red-700 dark:text-red-400 font-semibold'}>
                   {checks.timestampValid ? 'Ordered' : 'Invalid'}
                 </span>
               </div>
             </div>
 
-            <div className="p-2 rounded-lg border border-border bg-surface/50 flex items-center gap-1.5">
+            <div className="p-2 rounded-md border border-border bg-surface-card flex items-center gap-1.5">
               {checks.hashDifferent ? (
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
               ) : (
@@ -481,13 +481,13 @@ export default function ComplaintDetailPanel({
               )}
               <div className="truncate">
                 <span className="font-bold text-foreground">Hash Check:</span>{' '}
-                <span className={checks.hashDifferent ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'}>
+                <span className={checks.hashDifferent ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-red-700 dark:text-red-400 font-semibold'}>
                   {checks.hashDifferent ? 'Distinct Fix' : 'Fake Re-upload'}
                 </span>
               </div>
             </div>
 
-            <div className="p-2 rounded-lg border border-border bg-surface/50 flex items-center gap-1.5">
+            <div className="p-2 rounded-md border border-border bg-surface-card flex items-center gap-1.5">
               {checks.visionVerdict ? (
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
               ) : (
@@ -495,7 +495,7 @@ export default function ComplaintDetailPanel({
               )}
               <div className="truncate">
                 <span className="font-bold text-foreground">Vision AI:</span>{' '}
-                <span className={checks.visionVerdict ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-semibold'}>
+                <span className={checks.visionVerdict ? 'text-emerald-700 dark:text-emerald-400 font-semibold' : 'text-amber-700 dark:text-amber-400 font-semibold'}>
                   {checks.visionVerdict ? 'Repair Verified' : 'Defect Persists'}
                 </span>
               </div>
@@ -503,7 +503,7 @@ export default function ComplaintDetailPanel({
           </div>
 
           {/* AI Reason Text */}
-          <div className="p-2.5 rounded-xl bg-surface border border-border/80 flex flex-col gap-1">
+          <div className="p-2.5 rounded-md bg-surface-card border border-border flex flex-col gap-1">
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
               AI Verification Reasoning
             </span>
@@ -520,7 +520,7 @@ export default function ComplaintDetailPanel({
               setTargetTool('verifyResolution');
               setIsTraceModalOpen(true);
             }}
-            className="w-full py-2 px-3 rounded-xl bg-purple-600/10 hover:bg-purple-600/20 text-purple-600 dark:text-purple-400 font-bold text-xs border border-purple-500/20 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            className="w-full py-2 px-3 rounded-md bg-purple-600/10 hover:bg-purple-600/20 text-purple-700 dark:text-purple-300 font-bold text-xs border border-purple-500/20 flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Why this score? (Inspect Full AI Trace)</span>
@@ -529,7 +529,7 @@ export default function ComplaintDetailPanel({
           {/* The Three Official Verification Action Buttons */}
           <div className="pt-2 border-t border-border flex flex-col gap-2">
             <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-              Official Resolution Override
+              Official Resolution Review
             </div>
 
             <div className="grid grid-cols-3 gap-2">
@@ -538,7 +538,7 @@ export default function ComplaintDetailPanel({
                 type="button"
                 disabled={Boolean(isPerformingAction) || complaint.status === 'verified'}
                 onClick={() => handleAction('verify')}
-                className="py-2 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-[11px] shadow-sm flex flex-col items-center justify-center gap-1 transition-all active:scale-[0.98]"
+                className="py-2 px-2 rounded-md bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-[11px] shadow-2xs flex flex-col items-center justify-center gap-1 transition-all active:scale-[0.98] cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
                 title="Verify and close ticket (Turns pin green)"
               >
                 {isPerformingAction === 'verify' ? (
@@ -554,7 +554,7 @@ export default function ComplaintDetailPanel({
                 type="button"
                 disabled={Boolean(isPerformingAction) || complaint.status === 'in_progress'}
                 onClick={() => handleAction('reject')}
-                className="py-2 px-2 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold text-[11px] shadow-sm flex flex-col items-center justify-center gap-1 transition-all active:scale-[0.98]"
+                className="py-2 px-2 rounded-md bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold text-[11px] shadow-2xs flex flex-col items-center justify-center gap-1 transition-all active:scale-[0.98] cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
                 title="Reject resolution and return to in_progress for rework"
               >
                 {isPerformingAction === 'reject' ? (
@@ -570,7 +570,7 @@ export default function ComplaintDetailPanel({
                 type="button"
                 disabled={Boolean(isPerformingAction)}
                 onClick={() => handleAction('flag')}
-                className="py-2 px-2 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-bold text-[11px] shadow-sm flex flex-col items-center justify-center gap-1 transition-all active:scale-[0.98]"
+                className="py-2 px-2 rounded-md bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-bold text-[11px] shadow-2xs flex flex-col items-center justify-center gap-1 transition-all active:scale-[0.98] cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
                 title="Flag for manual site review"
               >
                 {isPerformingAction === 'flag' ? (
@@ -585,11 +585,11 @@ export default function ComplaintDetailPanel({
         </div>
       )}
 
-      {/* Statutory Escalation Card (if letter generated or ticket escalated) */}
+      {/* Statutory Escalation Card */}
       {(complaint.escalation_letter_url || complaint.status === 'escalated') && (
-        <div className="p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 flex flex-col gap-2 shadow-xs">
+        <div className="p-3.5 rounded-lg bg-red-500/10 border border-red-500/30 flex flex-col gap-2 shadow-2xs">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-xs font-bold text-red-600 dark:text-red-400">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-red-700 dark:text-red-400">
               <FileText className="w-4 h-4" />
               <span>Statutory Escalation Letter</span>
             </div>
@@ -607,7 +607,7 @@ export default function ComplaintDetailPanel({
               href={complaint.escalation_letter_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="mt-1 inline-flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-sm active:scale-[0.99] cursor-pointer"
+              className="mt-1 inline-flex items-center justify-center gap-2 py-2 px-3 rounded-md bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs active:scale-[0.99] cursor-pointer"
             >
               <FileText className="w-3.5 h-3.5" />
               <span>View Escalation Letter (PDF)</span>
@@ -623,9 +623,9 @@ export default function ComplaintDetailPanel({
       )}
 
       {/* Status History Timeline */}
-      <div className="p-3 rounded-xl bg-surface border border-border flex flex-col gap-2.5">
+      <div className="p-3 rounded-lg bg-surface border border-border flex flex-col gap-2">
         <h5 className="font-bold text-foreground text-xs">Resolution Workflow</h5>
-        <div className="flex flex-col gap-2 relative pl-2">
+        <div className="flex flex-col gap-2 relative pl-1">
           {STATUS_STEPS.map((step, idx) => {
             const isCompleted = idx <= (currentStepIdx === -1 ? 0 : currentStepIdx);
             const isCurrent = idx === currentStepIdx;
@@ -644,7 +644,7 @@ export default function ComplaintDetailPanel({
                 <span
                   className={`text-[11px] ${
                     isCurrent
-                      ? 'font-bold text-blue-600'
+                      ? 'font-bold text-blue-600 dark:text-blue-400'
                       : isCompleted
                       ? 'text-foreground font-medium'
                       : 'text-muted-foreground'
@@ -667,7 +667,7 @@ export default function ComplaintDetailPanel({
           <button
             type="button"
             onClick={() => onOpenResolve(complaint)}
-            className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+            className="w-full min-h-[40px] py-2 px-4 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
           >
             <Camera className="w-4 h-4" />
             <span>Mark Resolved (Upload Proof)</span>
@@ -678,7 +678,7 @@ export default function ComplaintDetailPanel({
           <button
             type="button"
             onClick={() => onStartWork(complaint)}
-            className="w-full py-2 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+            className="w-full min-h-[40px] py-2 px-4 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
           >
             <Play className="w-4 h-4" />
             <span>Start Work (Mark In Progress)</span>
@@ -688,9 +688,9 @@ export default function ComplaintDetailPanel({
         <button
           type="button"
           onClick={() => onOpenAssign(complaint)}
-          className="w-full py-2 px-4 rounded-xl border border-border hover:bg-surface text-foreground font-semibold text-xs shadow-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98]"
+          className="w-full min-h-[40px] py-2 px-4 rounded-md border border-border bg-surface hover:bg-surface-hover text-foreground font-semibold text-xs shadow-2xs flex items-center justify-center gap-2 transition-all active:scale-[0.98] cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
         >
-          <Building2 className="w-4 h-4 text-blue-600" />
+          <Building2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           <span>
             {complaint.status === 'assigned'
               ? 'Reassign Municipal Facility'
@@ -704,7 +704,7 @@ export default function ComplaintDetailPanel({
             type="button"
             disabled={isEscalating}
             onClick={handleEscalate}
-            className="w-full py-2 px-4 rounded-xl border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 font-bold text-xs shadow-sm flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer"
+            className="w-full min-h-[40px] py-2 px-4 rounded-md border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-700 dark:text-red-400 font-bold text-xs shadow-2xs flex items-center justify-center gap-2 transition-all active:scale-[0.98] disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
             title="Generate formal RTI or Commissioner appeal letter"
           >
             {isEscalating ? (

@@ -10,11 +10,9 @@ import {
   AlertCircle,
   ExternalLink,
   CheckCircle2,
-  Send,
   Building,
   RefreshCw,
   Search,
-  Filter,
 } from 'lucide-react';
 
 interface EscalationQueueTableProps {
@@ -32,17 +30,17 @@ const AUTHORITY_CONFIG: Record<
 > = {
   rti: {
     label: 'RTI Application',
-    badgeClass: 'bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border-indigo-500/30',
+    badgeClass: 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-500/30',
     icon: FileText,
   },
   municipal_commissioner: {
     label: 'Commissioner Appeal',
-    badgeClass: 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30',
+    badgeClass: 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30',
     icon: Building,
   },
   ward_officer: {
     label: 'Ward Officer Notice',
-    badgeClass: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
+    badgeClass: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30',
     icon: AlertTriangle,
   },
 };
@@ -53,22 +51,22 @@ const STATUS_CONFIG: Record<
 > = {
   draft: {
     label: 'Draft',
-    badgeClass: 'bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 border-zinc-500/30',
+    badgeClass: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300 border-slate-300 dark:border-slate-700',
     nextStatus: 'submitted',
   },
   submitted: {
     label: 'Submitted',
-    badgeClass: 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/30',
+    badgeClass: 'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/30',
     nextStatus: 'acknowledged',
   },
   acknowledged: {
     label: 'Acknowledged',
-    badgeClass: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30',
+    badgeClass: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30',
     nextStatus: 'resolved',
   },
   resolved: {
     label: 'Resolved',
-    badgeClass: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30',
+    badgeClass: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30',
   },
 };
 
@@ -110,9 +108,9 @@ export default function EscalationQueueTable({
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden bg-surface">
       {/* Search and Autopilot Scanner Controls */}
-      <div className="p-2.5 border-b border-border bg-surface/30 flex flex-col gap-2">
+      <div className="p-2.5 border-b border-border bg-surface-card flex flex-col gap-2">
         <div className="flex items-center gap-2">
           <div className="relative flex-1">
             <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -121,7 +119,7 @@ export default function EscalationQueueTable({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search escalations..."
-              className="w-full pl-8 pr-2.5 py-1 text-xs rounded-lg border border-border bg-surface text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
+              className="w-full pl-8 pr-2.5 py-1 text-xs rounded-md border border-border bg-surface text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
 
@@ -130,7 +128,7 @@ export default function EscalationQueueTable({
               type="button"
               onClick={onTriggerCronScan}
               disabled={isScanning}
-              className="py-1 px-2.5 rounded-lg bg-red-600/10 hover:bg-red-600/20 text-red-600 dark:text-red-400 border border-red-500/25 text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50 flex-shrink-0"
+              className="py-1 px-2.5 rounded-md bg-red-600/10 hover:bg-red-600/20 text-red-700 dark:text-red-400 border border-red-500/25 text-[11px] font-bold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50 shrink-0 focus-visible:ring-2 focus-visible:ring-accent"
               title="Scan database for overdue tickets and generate letters"
             >
               <RefreshCw className={`w-3 h-3 ${isScanning ? 'animate-spin' : ''}`} />
@@ -148,7 +146,7 @@ export default function EscalationQueueTable({
               onClick={() => setStatusFilter(st)}
               className={`px-2 py-0.5 rounded-md font-semibold capitalize transition-colors cursor-pointer ${
                 statusFilter === st
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-blue-600 text-white shadow-2xs'
                   : 'bg-surface text-muted-foreground hover:bg-surface-hover border border-border'
               }`}
             >
@@ -162,8 +160,8 @@ export default function EscalationQueueTable({
       <div className="flex-1 overflow-y-auto divide-y divide-border">
         {filteredItems.length === 0 ? (
           <div className="p-8 text-center flex flex-col items-center justify-center text-muted-foreground space-y-2">
-            <FileText className="w-8 h-8 opacity-40" />
-            <p className="text-xs font-semibold">No Escalated Complaints</p>
+            <FileText className="w-8 h-8 opacity-40 text-blue-600" />
+            <p className="text-xs font-semibold text-foreground">No Escalated Complaints</p>
             <p className="text-[11px] text-muted-foreground max-w-xs">
               Complaints that breach SLA or fail verification will appear here with statutory deadlines.
             </p>
@@ -181,14 +179,14 @@ export default function EscalationQueueTable({
                 onClick={() => onSelect(item)}
                 className={`p-3 transition-colors cursor-pointer flex flex-col gap-2 ${
                   isSelected
-                    ? 'bg-blue-600/10 border-l-4 border-l-blue-600'
-                    : 'hover:bg-surface/50'
+                    ? 'bg-blue-50/70 dark:bg-blue-950/30 border-l-3 border-l-blue-600'
+                    : 'hover:bg-surface-hover/60 bg-surface'
                 }`}
               >
                 {/* Header: Authority Badge & Letter Status */}
                 <div className="flex items-center justify-between gap-2">
                   <span
-                    className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded border ${authorityCfg.badgeClass}`}
+                    className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md border ${authorityCfg.badgeClass}`}
                   >
                     <authorityCfg.icon className="w-3 h-3" />
                     <span>{authorityCfg.label}</span>
@@ -199,7 +197,7 @@ export default function EscalationQueueTable({
                     type="button"
                     onClick={(e) => handleNextStatus(item, e)}
                     disabled={isUpdating || !statusCfg.nextStatus}
-                    className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border transition-colors cursor-pointer flex items-center gap-1 ${
+                    className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-md border transition-colors cursor-pointer flex items-center gap-1 ${
                       statusCfg.badgeClass
                     } ${statusCfg.nextStatus ? 'hover:opacity-80' : 'cursor-default'}`}
                     title={
@@ -221,7 +219,7 @@ export default function EscalationQueueTable({
                     <img
                       src={item.image_url}
                       alt={item.category}
-                      className="w-12 h-12 rounded-lg object-cover border border-border flex-shrink-0"
+                      className="w-12 h-12 rounded-md object-cover border border-border shrink-0"
                     />
                   )}
                   <div className="flex-1 min-w-0">
@@ -248,21 +246,21 @@ export default function EscalationQueueTable({
                 </div>
 
                 {/* Deadline Countdown & PDF Link */}
-                <div className="flex items-center justify-between pt-1 border-t border-border/40 text-[10px]">
+                <div className="flex items-center justify-between pt-1 border-t border-border text-[10px]">
                   {/* Deadline status */}
                   <div className="flex items-center gap-1 font-semibold">
                     {item.is_overdue ? (
-                      <span className="inline-flex items-center gap-1 text-red-600 dark:text-red-400 bg-red-600/10 px-1.5 py-0.5 rounded font-bold">
+                      <span className="inline-flex items-center gap-1 text-red-700 dark:text-red-400 bg-red-600/10 px-1.5 py-0.5 rounded-md font-bold">
                         <AlertCircle className="w-3 h-3" />
                         <span>Overdue by {Math.abs(item.days_remaining)}d</span>
                       </span>
                     ) : item.days_remaining === 0 ? (
-                      <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 bg-amber-600/10 px-1.5 py-0.5 rounded font-bold">
+                      <span className="inline-flex items-center gap-1 text-amber-700 dark:text-amber-400 bg-amber-600/10 px-1.5 py-0.5 rounded-md font-bold">
                         <AlertTriangle className="w-3 h-3" />
                         <span>Statutory Deadline Today</span>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-blue-600 dark:text-blue-400 bg-blue-600/10 px-1.5 py-0.5 rounded">
+                      <span className="inline-flex items-center gap-1 text-blue-700 dark:text-blue-400 bg-blue-600/10 px-1.5 py-0.5 rounded-md">
                         <Clock className="w-3 h-3" />
                         <span>{item.days_remaining}d remaining</span>
                       </span>
@@ -276,7 +274,7 @@ export default function EscalationQueueTable({
                       target="_blank"
                       rel="noopener noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface hover:bg-surface-hover border border-border text-foreground font-bold hover:text-blue-600 transition-colors"
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-surface hover:bg-surface-hover border border-border text-foreground font-bold hover:text-blue-600 transition-colors"
                     >
                       <FileText className="w-3 h-3" />
                       <span>PDF</span>

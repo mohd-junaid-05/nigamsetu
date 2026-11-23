@@ -54,20 +54,20 @@ export function MapStatsBanner({ visiblePins, className = '' }: MapStatsBannerPr
   return (
     <div
       data-testid="map-stats-banner"
-      className={`grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-2xl bg-surface-card border border-border shadow-sm backdrop-blur-md ${className}`}
+      className={`grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 rounded-lg bg-surface/95 border border-border shadow-xs backdrop-blur-md ${className}`}
     >
       {/* Metric 1: Total Open */}
-      <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl bg-surface/50 border border-border/50">
-        <div className="w-9 h-9 rounded-xl bg-status-open/10 text-status-open flex items-center justify-center shrink-0">
-          <AlertCircle className="w-5 h-5" />
+      <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-md bg-surface-card border border-border">
+        <div className="w-8 h-8 rounded-md bg-status-open/10 text-status-open flex items-center justify-center shrink-0">
+          <AlertCircle className="w-4 h-4" />
         </div>
         <div>
-          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
             Total Open Issues
           </div>
-          <div className="text-xl font-black text-foreground tracking-tight">
+          <div className="text-xl font-black text-foreground tracking-tight font-mono">
             {openCount}
-            <span className="text-xs font-normal text-muted-foreground ml-1.5">
+            <span className="text-xs font-normal text-muted-foreground ml-1.5 font-sans">
               active
             </span>
           </div>
@@ -75,33 +75,33 @@ export function MapStatsBanner({ visiblePins, className = '' }: MapStatsBannerPr
       </div>
 
       {/* Metric 2: Resolved This Month */}
-      <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl bg-surface/50 border border-border/50">
-        <div className="w-9 h-9 rounded-xl bg-status-verified/10 text-status-verified flex items-center justify-center shrink-0">
-          <CheckCircle2 className="w-5 h-5" />
+      <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-md bg-surface-card border border-border">
+        <div className="w-8 h-8 rounded-md bg-status-verified/10 text-status-verified flex items-center justify-center shrink-0">
+          <CheckCircle2 className="w-4 h-4" />
         </div>
         <div>
-          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
             Resolved This Month
           </div>
-          <div className="text-xl font-black text-foreground tracking-tight">
+          <div className="text-xl font-black text-foreground tracking-tight font-mono">
             {resolvedThisMonthCount}
-            <span className="text-xs font-normal text-muted-foreground ml-1.5">
-              fixed
+            <span className="text-xs font-normal text-muted-foreground ml-1.5 font-sans">
+              verified
             </span>
           </div>
         </div>
       </div>
 
       {/* Metric 3: Avg Resolution Time */}
-      <div className="flex items-center gap-3 px-3 py-1.5 rounded-xl bg-surface/50 border border-border/50">
-        <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
-          <Clock className="w-5 h-5" />
+      <div className="flex items-center gap-3 px-3.5 py-2.5 rounded-md bg-surface-card border border-border">
+        <div className="w-8 h-8 rounded-md bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+          <Clock className="w-4 h-4" />
         </div>
         <div>
-          <div className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
             Avg. Resolution Time
           </div>
-          <div className="text-xl font-black text-foreground tracking-tight">
+          <div className="text-xl font-black text-foreground tracking-tight font-mono">
             {avgResolutionDaysText}
           </div>
         </div>

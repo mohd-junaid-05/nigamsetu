@@ -14,6 +14,7 @@ import {
   Sparkles,
   Loader2,
   Bot,
+  ShieldCheck,
 } from 'lucide-react';
 import { SeverityPostResponse, SeverityGetResponse } from '@/app/api/agent/severity/route';
 import AgentTraceModal, { VerificationTraceData } from '@/components/dashboard/AgentTraceModal';
@@ -61,15 +62,15 @@ function getSeverityLabelName(severity: number | null): string {
 function getSeverityBadgeClasses(severity: number | null): string {
   switch (severity) {
     case 1:
-      return 'bg-severity-1/15 text-foreground border-severity-1/40';
+      return 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700';
     case 2:
-      return 'bg-severity-2/15 text-severity-2 border-severity-2/40';
+      return 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30';
     case 3:
-      return 'bg-severity-3/15 text-severity-3 border-severity-3/40 font-bold';
+      return 'bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/30 font-bold';
     case 4:
-      return 'bg-severity-4/20 text-severity-4 border-severity-4/40 font-bold animate-pulse';
+      return 'bg-red-600/15 text-red-800 dark:text-red-300 border-red-600/40 font-bold';
     default:
-      return 'bg-severity-2/15 text-severity-2 border-severity-2/40';
+      return 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30';
   }
 }
 
@@ -192,34 +193,34 @@ export function SuccessScreen({
   };
 
   return (
-    <div className="bg-surface-card border border-border rounded-2xl p-6 flex flex-col items-center text-center space-y-5 animate-in fade-in duration-300">
+    <div className="bg-surface border border-border rounded-xl p-6 flex flex-col items-center text-center space-y-5 animate-in fade-in duration-200">
       {/* Success Badge */}
-      <div className="w-16 h-16 rounded-full bg-status-verified/10 text-status-verified flex items-center justify-center shadow-inner">
-        <CheckCircle2 className="w-10 h-10" />
+      <div className="w-12 h-12 rounded-full bg-status-verified/10 text-status-verified flex items-center justify-center">
+        <CheckCircle2 className="w-7 h-7" />
       </div>
 
-      <div>
-        <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-full bg-status-open/10 text-status-open font-semibold uppercase tracking-wider">
+      <div className="space-y-1">
+        <span className="text-[11px] font-mono px-2.5 py-0.5 rounded-md bg-status-open/10 text-status-open font-semibold uppercase tracking-wider border border-status-open/20">
           Status: Open
         </span>
-        <h2 className="text-xl font-bold text-foreground mt-2">
+        <h2 className="text-xl font-extrabold text-foreground">
           Complaint Registered
         </h2>
-        <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-          Your report has landed in the municipal queue with postGIS boundary routing.
+        <p className="text-xs text-muted-foreground max-w-sm leading-relaxed">
+          Your report has landed in the municipal operations queue with PostGIS ward routing.
         </p>
       </div>
 
-      {/* Submitted Image Thumbnail if provided */}
+      {/* Submitted Image Thumbnail */}
       {imageUrl && (
-        <div className="w-full max-w-xs h-32 rounded-xl overflow-hidden border border-border bg-surface relative">
+        <div className="w-full max-w-xs h-36 rounded-lg overflow-hidden border border-border bg-surface relative">
           <img
             src={imageUrl}
             alt="Submitted civic evidence"
             className="w-full h-full object-cover"
           />
           {category && (
-            <span className="absolute bottom-2 left-2 text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-black/70 text-white backdrop-blur-xs">
+            <span className="absolute bottom-2 left-2 text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-slate-900/80 text-white backdrop-blur-xs">
               {category}
             </span>
           )}
@@ -227,15 +228,15 @@ export function SuccessScreen({
       )}
 
       {/* AI Agent Severity Assessment Card (Phase 05) */}
-      <div className="w-full bg-surface border border-border rounded-xl p-4 text-left space-y-2.5">
+      <div className="w-full bg-surface-card border border-border rounded-lg p-4 text-left space-y-2.5">
         <div className="flex items-center justify-between">
           <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-accent" />
+            <Sparkles className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
             AI Severity Assessment
           </span>
 
           {isAnalyzing ? (
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-accent animate-pulse">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-blue-600 dark:text-blue-400 animate-pulse">
               <Loader2 className="w-3 h-3 animate-spin" />
               <span>Analyzing photo...</span>
             </span>
@@ -243,7 +244,7 @@ export function SuccessScreen({
             <div className="flex items-center gap-1.5">
               <span
                 data-testid="severity-badge"
-                className={`text-[11px] font-mono px-2.5 py-0.5 rounded-full border ${getSeverityBadgeClasses(severity)}`}
+                className={`text-[11px] font-mono px-2 py-0.5 rounded-md border font-bold ${getSeverityBadgeClasses(severity)}`}
               >
                 {getSeverityLabel(severity)}
               </span>
@@ -252,7 +253,7 @@ export function SuccessScreen({
                 data-testid="why-this-score-btn"
                 onClick={handleOpenTrace}
                 disabled={isLoadingTrace}
-                className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-600/10 hover:bg-purple-600/20 text-purple-600 dark:text-purple-400 border border-purple-500/25 text-[10px] font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-purple-600/10 hover:bg-purple-600/20 text-purple-700 dark:text-purple-300 border border-purple-500/25 text-[10px] font-semibold transition-colors cursor-pointer disabled:opacity-50"
                 title="Why this severity score? (Inspect AI Trace)"
               >
                 <Sparkles className="w-3 h-3" />
@@ -273,7 +274,7 @@ export function SuccessScreen({
               Severity: {getSeverityLabelName(severity)} &mdash; {reason || 'Verified from photo evidence'}
             </p>
             <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono flex-wrap">
-              <span className="flex items-center gap-1 text-accent font-semibold">
+              <span className="flex items-center gap-1 text-blue-600 dark:text-blue-400 font-semibold">
                 <Bot className="w-3 h-3" />
                 Gemini 1.5 Flash
               </span>
@@ -287,7 +288,7 @@ export function SuccessScreen({
       </div>
 
       {/* Ticket Details Box */}
-      <div className="w-full bg-surface border border-border rounded-xl p-4 text-left space-y-3">
+      <div className="w-full bg-surface-card border border-border rounded-lg p-4 text-left space-y-2.5">
         {/* Ticket ID */}
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground font-medium">Complaint ID:</span>
@@ -312,15 +313,15 @@ export function SuccessScreen({
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground font-medium">Assigned Ward:</span>
           <span className="font-semibold text-foreground flex items-center gap-1">
-            <MapPin className="w-3.5 h-3.5 text-accent" />
+            <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
             {wardName || 'Ward Assigned via Location'}
           </span>
         </div>
 
         {/* SLA Timeline */}
-        <div className="flex items-start justify-between text-xs pt-1 border-t border-border/60">
+        <div className="flex items-start justify-between text-xs pt-2 border-t border-border">
           <span className="text-muted-foreground font-medium flex items-center gap-1 mt-0.5">
-            <Clock className="w-3.5 h-3.5 text-status-assigned" />
+            <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             Expected Timeline:
           </span>
           <span className="font-semibold text-foreground text-right max-w-[200px]">
@@ -330,11 +331,11 @@ export function SuccessScreen({
       </div>
 
       {/* Action Buttons */}
-      <div className="w-full space-y-2 pt-2">
+      <div className="w-full space-y-2 pt-1">
         <button
           type="button"
           onClick={onViewMyComplaints}
-          className="w-full py-2.5 px-4 rounded-xl bg-accent text-white text-xs font-bold hover:bg-blue-700 transition-colors shadow-sm flex items-center justify-center gap-2 cursor-pointer"
+          className="w-full min-h-[44px] py-2.5 px-4 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 active:scale-[0.99] transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
         >
           <span>View in "My Complaints"</span>
           <ArrowRight className="w-4 h-4" />
@@ -342,7 +343,7 @@ export function SuccessScreen({
 
         <Link
           href="/"
-          className="w-full py-2.5 px-4 rounded-xl bg-surface border border-border text-foreground text-xs font-semibold hover:bg-surface-hover transition-colors flex items-center justify-center gap-2"
+          className="w-full min-h-[44px] py-2.5 px-4 rounded-lg bg-surface border border-border text-foreground text-xs font-semibold hover:bg-surface-hover active:scale-[0.99] transition-all flex items-center justify-center gap-2"
         >
           <span>View Public Ward Map</span>
           <ExternalLink className="w-3.5 h-3.5 text-muted-foreground" />
@@ -351,7 +352,7 @@ export function SuccessScreen({
         <button
           type="button"
           onClick={onReset}
-          className="w-full py-2 px-4 rounded-xl text-muted-foreground text-xs font-medium hover:text-foreground transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+          className="w-full min-h-[40px] py-2 px-4 rounded-lg text-muted-foreground text-xs font-medium hover:text-foreground transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Report Another Issue</span>

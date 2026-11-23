@@ -17,6 +17,7 @@ import {
   FileText,
   MapPin,
   Map as MapIcon,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface ReportContainerProps {
@@ -121,21 +122,21 @@ export function ReportContainer({ userRole }: ReportContainerProps) {
 
   return (
     <div className="space-y-4">
-      {/* 3-Tab Mobile Navigation */}
-      <div className="grid grid-cols-3 gap-1 p-1 bg-surface-card border border-border rounded-xl text-center text-xs font-semibold shadow-sm">
+      {/* Refined Segmented Navigation */}
+      <div className="grid grid-cols-3 gap-1 p-1 bg-surface border border-border rounded-lg text-center text-xs font-semibold shadow-2xs">
         <button
           type="button"
           onClick={() => {
             setSubmittedData(null);
             setActiveTab('report');
           }}
-          className={`py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+          className={`py-2 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[40px] focus-visible:ring-2 focus-visible:ring-accent ${
             activeTab === 'report'
-              ? 'bg-accent text-white shadow-sm'
+              ? 'bg-surface-card text-foreground font-bold shadow-xs border border-border'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
-          <FileText className="w-3.5 h-3.5" />
+          <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
           <span>Report</span>
         </button>
 
@@ -145,19 +146,19 @@ export function ReportContainer({ userRole }: ReportContainerProps) {
             setSubmittedData(null);
             setActiveTab('my-complaints');
           }}
-          className={`py-2 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+          className={`py-2 px-3 rounded-md flex items-center justify-center gap-1.5 transition-all cursor-pointer min-h-[40px] focus-visible:ring-2 focus-visible:ring-accent ${
             activeTab === 'my-complaints'
-              ? 'bg-accent text-white shadow-sm'
+              ? 'bg-surface-card text-foreground font-bold shadow-xs border border-border'
               : 'text-muted-foreground hover:text-foreground'
           }`}
         >
-          <MapPin className="w-3.5 h-3.5" />
+          <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
           <span>My Complaints</span>
         </button>
 
         <Link
           href="/"
-          className="py-2 px-3 rounded-lg text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors"
+          className="py-2 px-3 rounded-md text-muted-foreground hover:text-foreground flex items-center justify-center gap-1.5 transition-colors min-h-[40px]"
         >
           <MapIcon className="w-3.5 h-3.5" />
           <span>Map</span>
@@ -182,7 +183,7 @@ export function ReportContainer({ userRole }: ReportContainerProps) {
         <MyComplaintsList onSwitchToReport={() => setActiveTab('report')} />
       ) : (
         /* View 3: Active Report Form Flow */
-        <form onSubmit={handleFormSubmit} className="space-y-5">
+        <form onSubmit={handleFormSubmit} className="space-y-4">
           {/* Camera Intake Component */}
           <CameraCapture
             onCapture={(file) => setImageFile(file)}
@@ -216,7 +217,7 @@ export function ReportContainer({ userRole }: ReportContainerProps) {
           {submitError && (
             <div
               role="alert"
-              className="p-3.5 rounded-xl bg-status-open/10 border border-status-open/30 text-status-open text-xs flex items-start gap-2.5 animate-in fade-in"
+              className="p-3.5 rounded-lg bg-status-open/10 border border-status-open/30 text-status-open text-xs flex items-start gap-2.5"
             >
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               <div>
@@ -231,28 +232,29 @@ export function ReportContainer({ userRole }: ReportContainerProps) {
             <button
               type="submit"
               disabled={submitting || !imageFile || !selectedCategory || lat === null}
-              className={`w-full py-3.5 px-4 rounded-xl text-white font-bold text-sm shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer ${
+              className={`w-full min-h-[48px] py-3 px-4 rounded-lg text-white font-bold text-sm shadow-sm flex items-center justify-center gap-2 transition-all cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
                 submitting || !imageFile || !selectedCategory || lat === null
-                  ? 'bg-muted/70 text-muted-foreground cursor-not-allowed opacity-60'
-                  : 'bg-accent hover:bg-blue-700 active:scale-[0.99]'
+                  ? 'bg-slate-400 text-slate-100 dark:bg-slate-700 dark:text-slate-400 cursor-not-allowed opacity-60'
+                  : 'bg-blue-600 hover:bg-blue-700 active:scale-[0.99]'
               }`}
             >
               {submitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Compressing & Registering Complaint...</span>
+                  <span>Submitting & Classifying Evidence...</span>
                 </>
               ) : (
                 <>
                   <Send className="w-4 h-4" />
-                  <span>Submit Complaint</span>
+                  <span>Submit Civic Complaint</span>
                 </>
               )}
             </button>
 
-            <p className="text-center text-[10px] text-muted-foreground mt-2">
-              Citizen Claim: <span className="font-mono font-semibold uppercase">{userRole}</span> &bull; Verified evidence routing
-            </p>
+            <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground mt-2">
+              <ShieldCheck className="w-3 h-3 text-status-verified" />
+              <span>Role: <strong className="font-mono uppercase text-foreground">{userRole}</strong> &bull; Direct municipal ward routing</span>
+            </div>
           </div>
         </form>
       )}

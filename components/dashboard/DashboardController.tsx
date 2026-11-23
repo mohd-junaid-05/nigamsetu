@@ -327,22 +327,22 @@ export default function DashboardController({
       </div>
 
       {/* 3-Panel Desktop Layout (25% Queue | 50% Map | 25% Details) */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-5 min-h-[580px]">
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[580px]">
         {/* Panel 1: Priority / Escalation Queue (25% -> 3 cols) */}
         <section
-          className={`lg:col-span-3 flex flex-col rounded-2xl border border-border bg-surface-card overflow-hidden shadow-sm ${
+          className={`lg:col-span-3 flex flex-col rounded-xl border border-border bg-surface overflow-hidden shadow-xs ${
             activeTab === 'queue' ? 'flex' : 'hidden lg:flex'
           }`}
         >
-          <div className="p-2 border-b border-border flex items-center justify-between bg-surface/40">
+          <div className="p-2 border-b border-border flex items-center justify-between bg-surface-card">
             <div className="flex items-center gap-1 w-full">
               <button
                 type="button"
                 onClick={() => setQueueView('priority')}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                className={`flex-1 py-1.5 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
                   queueView === 'priority'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-muted-foreground hover:bg-surface'
+                    ? 'bg-blue-600 text-white shadow-2xs'
+                    : 'text-muted-foreground hover:bg-surface-hover'
                 }`}
               >
                 <Layers className="w-3.5 h-3.5" />
@@ -352,10 +352,10 @@ export default function DashboardController({
               <button
                 type="button"
                 onClick={() => setQueueView('escalations')}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                className={`flex-1 py-1.5 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
                   queueView === 'escalations'
-                    ? 'bg-red-600 text-white shadow-xs'
-                    : 'text-muted-foreground hover:bg-surface'
+                    ? 'bg-red-600 text-white shadow-2xs'
+                    : 'text-muted-foreground hover:bg-surface-hover'
                 }`}
               >
                 <AlertTriangle className="w-3.5 h-3.5" />
@@ -364,46 +364,48 @@ export default function DashboardController({
             </div>
           </div>
 
-          {queueView === 'priority' ? (
-            <PriorityQueueTable
-              items={queue}
-              selectedId={selectedId}
-              onSelect={(item) => {
-                setSelectedId(item.id);
-                setActiveTab('details');
-              }}
-              onOpenAssign={(item) => setAssignTarget(item)}
-            />
-          ) : (
-            <EscalationQueueTable
-              items={escalations}
-              selectedId={selectedId}
-              onSelect={(item) => {
-                setSelectedId(item.complaint_id);
-                setActiveTab('details');
-              }}
-              onStatusChange={handleStatusChange}
-              onTriggerCronScan={handleTriggerCronScan}
-              isScanning={isScanning}
-            />
-          )}
+          <div className="flex-1 overflow-hidden">
+            {queueView === 'priority' ? (
+              <PriorityQueueTable
+                items={queue}
+                selectedId={selectedId}
+                onSelect={(item) => {
+                  setSelectedId(item.id);
+                  setActiveTab('details');
+                }}
+                onOpenAssign={(item) => setAssignTarget(item)}
+              />
+            ) : (
+              <EscalationQueueTable
+                items={escalations}
+                selectedId={selectedId}
+                onSelect={(item) => {
+                  setSelectedId(item.complaint_id);
+                  setActiveTab('details');
+                }}
+                onStatusChange={handleStatusChange}
+                onTriggerCronScan={handleTriggerCronScan}
+                isScanning={isScanning}
+              />
+            )}
+          </div>
         </section>
 
         {/* Panel 2: Ward Map (50% -> 6 cols) */}
         <section
-          className={`lg:col-span-6 flex flex-col rounded-2xl border border-border bg-surface-card overflow-hidden shadow-sm min-h-[460px] ${
+          className={`lg:col-span-6 flex flex-col rounded-xl border border-border bg-surface overflow-hidden shadow-xs min-h-[460px] ${
             activeTab === 'map' ? 'flex' : 'hidden lg:flex'
           }`}
         >
-          <div className="p-3.5 border-b border-border flex items-center justify-between bg-surface/40 z-10">
+          <div className="p-3 border-b border-border flex items-center justify-between bg-surface-card z-10">
             <div className="flex items-center gap-2">
-              <Map className="w-4 h-4 text-blue-600" />
-              <h2 className="text-sm font-bold text-foreground">
-                {wardName} Geospatial Map
+              <Map className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <h2 className="text-xs font-bold text-foreground">
+                {wardName} Geospatial Operations
               </h2>
             </div>
-            <span className="text-[10px] text-muted-foreground font-medium">
-              {facilities.length} Facilities • {queue.length} Active Pins
+            <span className="text-[10px] text-muted-foreground font-mono">
+              {facilities.length} Facilities • {queue.length} Incidents
             </span>
           </div>
 
@@ -422,19 +424,19 @@ export default function DashboardController({
 
         {/* Panel 3: Details & Workflow / Ward AI Chat (25% -> 3 cols) */}
         <section
-          className={`lg:col-span-3 flex flex-col rounded-2xl border border-border bg-surface-card overflow-hidden shadow-sm ${
+          className={`lg:col-span-3 flex flex-col rounded-xl border border-border bg-surface overflow-hidden shadow-xs ${
             activeTab === 'details' ? 'flex' : 'hidden lg:flex'
           }`}
         >
-          <div className="p-2 border-b border-border flex items-center justify-between bg-surface/40">
+          <div className="p-2 border-b border-border flex items-center justify-between bg-surface-card">
             <div className="flex items-center gap-1 w-full">
               <button
                 type="button"
                 onClick={() => setPanelView('details')}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                className={`flex-1 py-1.5 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
                   panelView === 'details'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-muted-foreground hover:bg-surface'
+                    ? 'bg-blue-600 text-white shadow-2xs'
+                    : 'text-muted-foreground hover:bg-surface-hover'
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" />
@@ -444,10 +446,10 @@ export default function DashboardController({
               <button
                 type="button"
                 onClick={() => setPanelView('chat')}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                className={`flex-1 py-1.5 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
                   panelView === 'chat'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-muted-foreground hover:bg-surface'
+                    ? 'bg-blue-600 text-white shadow-2xs'
+                    : 'text-muted-foreground hover:bg-surface-hover'
                 }`}
               >
                 <Sparkles className="w-3.5 h-3.5" />

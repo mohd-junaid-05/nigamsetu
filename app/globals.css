@@ -2,44 +2,68 @@
 
 @layer base {
   :root {
-    --background: #ffffff;
-    --foreground: #09090b;
-    --surface: #f4f4f5;
-    --surface-hover: #e4e4e7;
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    --surface: #ffffff;
+    --surface-hover: #f1f5f9;
     --surface-card: #ffffff;
-    --border: #e4e4e7;
-    --muted: #71717a;
-    --muted-foreground: #71717a;
+    --border: #e2e8f0;
+    --muted: #64748b;
+    --muted-foreground: #64748b;
 
-    /* Semantic Severity Colors */
-    --severity-1: #9ca3af; /* Cosmetic - grey */
-    --severity-2: #f59e0b; /* Significant - amber */
-    --severity-3: #ef4444; /* Critical - red */
-    --severity-4: #dc2626; /* Emergency - darker red */
+    /* Semantic Severity Colors (WCAG 2.2 AA compliant contrast) */
+    --severity-1: #64748b; /* Cosmetic - slate */
+    --severity-2: #d97706; /* Significant - amber */
+    --severity-3: #dc2626; /* Critical - red */
+    --severity-4: #b91c1c; /* Emergency - dark red */
 
     /* Semantic Status Colors */
-    --status-open: #ef4444;       /* Open - red */
-    --status-assigned: #f59e0b;   /* Assigned - amber */
-    --status-in-progress: #3b82f6; /* In Progress - blue */
-    --status-resolved: #6b7280;   /* Resolved (unverified) - grey */
-    --status-verified: #22c55e;   /* Verified - green */
-    --status-escalated: #a855f7;  /* Escalated - purple */
+    --status-open: #dc2626;       /* Open - red */
+    --status-assigned: #d97706;   /* Assigned - amber */
+    --status-in-progress: #2563eb; /* In Progress - blue */
+    --status-resolved: #64748b;   /* Resolved (unverified) - slate */
+    --status-verified: #16a34a;   /* Verified - green */
+    --status-escalated: #9333ea;  /* Escalated - purple */
 
-    --sla-breached: #dc2626;
+    --sla-breached: #b91c1c;
     --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --ring: #2563eb;
+
+    /* Standard Radius Scale */
+    --radius-sm: 0.375rem; /* 6px */
+    --radius-md: 0.5rem;   /* 8px */
+    --radius-lg: 0.75rem;  /* 12px */
+    --radius-xl: 1rem;     /* 16px */
   }
 
   .dark {
-    --background: #09090b;
-    --foreground: #fafafa;
-    --surface: #18181b;
-    --surface-hover: #27272a;
-    --surface-card: #121215;
-    --border: #27272a;
-    --muted: #a1a1aa;
-    --muted-foreground: #a1a1aa;
+    --background: #090d16;
+    --foreground: #f8fafc;
+    --surface: #111827;
+    --surface-hover: #1f2937;
+    --surface-card: #0f172a;
+    --border: #1e293b;
+    --muted: #94a3b8;
+    --muted-foreground: #94a3b8;
 
-    --status-resolved: #9ca3af;
+    /* Dark Mode Adjusted Accents for high contrast */
+    --severity-1: #94a3b8;
+    --severity-2: #fbbf24;
+    --severity-3: #f87171;
+    --severity-4: #ef4444;
+
+    --status-open: #f87171;
+    --status-assigned: #fbbf24;
+    --status-in-progress: #60a5fa;
+    --status-resolved: #94a3b8;
+    --status-verified: #4ade80;
+    --status-escalated: #c084fc;
+
+    --sla-breached: #ef4444;
+    --accent: #3b82f6;
+    --accent-hover: #60a5fa;
+    --ring: #3b82f6;
   }
 }
 
@@ -67,69 +91,97 @@
 
   --color-sla-breached: var(--sla-breached);
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-ring: var(--ring);
 }
 
 body {
   background-color: var(--background);
   color: var(--foreground);
-  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   min-height: 100vh;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Global Focus-Visible Accessibility Ring (WCAG 2.2 AA SC 2.4.7) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[tabindex="0"]:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
+}
+
+/* Reduced Motion Respect (WCAG 2.2 AA SC 2.3.3) */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* OpenStreetMap Dark Mode Tile Inversion (Phase 4 Spec) */
 /* The filter is applied ONLY to the tile layer pane so markers and popups remain unaltered */
 .dark .leaflet-tile-pane {
-  filter: invert(1) hue-rotate(180deg) brightness(0.8);
+  filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(1.1);
 }
 
 /* Custom Marker Cluster Styles */
 .custom-marker-cluster {
-  background: rgba(37, 99, 235, 0.25);
+  background: rgba(37, 99, 235, 0.2);
   border-radius: 50%;
   display: flex !important;
   align-items: center;
   justify-content: center;
-  transition: transform 0.15s ease-out;
+  transition: transform 0.15s cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 .custom-marker-cluster:hover {
-  transform: scale(1.1);
+  transform: scale(1.08);
 }
 
 .custom-marker-cluster-inner {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: #2563eb;
   color: #ffffff;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   border: 2px solid #ffffff;
 }
 
 .dark .custom-marker-cluster-inner {
-  border-color: #18181b;
+  border-color: #0f172a;
 }
 
 /* Leaflet Popup Styling */
 .leaflet-popup-content-wrapper {
   background-color: var(--surface-card) !important;
   color: var(--foreground) !important;
-  border-radius: 1rem !important;
+  border-radius: 0.75rem !important;
   padding: 0 !important;
   overflow: hidden !important;
   border: 1px solid var(--border) !important;
-  box-shadow: 0 14px 30px -4px rgba(0, 0, 0, 0.25), 0 6px 12px -3px rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 4px 10px -2px rgba(0, 0, 0, 0.08) !important;
 }
 
 .leaflet-popup-content {
   margin: 0 !important;
   line-height: inherit !important;
-  min-width: 250px;
+  min-width: 260px;
   max-width: 320px;
 }
 
@@ -139,23 +191,22 @@ body {
 }
 
 .leaflet-container a.leaflet-popup-close-button {
-  color: var(--muted-foreground) !important;
-  padding: 6px !important;
-  top: 6px !important;
-  right: 6px !important;
-  width: 24px !important;
-  height: 24px !important;
+  color: #ffffff !important;
+  padding: 4px !important;
+  top: 8px !important;
+  right: 8px !important;
+  width: 22px !important;
+  height: 22px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background: rgba(0, 0, 0, 0.4) !important;
+  background: rgba(15, 23, 42, 0.65) !important;
   border-radius: 9999px !important;
-  color: #ffffff !important;
   z-index: 20 !important;
+  backdrop-filter: blur(4px);
+  transition: background-color 0.15s ease;
 }
 
 .leaflet-container a.leaflet-popup-close-button:hover {
-  background: rgba(0, 0, 0, 0.6) !important;
-  color: #ffffff !important;
+  background: rgba(15, 23, 42, 0.85) !important;
 }
-

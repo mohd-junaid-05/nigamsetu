@@ -5,9 +5,7 @@ import { ComplaintCategory, ComplaintStatus } from '@/lib/types/database';
 import {
   RotateCcw,
   SlidersHorizontal,
-  Calendar,
   Layers,
-  Activity,
 } from 'lucide-react';
 
 export const CATEGORY_OPTIONS: { id: ComplaintCategory; label: string; icon: string }[] = [
@@ -15,7 +13,7 @@ export const CATEGORY_OPTIONS: { id: ComplaintCategory; label: string; icon: str
   { id: 'garbage', label: 'Garbage & Waste', icon: '🗑️' },
   { id: 'sewage', label: 'Drainage & Sewage', icon: '🚰' },
   { id: 'school', label: 'Schools', icon: '🏫' },
-  { id: 'healthcenter', label: 'Health Centers', icon: '🏥' },
+  { id: 'healthcenter', label: 'Health Clinics', icon: '🏥' },
   { id: 'other', label: 'Other', icon: '📦' },
 ];
 
@@ -74,16 +72,16 @@ export function MapFilterBar({
   return (
     <div
       data-testid="map-filter-bar"
-      className={`rounded-2xl bg-surface-card border border-border p-4 shadow-sm space-y-4 backdrop-blur-md ${className}`}
+      className={`rounded-lg bg-surface/95 border border-border p-3.5 shadow-xs space-y-3.5 backdrop-blur-md ${className}`}
     >
       {/* Top Header Row */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2.5">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-blue-600/10 text-blue-600 flex items-center justify-center">
-            <SlidersHorizontal className="w-4 h-4" />
+          <div className="w-6 h-6 rounded-md bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <SlidersHorizontal className="w-3.5 h-3.5" />
           </div>
           <span className="text-xs font-bold uppercase tracking-wider text-foreground">
-            Filters & Layers
+            Filter Map Pins
           </span>
           <span className="text-xs text-muted-foreground ml-1">
             (Showing{' '}
@@ -96,7 +94,7 @@ export function MapFilterBar({
           <button
             type="button"
             onClick={onResetFilters}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg bg-surface hover:bg-surface-hover text-muted-foreground hover:text-foreground transition-colors border border-border cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md bg-surface-hover text-foreground hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-border cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             <span>Reset All</span>
@@ -127,10 +125,10 @@ export function MapFilterBar({
                 type="button"
                 onClick={() => onToggleCategory(cat.id)}
                 data-testid={`filter-category-${cat.id}`}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all border cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
                   isSelected
-                    ? 'bg-foreground text-background border-foreground shadow-sm'
-                    : 'bg-surface/80 text-muted-foreground border-border hover:bg-surface hover:text-foreground'
+                    ? 'bg-foreground text-background border-foreground shadow-xs'
+                    : 'bg-surface text-muted-foreground border-border hover:bg-surface-hover hover:text-foreground'
                 }`}
               >
                 <span>{cat.icon}</span>
@@ -142,10 +140,10 @@ export function MapFilterBar({
       </div>
 
       {/* Row 2: Status Toggles */}
-      <div className="space-y-1.5">
+      <div className="space-y-1.5 pt-1 border-t border-border">
         <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
-          <span className="flex items-center gap-1.5 font-semibold text-[11px] uppercase tracking-wider">
-            <Activity className="w-3.5 h-3.5" /> Complaint Status
+          <span className="font-semibold text-[11px] uppercase tracking-wider">
+            Complaint Status
           </span>
           <button
             type="button"
@@ -163,14 +161,13 @@ export function MapFilterBar({
                 key={status.id}
                 type="button"
                 onClick={() => onToggleStatus(status.id)}
-                data-testid={`filter-status-${status.id}`}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border cursor-pointer ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all border cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
                   isSelected
-                    ? 'bg-surface-card text-foreground border-foreground shadow-sm font-semibold'
-                    : 'bg-surface/80 text-muted-foreground border-border hover:bg-surface hover:text-foreground opacity-60'
+                    ? 'bg-surface-card text-foreground border-foreground/50 shadow-xs ring-1 ring-border'
+                    : 'bg-surface text-muted-foreground border-border hover:bg-surface-hover hover:text-foreground'
                 }`}
               >
-                <span className={`w-2.5 h-2.5 rounded-full ${status.dotColor} shrink-0`} />
+                <span className={`w-2 h-2 rounded-full ${status.dotColor}`} />
                 <span>{status.label}</span>
               </button>
             );
@@ -178,41 +175,29 @@ export function MapFilterBar({
         </div>
       </div>
 
-      {/* Row 3: Date Range Slider */}
-      <div className="space-y-2 pt-1 border-t border-border/50">
-        <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
-          <span className="flex items-center gap-1.5 font-semibold text-[11px] uppercase tracking-wider">
-            <Calendar className="w-3.5 h-3.5" /> Date Range
-          </span>
-          <span className="text-xs font-bold text-foreground font-mono">
-            {DATE_RANGES[dateRangeIndex].label}
-          </span>
+      {/* Row 3: Date Range Slider / Buttons */}
+      <div className="space-y-1.5 pt-1 border-t border-border">
+        <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+          Reporting Period
         </div>
-
-        <div className="space-y-1">
-          <input
-            type="range"
-            min={0}
-            max={DATE_RANGES.length - 1}
-            step={1}
-            value={dateRangeIndex}
-            onChange={(e) => onChangeDateRange(parseInt(e.target.value, 10))}
-            data-testid="date-range-slider"
-            className="w-full h-2 bg-surface rounded-lg appearance-none cursor-pointer accent-blue-600"
-          />
-          <div className="flex justify-between text-[10px] text-muted-foreground font-mono px-0.5">
-            {DATE_RANGES.map((range, idx) => (
-              <span
+        <div className="grid grid-cols-4 gap-1 p-1 bg-surface-card rounded-md border border-border">
+          {DATE_RANGES.map((range, index) => {
+            const isSelected = dateRangeIndex === index;
+            return (
+              <button
                 key={range.label}
-                onClick={() => onChangeDateRange(idx)}
-                className={`cursor-pointer hover:text-foreground ${
-                  dateRangeIndex === idx ? 'text-blue-600 dark:text-blue-400 font-bold' : ''
+                type="button"
+                onClick={() => onChangeDateRange(index)}
+                className={`py-1 text-center text-xs font-semibold rounded transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-accent ${
+                  isSelected
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {range.label}
-              </span>
-            ))}
-          </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

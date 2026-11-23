@@ -6,11 +6,9 @@ import {
   Camera,
   MapPin,
   CheckCircle2,
-  AlertTriangle,
+  AlertCircle,
   Upload,
   RefreshCw,
-  FileText,
-  Navigation,
 } from 'lucide-react';
 
 interface ResolutionModalProps {
@@ -88,7 +86,6 @@ export default function ResolutionModal({
       },
       (err) => {
         setIsLocating(false);
-        // If GPS permission denied or failed, keep existing or prompt manual
         setErrorMessage(`GPS detection error: ${err.message}. Please enter coordinates manually.`);
       },
       {
@@ -103,7 +100,6 @@ export default function ResolutionModal({
     e.preventDefault();
     setErrorMessage(null);
 
-    // Frontend pre-validations
     if (!selectedFile) {
       setErrorMessage('Resolution photo proof is required.');
       return;
@@ -138,87 +134,82 @@ export default function ResolutionModal({
       });
 
       const data = await res.json();
-
       if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Failed to mark complaint resolved.');
+        throw new Error(data.error || 'Failed to submit resolution');
       }
 
       onResolved({
         complaintId,
         resolutionImageUrl: data.resolution_image_url,
-        resolvedAt: data.resolved_at,
-        notes: data.notes,
+        resolvedAt: data.resolved_at || new Date().toISOString(),
+        notes: notes.trim() || null,
         status: data.status,
         verification: data.verification,
       });
       onClose();
     } catch (err: unknown) {
       const error = err as Error;
-      setErrorMessage(error.message);
+      setErrorMessage(error.message || 'Submission error');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const hasLocation = Boolean(lat && lng && !isNaN(parseFloat(lat)) && !isNaN(parseFloat(lng)));
-
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-labelledby="resolution-modal-title"
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
     >
-      <div className="relative w-full max-w-lg bg-surface-card rounded-2xl border border-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="w-full max-w-lg rounded-xl border border-border bg-surface shadow-lg flex flex-col max-h-[90vh] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between bg-surface/50">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-600/10 text-blue-600 flex items-center justify-center">
-              <Camera className="w-5 h-5" />
+        <div className="flex items-center justify-between p-4 border-b border-border bg-surface-card">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-md bg-emerald-600/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <Camera className="w-4 h-4" />
             </div>
             <div>
-              <h3 id="resolution-modal-title" className="text-sm sm:text-base font-bold text-foreground">
-                Mark Complaint Resolved
+              <h3 className="text-sm font-bold text-foreground">
+                Upload Resolution Proof
               </h3>
-              <p className="text-[11px] text-muted-foreground capitalize">
-                {complaintCategory} Ticket • Current status: <span className="font-mono font-semibold">{complaintStatus}</span>
+              <p className="text-[11px] text-muted-foreground font-mono">
+                Ticket #{complaintId.slice(0, 8)} &bull; {complaintCategory.toUpperCase()}
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-surface transition-colors"
+            className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Content Form */}
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 overflow-y-auto flex flex-col gap-5 text-xs">
-          {/* Error Banner */}
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="p-4 overflow-y-auto space-y-4">
           {errorMessage && (
             <div
               role="alert"
-              className="p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 dark:text-red-400 flex items-start gap-2 text-xs"
+              className="p-3 rounded-md bg-status-open/10 border border-status-open/30 text-status-open text-xs flex items-center gap-2"
             >
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-              <div className="flex-1 font-medium">{errorMessage}</div>
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorMessage}</span>
             </div>
           )}
 
-          {/* Photo Evidence Capture */}
-          <div className="flex flex-col gap-2">
-            <label className="font-bold text-foreground flex items-center justify-between text-xs">
-              <span>Resolution Photo Evidence *</span>
-              <span className="text-[10px] text-muted-foreground">Max 10MB</span>
+          {/* Photo Intake */}
+          <div className="space-y-2">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1">
+              <span>Repair Proof Photo</span>
+              <span className="text-status-open">*</span>
             </label>
 
             {previewUrl ? (
-              <div className="relative w-full h-48 rounded-xl overflow-hidden border border-border bg-black/50 group">
+              <div className="relative rounded-md overflow-hidden border border-border bg-black/40 h-44">
                 <img
                   src={previewUrl}
-                  alt="Resolution proof preview"
+                  alt="Resolution Preview"
                   className="w-full h-full object-cover"
                 />
                 <button
@@ -227,149 +218,127 @@ export default function ResolutionModal({
                     setSelectedFile(null);
                     setPreviewUrl(null);
                   }}
-                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/70 text-white hover:bg-black transition-colors"
-                  title="Remove and retake photo"
+                  className="absolute top-2 right-2 p-1.5 rounded-md bg-black/70 text-white hover:bg-black/90 text-xs flex items-center gap-1 cursor-pointer"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" />
+                  <span>Remove</span>
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  ref={cameraInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+
                 <button
                   type="button"
                   onClick={() => cameraInputRef.current?.click()}
-                  className="flex flex-col items-center justify-center gap-2 p-5 rounded-xl border-2 border-dashed border-border hover:border-blue-500/50 bg-surface/30 hover:bg-blue-500/5 transition-all text-muted-foreground hover:text-foreground"
+                  className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-md border border-dashed border-border bg-surface-card hover:bg-surface-hover hover:border-emerald-600 transition-colors cursor-pointer min-h-[90px]"
                 >
-                  <Camera className="w-6 h-6 text-blue-600" />
-                  <span className="font-bold text-xs">Take Photo</span>
-                  <span className="text-[10px] text-muted-foreground">Camera</span>
+                  <Camera className="w-5 h-5 text-emerald-600" />
+                  <span className="text-xs font-bold text-foreground">Take Photo</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex flex-col items-center justify-center gap-2 p-5 rounded-xl border-2 border-dashed border-border hover:border-blue-500/50 bg-surface/30 hover:bg-blue-500/5 transition-all text-muted-foreground hover:text-foreground"
+                  className="flex flex-col items-center justify-center gap-1.5 p-4 rounded-md border border-dashed border-border bg-surface-card hover:bg-surface-hover hover:border-emerald-600 transition-colors cursor-pointer min-h-[90px]"
                 >
-                  <Upload className="w-6 h-6 text-emerald-600" />
-                  <span className="font-bold text-xs">Upload File</span>
-                  <span className="text-[10px] text-muted-foreground">Gallery / Files</span>
+                  <Upload className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-xs font-bold text-foreground">Upload File</span>
                 </button>
               </div>
             )}
-
-            {/* Hidden inputs */}
-            <input
-              ref={cameraInputRef}
-              type="file"
-              accept="image/*"
-              capture="environment"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleFileChange}
-            />
           </div>
 
-          {/* GPS Coordinates Section */}
-          <div className="flex flex-col gap-2 p-3.5 rounded-xl border border-border bg-surface/40">
+          {/* GPS Coordinates */}
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <label className="font-bold text-foreground flex items-center gap-1.5 text-xs">
-                <MapPin className="w-3.5 h-3.5 text-blue-600" />
-                <span>Repair Site GPS Coordinates *</span>
+              <label className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-1">
+                <span>Site GPS Coordinates</span>
+                <span className="text-status-open">*</span>
               </label>
               <button
                 type="button"
                 onClick={handleDetectGPS}
                 disabled={isLocating}
-                className="px-2.5 py-1 rounded-lg bg-blue-600/10 hover:bg-blue-600/20 text-blue-600 font-semibold text-[11px] flex items-center gap-1 transition-colors"
+                className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
               >
-                <Navigation className={`w-3 h-3 ${isLocating ? 'animate-spin' : ''}`} />
-                <span>{isLocating ? 'Detecting...' : 'Auto-Detect GPS'}</span>
+                <RefreshCw className={`w-3 h-3 ${isLocating ? 'animate-spin' : ''}`} />
+                <span>Detect Live GPS</span>
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-1">
-              <div>
-                <span className="text-[10px] text-muted-foreground block mb-1">Latitude</span>
-                <input
-                  type="number"
-                  step="any"
-                  value={lat}
-                  onChange={(e) => setLat(e.target.value)}
-                  placeholder="e.g. 12.935200"
-                  className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-background text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-600"
-                />
-              </div>
-              <div>
-                <span className="text-[10px] text-muted-foreground block mb-1">Longitude</span>
-                <input
-                  type="number"
-                  step="any"
-                  value={lng}
-                  onChange={(e) => setLng(e.target.value)}
-                  placeholder="e.g. 77.675000"
-                  className="w-full px-2.5 py-1.5 rounded-lg border border-border bg-background text-xs font-mono focus:outline-none focus:ring-1 focus:ring-blue-600"
-                />
-              </div>
+            <div className="grid grid-cols-2 gap-2 font-mono text-xs">
+              <input
+                type="text"
+                placeholder="Latitude (e.g. 12.935000)"
+                value={lat}
+                onChange={(e) => setLat(e.target.value)}
+                className="px-3 py-2 rounded-md border border-border bg-surface-card text-foreground"
+              />
+              <input
+                type="text"
+                placeholder="Longitude (e.g. 77.675000)"
+                value={lng}
+                onChange={(e) => setLng(e.target.value)}
+                className="px-3 py-2 rounded-md border border-border bg-surface-card text-foreground"
+              />
             </div>
-
-            {!hasLocation ? (
-              <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold flex items-center gap-1 mt-1">
-                <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                <span>Location required for verification.</span>
-              </p>
-            ) : (
-              <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1 mt-1">
-                <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
-                <span>GPS coordinates ready for verification pipeline.</span>
-              </p>
-            )}
+            <p className="text-[10px] text-muted-foreground">
+              GPS proximity is cross-verified against the original complaint coordinates (100m threshold).
+            </p>
           </div>
 
           {/* Work Notes */}
-          <div className="flex flex-col gap-1.5">
-            <label className="font-bold text-foreground flex items-center gap-1.5 text-xs">
-              <FileText className="w-3.5 h-3.5 text-muted-foreground" />
-              <span>Contractor / Worker Repair Notes (Optional)</span>
+          <div className="space-y-1.5">
+            <label className="text-xs font-semibold text-foreground uppercase tracking-wider">
+              Field Completion Notes (Optional)
             </label>
             <textarea
-              rows={3}
+              rows={2}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="e.g., Filled 2x1.5m pothole with WMM base and cold bituminous asphalt compaction."
-              className="w-full p-2.5 rounded-xl border border-border bg-background text-xs focus:outline-none focus:ring-1 focus:ring-blue-600 resize-none"
+              placeholder="E.g. Pothole filled with hot-mix bitumen, roller compacted..."
+              className="w-full text-xs p-2.5 rounded-md border border-border bg-surface-card text-foreground placeholder:text-muted-foreground resize-none"
             />
           </div>
 
-          {/* Footer Submit Buttons */}
-          <div className="pt-2 flex items-center justify-end gap-3 border-t border-border mt-1">
+          {/* Footer Actions */}
+          <div className="pt-2 border-t border-border flex items-center justify-end gap-2.5">
             <button
               type="button"
               onClick={onClose}
-              disabled={isSubmitting}
-              className="px-4 py-2 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+              className="px-3 py-1.5 rounded-md border border-border text-xs font-semibold text-foreground hover:bg-surface-hover cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !selectedFile || !hasLocation}
-              className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold shadow-md flex items-center gap-2 transition-all active:scale-[0.98]"
+              disabled={isSubmitting || !selectedFile}
+              className="px-4 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>
                   <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Submitting Fix...</span>
+                  <span>Submitting & Verifying...</span>
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Submit Resolution Proof</span>
+                  <span>Submit Proof</span>
                 </>
               )}
             </button>

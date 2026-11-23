@@ -9,11 +9,8 @@ import {
   ChevronDown,
   ChevronRight,
   RotateCcw,
-  AlertCircle,
   ExternalLink,
-  HelpCircle,
   Bot,
-  User,
 } from 'lucide-react';
 
 export interface ChatMessage {
@@ -153,48 +150,41 @@ export default function ChatPanel({
     setExpandedSqlIds({});
   };
 
-  /**
-   * Parses markdown-style citation anchors like [#c0000001] or [#id]
-   * and renders them as clickable links that open the detail panel.
-   */
-  const renderMessageTextWithCitations = (
-    text: string,
-    sources: ChatSourceCitation[] = []
-  ) => {
+  const renderMessageTextWithCitations = (text: string, sources?: ChatSourceCitation[]) => {
+    if (!sources || sources.length === 0) {
+      return <p className="whitespace-pre-wrap text-xs leading-relaxed text-foreground">{text}</p>;
+    }
+
     const citationRegex = /\[#([a-zA-Z0-9_-]+)\]/g;
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
     let match: RegExpExecArray | null;
 
     while ((match = citationRegex.exec(text)) !== null) {
-      const matchStart = match.index;
-      const matchEnd = citationRegex.lastIndex;
-
-      // Text before citation
-      if (matchStart > lastIndex) {
-        parts.push(text.substring(lastIndex, matchStart));
+      const precedingText = text.substring(lastIndex, match.index);
+      if (precedingText) {
+        parts.push(precedingText);
       }
 
-      const rawId = match[1];
-      // Resolve against full complaintId in sources if available
+      const citedId = match[1];
       const matchedSource = sources.find(
-        (s) => s.complaintId.toLowerCase().startsWith(rawId.toLowerCase())
+        (s) => s.complaintId.startsWith(citedId) || s.complaintId.includes(citedId)
       );
-      const targetId = matchedSource ? matchedSource.complaintId : rawId;
+      const targetId = matchedSource ? matchedSource.complaintId : citedId;
 
       parts.push(
         <button
-          key={`cite-${matchStart}-${rawId}`}
+          key={`cite-${match.index}-${citedId}`}
           type="button"
           onClick={() => onSelectComplaint(targetId)}
-          className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md font-mono font-bold text-xs bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-500/20 border border-blue-500/20 transition-colors mx-0.5 cursor-pointer underline decoration-dotted"
-          title={`Click to inspect ticket #${rawId}`}
+          className="inline-flex items-center gap-0.5 mx-0.5 px-1.5 py-0.2 rounded bg-blue-600/10 text-blue-700 dark:text-blue-400 font-mono font-bold text-[11px] hover:underline cursor-pointer border border-blue-500/20 align-baseline"
+          title={`Click to inspect complaint #${targetId}`}
         >
-          #{rawId}
+          <span>#{citedId.slice(0, 8)}</span>
         </button>
       );
 
-      lastIndex = matchEnd;
+      lastIndex = match.index + match[0].length;
     }
 
     if (lastIndex < text.length) {
@@ -209,17 +199,17 @@ export default function ChatPanel({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-surface-card overflow-hidden">
+    <div className="flex-1 flex flex-col h-full bg-surface overflow-hidden">
       {/* Top Header / Context Banner */}
-      <div className="px-3.5 py-2.5 border-b border-border bg-surface/50 flex items-center justify-between text-xs">
+      <div className="px-3.5 py-2.5 border-b border-border bg-surface-card flex items-center justify-between text-xs">
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-lg bg-blue-600/10 text-blue-600 flex items-center justify-center">
+          <div className="w-6 h-6 rounded-md bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
             <Sparkles className="w-3.5 h-3.5" />
           </div>
           <div>
-            <h3 className="font-bold text-foreground text-xs leading-tight">Ward AI Copilot</h3>
+            <h3 className="font-bold text-foreground text-xs leading-tight">Ward Copilot</h3>
             <span className="text-[10px] text-muted-foreground font-mono">
-              Strictly scoped to {wardName}
+              Scoped to {wardName}
             </span>
           </div>
         </div>
@@ -228,7 +218,7 @@ export default function ChatPanel({
           <button
             type="button"
             onClick={handleClearSession}
-            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] text-muted-foreground hover:text-foreground hover:bg-muted/20 border border-border transition-colors cursor-pointer"
+            className="flex items-center gap-1 px-2 py-1 rounded-md text-[11px] text-muted-foreground hover:text-foreground hover:bg-surface-hover border border-border transition-colors cursor-pointer"
             title="Reset session chat history"
           >
             <RotateCcw className="w-3 h-3" />
@@ -241,15 +231,15 @@ export default function ChatPanel({
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center min-h-[300px] text-center p-4">
-            <div className="w-12 h-12 rounded-2xl bg-blue-600/10 text-blue-600 flex items-center justify-center mb-3">
-              <Bot className="w-6 h-6" />
+            <div className="w-10 h-10 rounded-md bg-blue-600/10 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-2.5">
+              <Bot className="w-5 h-5" />
             </div>
             <h4 className="text-sm font-bold text-foreground mb-1">
-              Ask natural questions about {wardName}
+              Ask natural queries about {wardName}
             </h4>
             <p className="text-xs text-muted-foreground max-w-xs mb-4 leading-relaxed">
               Query complaints by category, status, severity, or date. Every answer is derived
-              directly from structured database queries.
+              directly from structured database queries with verifiable SQL.
             </p>
 
             <div className="w-full flex flex-col gap-1.5 text-left">
@@ -261,7 +251,7 @@ export default function ChatPanel({
                   key={idx}
                   type="button"
                   onClick={() => handleSend(prompt)}
-                  className="w-full text-left px-3 py-2 rounded-xl border border-border bg-surface hover:border-blue-500/50 hover:bg-blue-500/5 text-xs text-foreground transition-all cursor-pointer flex items-center justify-between group"
+                  className="w-full text-left px-3 py-2 rounded-md border border-border bg-surface-card hover:border-blue-500/50 hover:bg-blue-500/5 text-xs text-foreground transition-all cursor-pointer flex items-center justify-between group"
                 >
                   <span className="group-hover:text-blue-600 dark:group-hover:text-blue-400">
                     &ldquo;{prompt}&rdquo;
@@ -277,7 +267,7 @@ export default function ChatPanel({
               {msg.sender === 'user' ? (
                 /* User Bubble */
                 <div className="flex justify-end">
-                  <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-blue-600 text-white px-3.5 py-2.5 text-xs font-medium shadow-xs">
+                  <div className="max-w-[85%] rounded-lg rounded-tr-xs bg-blue-600 text-white px-3.5 py-2 text-xs font-medium shadow-2xs">
                     <p className="whitespace-pre-wrap">{msg.text}</p>
                     <span className="block text-[9px] text-blue-200 mt-1 text-right">
                       {msg.timestamp}
@@ -295,22 +285,22 @@ export default function ChatPanel({
                     </span>
                   </div>
 
-                  <div className="rounded-2xl rounded-tl-sm bg-surface border border-border p-3.5 shadow-xs flex flex-col gap-2.5">
+                  <div className="rounded-lg rounded-tl-xs bg-surface-card border border-border p-3.5 shadow-2xs flex flex-col gap-2.5">
                     {/* Natural language formatted answer */}
                     {renderMessageTextWithCitations(msg.text, msg.sources)}
 
                     {/* Collapsible Transparent SQL Query */}
                     {msg.sqlQuery && (
-                      <div className="mt-1 rounded-xl border border-border bg-surface-card overflow-hidden">
+                      <div className="mt-1 rounded-md border border-border bg-surface overflow-hidden">
                         <button
                           type="button"
                           onClick={() => toggleSqlExpand(msg.id)}
-                          className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-mono font-bold text-muted-foreground hover:text-foreground hover:bg-muted/10 transition-colors cursor-pointer"
+                          className="w-full flex items-center justify-between px-3 py-1.5 text-[11px] font-mono font-bold text-muted-foreground hover:text-foreground hover:bg-surface-hover transition-colors cursor-pointer"
                         >
                           <span className="flex items-center gap-1.5">
-                            <Database className="w-3.5 h-3.5 text-blue-600" />
+                            <Database className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                             <span>
-                              SQL Query {expandedSqlIds[msg.id] ? '(Click to Hide)' : '(Click to Expand)'}
+                              SQL Query {expandedSqlIds[msg.id] ? '(Hide SQL)' : '(View SQL)'}
                             </span>
                           </span>
                           {expandedSqlIds[msg.id] ? (
@@ -321,7 +311,7 @@ export default function ChatPanel({
                         </button>
 
                         {expandedSqlIds[msg.id] && (
-                          <div className="p-3 border-t border-border bg-muted/20 text-[11px] font-mono text-foreground overflow-x-auto whitespace-pre-wrap leading-relaxed select-all">
+                          <div className="p-3 border-t border-border bg-muted/10 text-[11px] font-mono text-foreground overflow-x-auto whitespace-pre-wrap leading-relaxed select-all">
                             <code>{msg.sqlQuery}</code>
                           </div>
                         )}
@@ -341,30 +331,15 @@ export default function ChatPanel({
                               key={s.complaintId}
                               type="button"
                               onClick={() => onSelectComplaint(s.complaintId)}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg border border-border bg-surface hover:border-blue-500/50 hover:bg-blue-500/5 text-xs text-foreground transition-all cursor-pointer group"
+                              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border border-border bg-surface hover:border-blue-500/50 hover:bg-blue-500/5 text-xs text-foreground transition-all cursor-pointer group"
                               title={`Inspect ticket #${s.complaintId.slice(0, 8)}: ${s.addressText || ''}`}
                             >
                               <span className="font-mono font-bold text-blue-600 dark:text-blue-400 group-hover:underline text-[11px]">
                                 #{s.complaintId.slice(0, 8)}
                               </span>
                               {s.category && (
-                                <span className="text-[10px] font-medium text-muted-foreground capitalize">
-                                  {s.category}
-                                </span>
-                              )}
-                              {typeof s.severity === 'number' && (
-                                <span
-                                  className={`text-[9px] font-bold px-1 rounded ${
-                                    s.severity === 4
-                                      ? 'bg-red-500/10 text-red-600'
-                                      : s.severity === 3
-                                      ? 'bg-orange-500/10 text-orange-600'
-                                      : s.severity === 2
-                                      ? 'bg-amber-500/10 text-amber-600'
-                                      : 'bg-muted/20 text-muted-foreground'
-                                  }`}
-                                >
-                                  Sev {s.severity}
+                                <span className="text-[10px] text-muted-foreground capitalize">
+                                  ({s.category})
                                 </span>
                               )}
                             </button>
@@ -378,59 +353,32 @@ export default function ChatPanel({
             </div>
           ))
         )}
-
-        {/* Loading Bubble */}
-        {isLoading && (
-          <div className="flex flex-col gap-1 max-w-[85%]">
-            <div className="flex items-center gap-1.5 text-[11px] font-bold text-blue-600 dark:text-blue-400">
-              <Sparkles className="w-3.5 h-3.5 animate-spin" />
-              <span>Querying Ward Database...</span>
-            </div>
-            <div className="rounded-2xl rounded-tl-sm bg-surface border border-border p-3.5 shadow-xs flex items-center gap-2 text-xs text-muted-foreground">
-              <span className="w-2 h-2 rounded-full bg-blue-600 animate-ping" />
-              <span>Generating SQL filter and retrieving ward records...</span>
-            </div>
-          </div>
-        )}
-
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input Field at Bottom */}
-      <div className="p-3 border-t border-border bg-surface/50">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSend();
-          }}
-          className="flex items-center gap-2"
-        >
-          <div className="relative flex-1">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={handleKeyDown}
-              disabled={isLoading || !wardId}
-              placeholder={
-                wardId
-                  ? 'Ask about complaints by category, status, or date...'
-                  : 'Assign ward to enable chat...'
-              }
-              className="w-full pl-3.5 pr-3 py-2 rounded-xl border border-border bg-surface text-foreground text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-600/30 focus:border-blue-600 transition-all disabled:opacity-50"
-            />
-          </div>
-
+      {/* Input Form Footer */}
+      <div className="p-3 border-t border-border bg-surface-card">
+        <div className="flex items-center gap-2">
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={isLoading}
+            placeholder={`Ask about complaints in ${wardName}...`}
+            className="flex-1 px-3 py-2 text-xs rounded-md border border-border bg-surface text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-accent disabled:opacity-50"
+          />
           <button
-            type="submit"
-            disabled={!inputValue.trim() || isLoading || !wardId}
-            className="p-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all cursor-pointer shadow-xs flex items-center justify-center flex-shrink-0"
-            title="Send query"
+            type="button"
+            onClick={() => handleSend()}
+            disabled={isLoading || !inputValue.trim()}
+            className="px-3.5 py-2 rounded-md bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-xs font-bold transition-all shadow-2xs flex items-center gap-1 cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-accent"
           >
             <Send className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Send</span>
           </button>
-        </form>
+        </div>
       </div>
     </div>
   );

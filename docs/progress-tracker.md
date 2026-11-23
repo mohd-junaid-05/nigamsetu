@@ -112,3 +112,18 @@
 - [x] Dark/light mode theme audit across all pages and components
 - [x] Mobile PWA offline shell verification and standalone install test
 - [x] Final acceptance check verification across all 13 phases
+
+## Phase 14: UI/UX Refinement, Design System & AI-Slop Elimination
+- [x] Design intelligence and skill preparation: Installed lightweight Anthropic (`frontend-design`) and Vercel (`web-design-guidelines`, `building-components`) skills; conducted research foundation audit in `docs/design-system-audit.md`
+- [x] Complete UI audit across all 5 roles (citizen, official, facility, admin, public) and all routes (`/`, `/report`, `/map`, `/dashboard`, `/facility`, `/admin/traces`, `/demo`)
+- [x] AI-slop elimination: Stripped excessive gradients, glowing blobs, neon drop shadows, bloated nested cards, and robotic copy; established restrained, authoritative municipal civic palette
+- [x] Design system standardization: Refined `app/globals.css` with semantic color tokens, WCAG 2.2 AA contrast compliance (>= 4.5:1 text, >= 3:1 controls), 4px grid spacing, and `@media (prefers-reduced-motion: reduce)` rules
+- [x] App shell and navigation: Aligned `AppHeader` with clean role pills, high-contrast links, and mobile-friendly secondary navigation bar without decorative badge spam
+- [x] Citizen experience refinement: Streamlined `/report` flow (`CategorySelector`, `CameraCapture`, `LocationPicker`, `SuccessScreen`, `MyComplaintsList`) with >= 48px touch targets, monospaced coordinate badges, and preserved all `data-testid` attributes
+- [x] Public map & metrics: Modernized `/map` (`MapStatsBanner`, `MapFilterBar`, `MapLegend`, `PublicMapContainer`) with high-contrast metric typography, clean filter chips, and accessible OSM dark-mode tile rendering
+- [x] Official operations & dashboard: Standardized `/dashboard` 3-panel layout (`PriorityQueueTable`, `ComplaintDetailPanel`, `EscalationQueueTable`, `ChatPanel`, `AssignmentModal`) with dense tabular rows, clickable citation pills `[#id]`, and before/after verification evidence cards
+- [x] Depot & facility workflow: Polished `/facility` (`FacilityView`, `ResolutionModal`) with tactile workflow actions (Start Work, Upload Proof), 10MB file validation, and GPS capture
+- [x] Administrator transparency view: Refined `/admin/traces` (`AdminTracesView`, `VerificationTraceModal`) with multi-facet filters, tool-specific payload previews, and one-click JSON clipboard export
+- [x] Live presentation deck: Polished `/demo` presentation runner with synchronized speech synthesis, clean chapter tabs, and cheat sheet cards
+- [x] Functional preservation & zero-regression build: Verified Next.js 16 Turbopack production build compiles with zero TypeScript errors and all API route contracts, database policies, PostGIS queries, and AI algorithms 100% intact
+

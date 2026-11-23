@@ -19,7 +19,7 @@ const LeafletPickerMap = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="w-full h-56 rounded-xl border border-border bg-surface flex items-center justify-center text-xs text-muted-foreground animate-pulse">
+      <div className="w-full h-56 rounded-lg border border-border bg-surface flex items-center justify-center text-xs text-muted-foreground animate-pulse">
         Loading interactive map picker...
       </div>
     ),
@@ -159,11 +159,11 @@ export function LocationPicker({
       </div>
 
       {/* Main Location Status Card */}
-      <div className="p-3.5 rounded-xl border border-border bg-surface-card space-y-3">
+      <div className="p-3.5 rounded-lg border border-border bg-surface space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-2.5 min-w-0">
             <div
-              className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
+              className={`w-7 h-7 rounded-md flex items-center justify-center shrink-0 ${
                 lat !== null && lng !== null
                   ? 'bg-status-verified/10 text-status-verified'
                   : 'bg-status-open/10 text-status-open'
@@ -174,33 +174,33 @@ export function LocationPicker({
 
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <h4 className="text-xs font-bold text-foreground">
+                <h4 className="text-xs font-bold text-foreground font-mono">
                   {lat !== null && lng !== null
                     ? `${lat.toFixed(5)}° N, ${lng.toFixed(5)}° E`
                     : 'Awaiting Location Lock'}
                 </h4>
                 {gpsStatus === 'locating' && (
-                  <span className="text-[10px] font-mono text-accent animate-pulse">
+                  <span className="text-[10px] font-mono text-blue-600 dark:text-blue-400 animate-pulse">
                     locking GPS...
                   </span>
                 )}
               </div>
 
-              <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">
+              <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">
                 {geocoding ? 'Reverse geocoding address via Nominatim...' : addressText || 'No address resolved'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 flex-shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               type="button"
               disabled={disabled || gpsStatus === 'locating'}
               onClick={requestGpsLocation}
               title="Acquire live GPS"
-              className="p-1.5 rounded-lg border border-border hover:bg-surface text-foreground transition-colors cursor-pointer"
+              className="p-1.5 rounded-md border border-border hover:bg-surface-hover text-foreground transition-colors cursor-pointer min-h-[36px] min-w-[36px] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-accent"
             >
-              <RotateCw className={`w-3.5 h-3.5 ${gpsStatus === 'locating' ? 'animate-spin text-accent' : ''}`} />
+              <RotateCw className={`w-3.5 h-3.5 ${gpsStatus === 'locating' ? 'animate-spin text-blue-600' : ''}`} />
             </button>
 
             <button
@@ -208,10 +208,10 @@ export function LocationPicker({
               disabled={disabled}
               onClick={() => setShowManualPicker(!showManualPicker)}
               title="Toggle map picker"
-              className={`p-1.5 rounded-lg border text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer ${
+              className={`px-2.5 py-1.5 rounded-md border text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer min-h-[36px] focus-visible:ring-2 focus-visible:ring-accent ${
                 showManualPicker
-                  ? 'bg-accent text-white border-accent'
-                  : 'border-border hover:bg-surface text-foreground'
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-xs'
+                  : 'border-border hover:bg-surface-hover text-foreground'
               }`}
             >
               <Sliders className="w-3.5 h-3.5" />
@@ -224,9 +224,9 @@ export function LocationPicker({
         {errorMessage && (
           <div
             role="alert"
-            className="p-2.5 rounded-lg bg-status-assigned/10 border border-status-assigned/30 text-status-assigned text-xs flex items-center gap-2"
+            className="p-2.5 rounded-md bg-status-assigned/10 border border-status-assigned/30 text-status-assigned text-xs flex items-center gap-2"
           >
-            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+            <AlertTriangle className="w-4 h-4 shrink-0" />
             <span className="font-medium text-[11px]">{errorMessage}</span>
           </div>
         )}
@@ -241,18 +241,18 @@ export function LocationPicker({
               key={preset.name}
               type="button"
               onClick={() => handlePresetSelect(preset)}
-              className="px-2 py-0.5 rounded-md border border-border bg-surface hover:bg-surface-hover hover:border-accent text-foreground whitespace-nowrap transition-colors cursor-pointer font-mono"
+              className="px-2 py-1 rounded-md border border-border bg-surface hover:bg-surface-hover hover:border-blue-600 text-foreground whitespace-nowrap transition-colors cursor-pointer font-mono"
             >
               {preset.name.split(' - ')[1]}
             </button>
           ))}
         </div>
 
-        {/* Interactive Manual Map Picker (Acceptance check 4) */}
+        {/* Interactive Manual Map Picker */}
         {showManualPicker && (
           <div className="pt-2 border-t border-border space-y-2">
             <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-              <span className="font-medium text-foreground">Manual Point Selector</span>
+              <span className="font-semibold text-foreground">Manual Pin Selector</span>
               <span>Click map or drag marker</span>
             </div>
 

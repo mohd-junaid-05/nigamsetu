@@ -199,10 +199,10 @@ export default function AdminTracesView({
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl border border-border bg-surface-card flex flex-col gap-1 shadow-sm">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="p-3.5 rounded-lg border border-border bg-surface flex flex-col gap-1 shadow-2xs">
           <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-blue-500" />
+            <Layers className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
             Total Filtered Traces
           </span>
           <span data-testid="kpi-total-traces" className="text-2xl font-black text-foreground font-mono">
@@ -211,9 +211,9 @@ export default function AdminTracesView({
           <span className="text-[10px] text-muted-foreground">Logged across all 5 agent tools</span>
         </div>
 
-        <div className="p-4 rounded-2xl border border-border bg-surface-card flex flex-col gap-1 shadow-sm">
+        <div className="p-3.5 rounded-lg border border-border bg-surface flex flex-col gap-1 shadow-2xs">
           <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1.5">
-            <Clock className="w-3.5 h-3.5 text-amber-500" />
+            <Clock className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
             Average Execution Latency
           </span>
           <span className="text-2xl font-black text-foreground font-mono">
@@ -224,9 +224,9 @@ export default function AdminTracesView({
           <span className="text-[10px] text-muted-foreground">Across visible execution logs</span>
         </div>
 
-        <div className="p-4 rounded-2xl border border-border bg-surface-card flex flex-col gap-1 shadow-sm">
+        <div className="p-3.5 rounded-lg border border-border bg-surface flex flex-col gap-1 shadow-2xs">
           <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
             Active AI Models
           </span>
           <span className="text-2xl font-black text-foreground font-mono">
@@ -235,9 +235,9 @@ export default function AdminTracesView({
           <span className="text-[10px] text-muted-foreground">Cascaded multimodal vision models</span>
         </div>
 
-        <div className="p-4 rounded-2xl border border-border bg-surface-card flex flex-col gap-1 shadow-sm">
+        <div className="p-3.5 rounded-lg border border-border bg-surface flex flex-col gap-1 shadow-2xs">
           <span className="text-[11px] font-bold text-muted-foreground flex items-center gap-1.5">
-            <ShieldAlert className="w-3.5 h-3.5 text-purple-500" />
+            <ShieldAlert className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
             Audit Integrity
           </span>
           <span className="text-2xl font-black text-emerald-600 font-mono">
@@ -248,10 +248,10 @@ export default function AdminTracesView({
       </div>
 
       {/* Filter Bar */}
-      <div className="p-4 rounded-2xl border border-border bg-surface-card shadow-sm flex flex-col gap-3">
+      <div className="p-3.5 rounded-lg border border-border bg-surface shadow-2xs flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-            <Filter className="w-4 h-4 text-purple-600" />
+            <Filter className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             Trace Query Filters
           </span>
           <button
@@ -277,7 +277,7 @@ export default function AdminTracesView({
                 setSelectedTool(e.target.value);
                 setPage(1);
               }}
-              className="py-2 px-3 rounded-xl border border-border bg-surface text-foreground font-medium focus:ring-2 focus:ring-purple-500/20 outline-none"
+              className="py-1.5 px-3 rounded-md border border-border bg-surface-card text-foreground font-medium focus:ring-2 focus:ring-purple-500/20 outline-none"
             >
               {TOOL_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -300,7 +300,7 @@ export default function AdminTracesView({
                 setSelectedModel(e.target.value);
                 setPage(1);
               }}
-              className="py-2 px-3 rounded-xl border border-border bg-surface text-foreground font-medium focus:ring-2 focus:ring-purple-500/20 outline-none"
+              className="py-1.5 px-3 rounded-md border border-border bg-surface-card text-foreground font-medium focus:ring-2 focus:ring-purple-500/20 outline-none"
             >
               {MODEL_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -323,7 +323,7 @@ export default function AdminTracesView({
                 setDateFilter(e.target.value as any);
                 setPage(1);
               }}
-              className="py-2 px-3 rounded-xl border border-border bg-surface text-foreground font-medium focus:ring-2 focus:ring-purple-500/20 outline-none"
+              className="py-1.5 px-3 rounded-md border border-border bg-surface-card text-foreground font-medium focus:ring-2 focus:ring-purple-500/20 outline-none"
             >
               <option value="all">All Available Records</option>
               <option value="today">Today (Last 24 Hours)</option>
@@ -348,7 +348,7 @@ export default function AdminTracesView({
                   setComplaintSearch(e.target.value);
                   setPage(1);
                 }}
-                className="w-full py-2 pl-8 pr-3 rounded-xl border border-border bg-surface text-foreground font-mono text-xs focus:ring-2 focus:ring-purple-500/20 outline-none"
+                className="w-full py-1.5 pl-8 pr-3 rounded-md border border-border bg-surface-card text-foreground font-mono text-xs focus:ring-2 focus:ring-purple-500/20 outline-none"
               />
               <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
@@ -357,7 +357,7 @@ export default function AdminTracesView({
       </div>
 
       {/* Traces Table Section */}
-      <div className="rounded-2xl border border-border bg-surface-card overflow-hidden shadow-sm flex flex-col">
+      <div className="rounded-lg border border-border bg-surface overflow-hidden shadow-2xs flex flex-col">
         {loading && (
           <div className="p-8 text-center text-xs text-muted-foreground flex flex-col items-center justify-center gap-2">
             <RefreshCw className="w-5 h-5 animate-spin text-purple-600" />

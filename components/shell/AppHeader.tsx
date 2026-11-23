@@ -3,7 +3,15 @@ import { Suspense } from 'react';
 import { Show, SignInButton, UserButton } from '@clerk/nextjs';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { getServerSession } from '@/lib/auth/session';
-import { MapPin, ShieldAlert, FileText, Building2, Sparkles } from 'lucide-react';
+import {
+  MapPin,
+  ShieldAlert,
+  FileText,
+  Building2,
+  Sparkles,
+  PlayCircle,
+  Menu,
+} from 'lucide-react';
 
 async function UserRoleClaimBadge() {
   const session = await getServerSession();
@@ -12,10 +20,10 @@ async function UserRoleClaimBadge() {
     return (
       <div
         data-testid="server-role-badge"
-        className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border border-border bg-surface text-muted-foreground"
+        className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-md text-xs border border-border bg-surface text-muted-foreground"
       >
-        <span className="inline-block w-2 h-2 rounded-full bg-gray-400" />
-        <span>Visitor (Public)</span>
+        <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+        <span className="font-medium">Public Visitor</span>
       </div>
     );
   }
@@ -23,16 +31,16 @@ async function UserRoleClaimBadge() {
   return (
     <div
       data-testid="server-role-badge"
-      className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border border-border bg-surface"
+      className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-md text-xs border border-border bg-surface"
     >
-      <span className="inline-block w-2 h-2 rounded-full bg-status-verified" />
-      <span className="text-muted-foreground">Role:</span>
+      <span className="w-1.5 h-1.5 rounded-full bg-status-verified" />
+      <span className="text-muted-foreground font-medium">Role:</span>
       <span className="font-semibold capitalize text-foreground">{session.role}</span>
       {session.wardId && (
         <>
           <span className="text-border">|</span>
           <span className="text-muted-foreground">Ward:</span>
-          <span className="font-mono font-medium text-foreground">{session.wardId}</span>
+          <span className="font-mono font-semibold text-foreground">{session.wardId}</span>
         </>
       )}
     </div>
@@ -41,98 +49,85 @@ async function UserRoleClaimBadge() {
 
 export function AppHeader() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-surface-card/95 backdrop-blur supports-[backdrop-filter]:bg-surface-card/75">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-surface/95 backdrop-blur-md supports-[backdrop-filter]:bg-surface/85 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Brand / Logo */}
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2.5 font-bold text-lg tracking-tight">
-            <div className="w-9 h-9 rounded-lg bg-blue-600 text-white flex items-center justify-center font-black shadow-sm">
+          <Link
+            href="/"
+            className="flex items-center gap-3 text-foreground focus-visible:ring-2 focus-visible:ring-accent rounded-md py-1"
+          >
+            <div className="w-8 h-8 rounded-md bg-blue-600 text-white flex items-center justify-center font-black text-sm tracking-tight shadow-xs">
               NS
             </div>
             <div className="flex flex-col">
-              <span className="leading-none text-foreground font-black tracking-tight">NigamSetu</span>
-              <span className="text-[10px] text-muted tracking-wider uppercase font-semibold mt-0.5">
-                AI Civic Fix Layer
+              <span className="leading-tight font-black tracking-tight text-base">
+                NigamSetu
+              </span>
+              <span className="text-[10px] text-muted-foreground tracking-wider uppercase font-semibold">
+                AI Civic Fix Platform
               </span>
             </div>
           </Link>
 
-          {/* Navigation Links */}
+          {/* Primary Navigation */}
           <nav className="hidden md:flex items-center gap-1 text-sm font-medium">
             <Link
               href="/"
-              className="px-3 py-1.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-surface-hover transition-colors flex items-center gap-1.5"
+              className="px-3 py-1.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-surface-hover transition-colors"
             >
-              <span>Home</span>
+              Overview
             </Link>
             <Link
               href="/map"
               className="px-3 py-1.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-surface-hover transition-colors flex items-center gap-1.5"
             >
-              <MapPin className="w-4 h-4 text-blue-500" />
+              <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
               <span>Public Map</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold">
-                Live
-              </span>
             </Link>
             <Link
               href="/report"
               className="px-3 py-1.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-surface-hover transition-colors flex items-center gap-1.5"
             >
-              <FileText className="w-4 h-4 text-amber-500" />
+              <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
               <span>Report Issue</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/10 text-amber-600 dark:text-amber-400 font-semibold">
-                Mobile
-              </span>
             </Link>
             <Link
               href="/dashboard"
               className="px-3 py-1.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-surface-hover transition-colors flex items-center gap-1.5"
             >
-              <ShieldAlert className="w-4 h-4 text-red-500" />
-              <span>Official Dashboard</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-600/10 text-blue-600 dark:text-blue-400 font-semibold">
-                Ops
-              </span>
+              <ShieldAlert className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+              <span>Official Operations</span>
             </Link>
             <Link
               href="/facility"
               className="px-3 py-1.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-surface-hover transition-colors flex items-center gap-1.5"
             >
-              <Building2 className="w-4 h-4 text-emerald-500" />
+              <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
               <span>Facility Depot</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold">
-                Field
-              </span>
             </Link>
             <Link
               href="/admin/traces"
               className="px-3 py-1.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-surface-hover transition-colors flex items-center gap-1.5"
             >
-              <Sparkles className="w-4 h-4 text-purple-500" />
+              <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
               <span>AI Traces</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-purple-600/10 text-purple-600 dark:text-purple-400 font-semibold">
-                Audit
-              </span>
             </Link>
             <Link
               href="/demo"
-              className="px-3 py-1.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-surface-hover transition-colors flex items-center gap-1.5"
+              className="px-2.5 py-1 rounded-md text-xs font-semibold text-foreground/90 hover:text-foreground hover:bg-surface-hover border border-border transition-colors flex items-center gap-1.5 ml-1"
             >
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-              <span>Demo Walkthrough</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-red-500/10 text-red-600 dark:text-red-400 font-bold">
-                6 min
-              </span>
+              <PlayCircle className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+              <span>Demo</span>
             </Link>
           </nav>
         </div>
 
-        {/* Right Section: Role Claim, Ward, Theme, Auth */}
-        <div className="flex items-center gap-3">
+        {/* Right Section: Identity Badge, Theme, Auth */}
+        <div className="flex items-center gap-2.5">
           <Suspense
             fallback={
-              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs border border-border bg-surface text-muted-foreground animate-pulse">
+              <div className="hidden lg:flex items-center gap-2 px-2.5 py-1 rounded-md text-xs border border-border bg-surface text-muted-foreground animate-pulse">
                 <span>Loading identity...</span>
               </div>
             }
@@ -140,7 +135,6 @@ export function AppHeader() {
             <UserRoleClaimBadge />
           </Suspense>
 
-          {/* Theme Switcher */}
           <ThemeToggle />
 
           {/* User Sign-In / User Profile Button */}
@@ -159,7 +153,7 @@ export function AppHeader() {
                 <SignInButton mode="modal">
                   <button
                     type="button"
-                    className="px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-sm"
+                    className="px-3 py-1.5 text-xs font-semibold rounded-md bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.98] transition-all shadow-xs cursor-pointer focus-visible:ring-2 focus-visible:ring-accent"
                   >
                     Sign In
                   </button>
@@ -168,6 +162,30 @@ export function AppHeader() {
             </Suspense>
           </div>
         </div>
+      </div>
+
+      {/* Mobile Secondary Action Strip */}
+      <div className="md:hidden flex items-center justify-around border-t border-border bg-surface px-2 py-2 text-xs font-medium text-muted-foreground overflow-x-auto">
+        <Link href="/map" className="px-2 py-1 hover:text-foreground flex items-center gap-1 shrink-0">
+          <MapPin className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+          <span>Map</span>
+        </Link>
+        <Link href="/report" className="px-2 py-1 hover:text-foreground flex items-center gap-1 shrink-0 font-semibold text-foreground">
+          <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+          <span>Report</span>
+        </Link>
+        <Link href="/dashboard" className="px-2 py-1 hover:text-foreground flex items-center gap-1 shrink-0">
+          <ShieldAlert className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+          <span>Dashboard</span>
+        </Link>
+        <Link href="/facility" className="px-2 py-1 hover:text-foreground flex items-center gap-1 shrink-0">
+          <Building2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+          <span>Depot</span>
+        </Link>
+        <Link href="/demo" className="px-2 py-1 hover:text-foreground flex items-center gap-1 shrink-0 font-medium">
+          <PlayCircle className="w-3.5 h-3.5 text-red-600" />
+          <span>Demo</span>
+        </Link>
       </div>
     </header>
   );

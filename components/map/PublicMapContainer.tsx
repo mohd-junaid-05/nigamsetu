@@ -284,13 +284,13 @@ export function PublicMapContainer({
       <MapStatsBanner visiblePins={filteredPins} />
 
       {/* Main Map Container Card */}
-      <div className="rounded-2xl border border-border bg-surface-card overflow-hidden shadow-sm flex flex-col">
+      <div className="rounded-xl border border-border bg-surface overflow-hidden shadow-xs flex flex-col">
         {/* Top Filter and Controls Bar */}
-        <div className="p-4 border-b border-border bg-surface/40">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+        <div className="p-3.5 border-b border-border bg-surface">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-2.5">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-blue-600" />
-              <h2 className="text-sm font-bold text-foreground">
+              <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-foreground">
                 Public Complaint Clusters
               </h2>
               <span className="text-xs text-muted-foreground">
@@ -301,9 +301,9 @@ export function PublicMapContainer({
             <div className="flex items-center gap-2">
               <Link
                 href="/map"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface hover:bg-surface-hover border border-border text-xs font-semibold text-foreground transition-colors shadow-xs"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-surface hover:bg-surface-hover border border-border text-xs font-semibold text-foreground transition-colors shadow-2xs"
               >
-                <Maximize2 className="w-3.5 h-3.5 text-blue-600" />
+                <Maximize2 className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                 <span>Full Viewport</span>
               </Link>
 
@@ -312,7 +312,7 @@ export function PublicMapContainer({
                 onClick={fetchPins}
                 disabled={isLoading}
                 title="Refresh Map"
-                className="p-1.5 rounded-lg bg-surface hover:bg-surface-hover border border-border text-foreground transition-colors cursor-pointer"
+                className="p-1.5 rounded-md bg-surface hover:bg-surface-hover border border-border text-foreground transition-colors cursor-pointer min-h-[32px] min-w-[32px] flex items-center justify-center focus-visible:ring-2 focus-visible:ring-accent"
               >
                 <RotateCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-600' : ''}`} />
               </button>
