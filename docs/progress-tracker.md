@@ -107,8 +107,8 @@
 - [x] Public auditability badge ensuring AI actions are evidence-derived
 
 ## Phase 13: Demo data and polish
-- [ ] Comprehensive realistic seed script with real Indian ward scenarios (potholes, garbage, sewage)
-- [ ] Five pre-verified before/after photo test pairs for live acceptance demo
-- [ ] Dark/light mode theme audit across all pages and components
-- [ ] Mobile PWA offline shell verification and standalone install test
-- [ ] Final acceptance check verification across all 13 phases
+- [x] Comprehensive realistic seed script with real Indian ward scenarios (potholes, garbage, sewage)
+- [x] Five pre-verified before/after photo test pairs for live acceptance demo
+- [x] Dark/light mode theme audit across all pages and components
+- [x] Mobile PWA offline shell verification and standalone install test
+- [x] Final acceptance check verification across all 13 phases

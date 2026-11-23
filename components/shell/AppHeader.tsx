@@ -115,6 +115,16 @@ export function AppHeader() {
                 Audit
               </span>
             </Link>
+            <Link
+              href="/demo"
+              className="px-3 py-1.5 rounded-md text-foreground/80 hover:text-foreground hover:bg-surface-hover transition-colors flex items-center gap-1.5"
+            >
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+              <span>Demo Walkthrough</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded bg-red-500/10 text-red-600 dark:text-red-400 font-bold">
+                6 min
+              </span>
+            </Link>
           </nav>
         </div>
 

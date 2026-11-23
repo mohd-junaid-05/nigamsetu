@@ -127,6 +127,9 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-23 | Enforce strict citizen isolation in `agent_traces` RLS policy (`complaints.reporter_id = requesting_user_id()`) | Guarantees citizens can only view audit traces for their own complaints while admins maintain global audit capability and officials maintain ward scoping | Yes |
 | 2026-11-23 | Add `get_filtered_agent_traces` RPC function with dynamic multi-facet filtering | Enables fast server-side filtering by tool name, complaint ID, model architecture, and date boundaries with windowed total count | Yes |
 | 2026-11-23 | Provide polymorphic `AgentTraceModal` handling all 5 agent tools with multi-trace tab navigation | Supports unified audit inspection for severity scoring, perceptual duplicate checks, 4-check fix verification, escalation drafting, and chat answers | Yes |
+| 2026-11-23 | Generate 192x192, 512x512, and 180x180 PNG PWA icons with `sharp` alongside SVGs | Meets strict mobile PWA standalone installation standards across iOS Safari and Android Chrome | Yes |
+| 2026-11-23 | Pre-seed real Clerk persona accounts (`demo.citizen`, `demo.official.*`, `demo.admin`) with synced `profiles` | Ensures live stage presentation works with actual Clerk credentials and synchronized JWT claims without manual account setup | Yes |
+| 2026-11-23 | Build interactive 6-minute presentation and walkthrough engine at `/demo` with Web Speech API audio synthesis | Guarantees failsafe demo execution on stage with synchronized chapters, timed speaker narration, and backup video playback | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.
 
