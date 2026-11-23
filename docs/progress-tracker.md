@@ -75,12 +75,12 @@
 - [x] Status transition enforcement (only `in_progress` -> `resolved` permitted; direct from `open` rejected)
 
 ## Phase 09: AI Agent: Resolution verification
-- [ ] `verifyResolution` tool using Gemini Vision to compare before/after images
-- [ ] Pure mathematical alignment check: GPS distance threshold and timestamp ordering
-- [ ] AI similarity score calculation (0.0 to 1.0)
-- [ ] Auto-confirmation to `verified` (green) if score exceeds threshold
-- [ ] Auto-rejection to `in_progress` if score is below 0.4 with reason logged
-- [ ] Manual override action for official and citizen appeal
+- [x] `verifyResolution` tool using Gemini Vision to compare before/after images
+- [x] Pure mathematical alignment check: GPS distance threshold and timestamp ordering
+- [x] AI similarity score calculation (0.0 to 1.0)
+- [x] Auto-confirmation to `verified` (green) if score exceeds threshold
+- [x] Auto-rejection to `in_progress` if score is below 0.4 with reason logged
+- [x] Manual override action for official and citizen appeal
 
 ## Phase 10: AI Agent: Escalation autopilot
 - [ ] Automated SLA breach detection cron/checker for overdue complaints

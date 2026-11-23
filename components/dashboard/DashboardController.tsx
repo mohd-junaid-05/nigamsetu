@@ -104,24 +104,64 @@ export default function DashboardController({
     complaintId,
     resolutionImageUrl,
     resolvedAt,
+    status,
+    verification,
   }: {
     complaintId: string;
     resolutionImageUrl: string;
     resolvedAt: string;
+    notes?: string | null;
+    status?: string;
+    verification?: any;
   }) => {
+    const finalStatus = (status as any) || 'resolved';
     setQueue((prev) =>
       prev.map((item) =>
         item.id === complaintId
           ? {
               ...item,
-              status: 'resolved' as const,
+              status: finalStatus,
               resolution_image_url: resolutionImageUrl,
               resolved_at: resolvedAt,
+              verification_score: typeof verification?.score === 'number' ? verification.score : item.verification_score,
+              verification_status: verification?.autoVerificationStatus || item.verification_status,
             }
           : item
       )
     );
     refreshQueue();
+  };
+
+  // Handle official verification action (Verify & Close, Reject & Reopen, Flag for Review)
+  const handleVerifyAction = async (
+    complaintId: string,
+    action: 'verify' | 'reject' | 'flag',
+    notes?: string
+  ) => {
+    try {
+      const res = await fetch(`/api/complaints/${complaintId}/verify`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, notes }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setQueue((prev) =>
+          prev.map((item) =>
+            item.id === complaintId
+              ? {
+                  ...item,
+                  status: data.status as any,
+                  verification_status: data.verification_status,
+                }
+              : item
+          )
+        );
+        refreshQueue();
+      }
+    } catch (err) {
+      console.error('[DashboardController] Failed to apply verification action:', err);
+    }
   };
 
   return (
@@ -266,6 +306,7 @@ export default function DashboardController({
             onOpenAssign={(item) => setAssignTarget(item)}
             onOpenResolve={(item) => setResolveTarget(item)}
             onStartWork={handleStartWork}
+            onVerifyAction={handleVerifyAction}
           />
         </section>
       </div>

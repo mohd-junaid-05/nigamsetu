@@ -113,5 +113,8 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-22 | Extend `profiles` table with `facility_id` and add `facility` role | Enables municipal contractor/facility worker scoping, RLS policy checks, and depot dashboard view | Yes |
 | 2026-11-22 | Enforce strict status transitions via `trg_complaint_status_transition` | Guarantees database and API layer reject moving tickets directly to `resolved` unless previous state was `in_progress` | Yes |
 | 2026-11-22 | Introduce `complaint_activity_logs` table and `resolve_complaint` RPC | Atomically updates resolution image URL, GPS coordinates, notes, resolved timestamp, and logs activity timeline | Yes |
+| 2026-11-23 | Implement composite resolution scoring formula: `(gps_score * 0.2) + (hash_score * 0.3) + (vision_score * 0.5)` | Ensures deterministic, testable verification scoring with hard GPS threshold (>100m) and perceptual hash fake detection (<5 Hamming distance) | Yes |
+| 2026-11-23 | Add `apply_verification_result` RPC and `get_complaint_verification_trace` RPC | Atomically updates complaint status, score, verification status, and activity audit timeline with security definer permissions | Yes |
+| 2026-11-23 | Include resolved and verified status tickets in `get_priority_queue` | Enables officials to review tickets awaiting verification and audit resolution evidence directly from the controller dashboard | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.

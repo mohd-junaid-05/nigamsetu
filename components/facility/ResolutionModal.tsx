@@ -26,6 +26,8 @@ interface ResolutionModalProps {
     resolutionImageUrl: string;
     resolvedAt: string;
     notes?: string | null;
+    status?: string;
+    verification?: any;
   }) => void;
 }
 
@@ -146,6 +148,8 @@ export default function ResolutionModal({
         resolutionImageUrl: data.resolution_image_url,
         resolvedAt: data.resolved_at,
         notes: data.notes,
+        status: data.status,
+        verification: data.verification,
       });
       onClose();
     } catch (err: unknown) {

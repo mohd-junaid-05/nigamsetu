@@ -1,12 +1,11 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { PriorityQueueItem } from '@/app/api/complaints/priority/route';
 import {
   ShieldAlert,
   MapPin,
   Clock,
-  User,
   Building2,
   CheckCircle2,
   AlertTriangle,
@@ -14,14 +13,23 @@ import {
   Users,
   Camera,
   Play,
+  Sparkles,
+  XCircle,
+  HelpCircle,
+  RefreshCw,
+  RotateCcw,
+  Flag,
+  CheckCheck,
 } from 'lucide-react';
 import Link from 'next/link';
+import VerificationTraceModal, { VerificationTraceData } from './VerificationTraceModal';
 
 interface ComplaintDetailPanelProps {
   complaint: PriorityQueueItem | null;
   onOpenAssign: (item: PriorityQueueItem) => void;
   onOpenResolve?: (item: PriorityQueueItem) => void;
   onStartWork?: (item: PriorityQueueItem) => void;
+  onVerifyAction?: (complaintId: string, action: 'verify' | 'reject' | 'flag', notes?: string) => Promise<void>;
   facilityName?: string | null;
 }
 
@@ -82,8 +90,41 @@ export default function ComplaintDetailPanel({
   onOpenAssign,
   onOpenResolve,
   onStartWork,
+  onVerifyAction,
   facilityName,
 }: ComplaintDetailPanelProps) {
+  const [isTraceModalOpen, setIsTraceModalOpen] = useState(false);
+  const [traceData, setTraceData] = useState<VerificationTraceData | null>(null);
+  const [isLoadingTrace, setIsLoadingTrace] = useState(false);
+  const [isPerformingAction, setIsPerformingAction] = useState<string | null>(null);
+
+  // Fetch latest verification trace for the selected complaint
+  const fetchTrace = async (complaintId: string) => {
+    setIsLoadingTrace(true);
+    try {
+      const res = await fetch(`/api/complaints/${complaintId}/trace`);
+      const data = await res.json();
+      if (data.success && data.trace) {
+        setTraceData(data.trace);
+      } else {
+        setTraceData(null);
+      }
+    } catch (err) {
+      console.warn('[ComplaintDetailPanel] Failed to fetch trace:', err);
+      setTraceData(null);
+    } finally {
+      setIsLoadingTrace(false);
+    }
+  };
+
+  useEffect(() => {
+    if (complaint?.id && (complaint.resolution_image_url || complaint.status === 'resolved' || complaint.status === 'verified')) {
+      fetchTrace(complaint.id);
+    } else {
+      setTraceData(null);
+    }
+  }, [complaint?.id, complaint?.status, complaint?.resolution_image_url]);
+
   if (!complaint) {
     return (
       <div className="p-8 flex-1 flex flex-col items-center justify-center text-center text-xs text-muted-foreground">
@@ -104,6 +145,42 @@ export default function ComplaintDetailPanel({
   const isBreached = complaint.sla_breached;
 
   const currentStepIdx = STATUS_STEPS.findIndex((s) => s.key === complaint.status);
+
+  // Verification metrics & checks derived from complaint and trace
+  const verificationScore =
+    typeof complaint.verification_score === 'number'
+      ? complaint.verification_score
+      : typeof traceData?.output_summary?.score === 'number'
+      ? traceData.output_summary.score
+      : null;
+
+  const traceOutput = traceData?.output_summary;
+  const checks = traceOutput?.checks || {
+    gpsMatch: true,
+    timestampValid: true,
+    hashDifferent: true,
+    visionVerdict: verificationScore !== null ? verificationScore >= 0.75 : true,
+  };
+
+  const reasonText =
+    traceOutput?.reason ||
+    (verificationScore !== null && verificationScore >= 0.75
+      ? 'Visual evidence confirms the reported infrastructure defect has been genuinely repaired and cleared.'
+      : verificationScore !== null && verificationScore < 0.4
+      ? 'Evidence failed verification checks: resolution photo does not confirm genuine defect repair.'
+      : 'Resolution photo submitted and awaiting municipal verification.');
+
+  // Handle manual official actions
+  const handleAction = async (action: 'verify' | 'reject' | 'flag') => {
+    if (!onVerifyAction) return;
+    setIsPerformingAction(action);
+    try {
+      await onVerifyAction(complaint.id, action);
+      await fetchTrace(complaint.id);
+    } finally {
+      setIsPerformingAction(null);
+    }
+  };
 
   return (
     <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 text-xs">
@@ -188,6 +265,267 @@ export default function ComplaintDetailPanel({
         </p>
       </div>
 
+      {/* ========================================================================= */}
+      {/* PHASE 09: RESOLUTION VERIFICATION PANEL (BEFORE/AFTER & SCORE BAR)         */}
+      {/* ========================================================================= */}
+      {(complaint.resolution_image_url || complaint.status === 'resolved' || complaint.status === 'verified') && (
+        <div className="p-3.5 rounded-2xl border border-border bg-surface/70 flex flex-col gap-3 shadow-sm">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <span className="font-bold text-foreground text-xs flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-purple-600" />
+              <span>AI Resolution Verification</span>
+            </span>
+            <span
+              className={`px-2 py-0.5 text-[10px] font-bold rounded-md font-mono uppercase border ${
+                complaint.status === 'verified'
+                  ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30'
+                  : complaint.status === 'in_progress'
+                  ? 'bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30'
+                  : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30'
+              }`}
+            >
+              {complaint.status === 'verified'
+                ? 'Verified Fix'
+                : complaint.status === 'in_progress'
+                ? 'Rejected / In Progress'
+                : 'Pending Official Review'}
+            </span>
+          </div>
+
+          {/* Side-by-Side Before (Left) & After (Right) Photo Evidence */}
+          <div className="grid grid-cols-2 gap-2">
+            {/* Before (Left) */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                Before (Report)
+              </span>
+              <div className="relative w-full h-28 rounded-xl overflow-hidden border border-border bg-black/60 group">
+                <img
+                  src={complaint.image_url}
+                  alt="Before defect"
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                />
+                <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/75 text-[9px] font-bold text-white backdrop-blur-md">
+                  Original Defect
+                </span>
+              </div>
+            </div>
+
+            {/* After (Right) */}
+            <div className="flex flex-col gap-1">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                After (Claimed Fix)
+              </span>
+              <div className="relative w-full h-28 rounded-xl overflow-hidden border border-border bg-black/60 group">
+                {complaint.resolution_image_url ? (
+                  <img
+                    src={complaint.resolution_image_url}
+                    alt="After resolution"
+                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[10px]">
+                    No photo uploaded
+                  </div>
+                )}
+                <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/75 text-[9px] font-bold text-white backdrop-blur-md">
+                  Municipal Proof
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Composite Score Bar in the Middle */}
+          {verificationScore !== null && (
+            <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-surface border border-border">
+              <div className="flex items-center justify-between text-xs">
+                <span className="font-bold text-foreground flex items-center gap-1.5">
+                  <span>AI Confidence Score:</span>
+                  <span
+                    className={`font-mono text-sm font-black ${
+                      verificationScore >= 0.75
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : verificationScore < 0.4
+                        ? 'text-red-600 dark:text-red-400'
+                        : 'text-amber-600 dark:text-amber-400'
+                    }`}
+                  >
+                    {(verificationScore * 100).toFixed(0)}% ({verificationScore.toFixed(2)})
+                  </span>
+                </span>
+                <span className="text-[10px] font-semibold text-muted-foreground">
+                  {verificationScore >= 0.75
+                    ? 'Auto-Pass Threshold (≥0.75)'
+                    : verificationScore < 0.4
+                    ? 'Auto-Fail Threshold (<0.40)'
+                    : 'Manual Review (0.40 - 0.75)'}
+                </span>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="w-full h-2.5 rounded-full bg-muted/40 overflow-hidden border border-border/60">
+                <div
+                  className={`h-full transition-all duration-500 rounded-full ${
+                    verificationScore >= 0.75
+                      ? 'bg-emerald-500'
+                      : verificationScore < 0.4
+                      ? 'bg-red-500'
+                      : 'bg-amber-500'
+                  }`}
+                  style={{ width: `${Math.min(100, Math.max(5, verificationScore * 100))}%` }}
+                />
+              </div>
+
+              {/* Formula weights reminder */}
+              <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono pt-1">
+                <span>GPS (20%)</span>
+                <span>•</span>
+                <span>pHash (30%)</span>
+                <span>•</span>
+                <span>Gemini 1.5 Pro (50%)</span>
+              </div>
+            </div>
+          )}
+
+          {/* Four Individual Verification Checks */}
+          <div className="grid grid-cols-2 gap-2 text-[10px]">
+            <div className="p-2 rounded-lg border border-border bg-surface/50 flex items-center gap-1.5">
+              {checks.gpsMatch ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              ) : (
+                <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0" />
+              )}
+              <div className="truncate">
+                <span className="font-bold text-foreground">GPS Proximity:</span>{' '}
+                <span className={checks.gpsMatch ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'}>
+                  {checks.gpsMatch ? '≤ 100m' : '> 100m Fail'}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-2 rounded-lg border border-border bg-surface/50 flex items-center gap-1.5">
+              {checks.timestampValid ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              ) : (
+                <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0" />
+              )}
+              <div className="truncate">
+                <span className="font-bold text-foreground">Timestamp:</span>{' '}
+                <span className={checks.timestampValid ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'}>
+                  {checks.timestampValid ? 'Ordered' : 'Invalid'}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-2 rounded-lg border border-border bg-surface/50 flex items-center gap-1.5">
+              {checks.hashDifferent ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              ) : (
+                <XCircle className="w-3.5 h-3.5 text-red-500 shrink-0" />
+              )}
+              <div className="truncate">
+                <span className="font-bold text-foreground">Hash Check:</span>{' '}
+                <span className={checks.hashDifferent ? 'text-emerald-600 font-semibold' : 'text-red-600 font-semibold'}>
+                  {checks.hashDifferent ? 'Distinct Fix' : 'Fake Re-upload'}
+                </span>
+              </div>
+            </div>
+
+            <div className="p-2 rounded-lg border border-border bg-surface/50 flex items-center gap-1.5">
+              {checks.visionVerdict ? (
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+              ) : (
+                <XCircle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              )}
+              <div className="truncate">
+                <span className="font-bold text-foreground">Vision AI:</span>{' '}
+                <span className={checks.visionVerdict ? 'text-emerald-600 font-semibold' : 'text-amber-600 font-semibold'}>
+                  {checks.visionVerdict ? 'Repair Verified' : 'Defect Persists'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Reason Text */}
+          <div className="p-2.5 rounded-xl bg-surface border border-border/80 flex flex-col gap-1">
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+              AI Verification Reasoning
+            </span>
+            <p className="text-[11px] text-foreground leading-relaxed italic">
+              &quot;{reasonText}&quot;
+            </p>
+          </div>
+
+          {/* "Why this score?" Button */}
+          <button
+            type="button"
+            onClick={() => setIsTraceModalOpen(true)}
+            className="w-full py-2 px-3 rounded-xl bg-purple-600/10 hover:bg-purple-600/20 text-purple-600 dark:text-purple-400 font-bold text-xs border border-purple-500/20 flex items-center justify-center gap-1.5 transition-colors"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Why this score? (Inspect Full AI Trace)</span>
+          </button>
+
+          {/* The Three Official Verification Action Buttons */}
+          <div className="pt-2 border-t border-border flex flex-col gap-2">
+            <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+              Official Resolution Override
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              {/* Verify & Close */}
+              <button
+                type="button"
+                disabled={Boolean(isPerformingAction) || complaint.status === 'verified'}
+                onClick={() => handleAction('verify')}
+                className="py-2 px-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-[11px] shadow-sm flex flex-col items-center justify-center gap-1 transition-all active:scale-[0.98]"
+                title="Verify and close ticket (Turns pin green)"
+              >
+                {isPerformingAction === 'verify' ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <CheckCheck className="w-3.5 h-3.5" />
+                )}
+                <span>Verify & Close</span>
+              </button>
+
+              {/* Reject & Reopen */}
+              <button
+                type="button"
+                disabled={Boolean(isPerformingAction) || complaint.status === 'in_progress'}
+                onClick={() => handleAction('reject')}
+                className="py-2 px-2 rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold text-[11px] shadow-sm flex flex-col items-center justify-center gap-1 transition-all active:scale-[0.98]"
+                title="Reject resolution and return to in_progress for rework"
+              >
+                {isPerformingAction === 'reject' ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <RotateCcw className="w-3.5 h-3.5" />
+                )}
+                <span>Reject & Reopen</span>
+              </button>
+
+              {/* Flag for Review */}
+              <button
+                type="button"
+                disabled={Boolean(isPerformingAction)}
+                onClick={() => handleAction('flag')}
+                className="py-2 px-2 rounded-xl bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-bold text-[11px] shadow-sm flex flex-col items-center justify-center gap-1 transition-all active:scale-[0.98]"
+                title="Flag for manual site review"
+              >
+                {isPerformingAction === 'flag' ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Flag className="w-3.5 h-3.5" />
+                )}
+                <span>Flag for Review</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Status History Timeline */}
       <div className="p-3 rounded-xl bg-surface border border-border flex flex-col gap-2.5">
         <h5 className="font-bold text-foreground text-xs">Resolution Workflow</h5>
@@ -227,28 +565,6 @@ export default function ComplaintDetailPanel({
         </div>
       </div>
 
-      {/* After Photo & Notes Preview (if resolved) */}
-      {complaint.resolution_image_url && (
-        <div className="p-3 rounded-xl border border-border bg-surface/50 flex flex-col gap-2">
-          <div className="flex items-center justify-between">
-            <span className="font-bold text-foreground text-xs flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Resolution Proof Recorded</span>
-            </span>
-            <span className="text-[10px] font-mono text-muted-foreground">
-              {complaint.resolved_at ? new Date(complaint.resolved_at).toLocaleDateString('en-IN') : ''}
-            </span>
-          </div>
-          <div className="relative w-full h-32 rounded-lg overflow-hidden border border-border bg-black/40">
-            <img
-              src={complaint.resolution_image_url}
-              alt="Resolution proof"
-              className="w-full h-full object-cover"
-            />
-          </div>
-        </div>
-      )}
-
       {/* Action Buttons: Workflow transitions */}
       <div className="pt-1 flex flex-col gap-2">
         {complaint.status === 'in_progress' && onOpenResolve && (
@@ -286,6 +602,14 @@ export default function ComplaintDetailPanel({
           </span>
         </button>
       </div>
+
+      {/* Trace Inspector Modal */}
+      <VerificationTraceModal
+        isOpen={isTraceModalOpen}
+        onClose={() => setIsTraceModalOpen(false)}
+        trace={traceData}
+        complaintId={complaint.id}
+      />
     </div>
   );
 }

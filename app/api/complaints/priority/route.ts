@@ -17,6 +17,9 @@ export interface PriorityQueueItem {
   facility_id?: string | null;
   resolved_at?: string | null;
   resolution_image_url?: string | null;
+  resolution_notes?: string | null;
+  verification_score?: number | null;
+  verification_status?: string | null;
 }
 
 export interface PriorityQueueResponse {
@@ -65,6 +68,9 @@ export async function GET(req: Request): Promise<Response> {
       facility_id: r.facility_id,
       resolved_at: r.resolved_at || null,
       resolution_image_url: r.resolution_image_url || null,
+      resolution_notes: r.resolution_notes || null,
+      verification_score: typeof r.verification_score === 'number' ? r.verification_score : null,
+      verification_status: r.verification_status || null,
     }));
 
     return Response.json({

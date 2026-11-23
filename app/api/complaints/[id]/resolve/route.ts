@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { z } from 'zod';
+import { CivicAgent, VerifyResolutionInput, VerifyResolutionOutput } from '@/lib/agent/CivicAgent';
 
 export type ResolveComplaintResponse = {
   success: boolean;
@@ -9,6 +10,31 @@ export type ResolveComplaintResponse = {
   resolution_image_url?: string;
   resolved_at?: string;
   notes?: string | null;
+  verification?: {
+    verified: boolean;
+    score: number;
+    confidence: number;
+    reason: string;
+    verdict: string;
+    checks: {
+      gpsMatch: boolean;
+      timestampValid: boolean;
+      hashDifferent: boolean;
+      visionVerdict: boolean;
+    };
+    metrics: {
+      distanceMeters: number;
+      hammingDistance: number | null;
+      gpsScore: number;
+      hashScore: number;
+      visionScore: number;
+      visionConfidence: number;
+      compositeScore: number;
+      weights: { gps: number; hash: number; vision: number };
+    };
+    autoStatus: string;
+    autoVerificationStatus: string;
+  };
   error?: string;
 };
 
@@ -68,7 +94,7 @@ export async function POST(
     // 2. Fetch complaint to verify existence, status, facility, and ward
     const { data: complaint, error: fetchError } = await supabase
       .from('complaints')
-      .select('id, status, facility_id, ward_id, image_url, created_at')
+      .select('id, status, facility_id, ward_id, image_url, created_at, category, location')
       .eq('id', complaintId)
       .single();
 
@@ -248,38 +274,74 @@ export async function POST(
       finalResolvedAt = rpcData[0].resolved_at;
     }
 
-    // 10. Trigger verification agent (Async trace / log to enter the verification pipeline)
+    // 10. Parse original complaint GPS coordinates
+    let complaintLat = lat;
+    let complaintLng = lng;
+    if (typeof complaint.location === 'string') {
+      const match = complaint.location.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
+      if (match) {
+        complaintLng = parseFloat(match[1]);
+        complaintLat = parseFloat(match[2]);
+      }
+    } else if (
+      complaint.location &&
+      typeof complaint.location === 'object' &&
+      'coordinates' in (complaint.location as any)
+    ) {
+      const coords = (complaint.location as any).coordinates;
+      complaintLng = coords[0];
+      complaintLat = coords[1];
+    }
+
+    // 11. Execute CivicAgent verifyResolution tool
+    let verificationResult: VerifyResolutionOutput | null = null;
+    let effectiveFinalStatus = 'resolved';
+
     try {
-      await supabase.from('agent_traces').insert({
-        complaint_id: complaintId,
-        tool_name: 'verifyResolution',
-        input_summary: {
+      const agent = new CivicAgent(process.env.GOOGLE_AI_API_KEY, supabase);
+      verificationResult = await agent.run<VerifyResolutionInput, VerifyResolutionOutput>(
+        'verifyResolution',
+        {
           complaintId,
           beforeImageUrl: complaint.image_url,
           afterImageUrl: resolutionImageUrl,
-          resolutionGps: [lat, lng],
-          resolutionNotes: notes,
-          resolvedAt: finalResolvedAt,
-          status: 'pending_verification',
+          beforeLocation: [complaintLat, complaintLng],
+          afterLocation: [lat, lng],
+          beforeTimestamp: complaint.created_at,
+          afterTimestamp: finalResolvedAt,
+          category: complaint.category,
         },
-        output_summary: {
-          pipeline_state: 'queued_for_verification',
-          message: 'Resolution proof submitted. Complaint entered verification pipeline.',
-        },
-        model_used: 'gemini-1.5-pro',
-        latency_ms: 12,
-      });
-    } catch {
-      // Non-blocking trace logging
+        {
+          complaintId,
+          supabase,
+          userRole: effectiveRole,
+        }
+      );
+      effectiveFinalStatus = verificationResult.autoStatus;
+    } catch (agentErr) {
+      console.error('[Resolve API] Verification tool execution error:', agentErr);
     }
 
     return Response.json({
       success: true,
       complaintId,
-      status: 'resolved',
+      status: effectiveFinalStatus,
       resolution_image_url: resolutionImageUrl,
       resolved_at: finalResolvedAt,
       notes: notes || null,
+      verification: verificationResult
+        ? {
+            verified: verificationResult.verified,
+            score: verificationResult.score,
+            confidence: verificationResult.confidence,
+            reason: verificationResult.reason,
+            verdict: verificationResult.verdict,
+            checks: verificationResult.checks,
+            metrics: verificationResult.metrics,
+            autoStatus: verificationResult.autoStatus,
+            autoVerificationStatus: verificationResult.autoVerificationStatus,
+          }
+        : undefined,
     } satisfies ResolveComplaintResponse);
   } catch (err: unknown) {
     const error = err as Error;

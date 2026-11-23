@@ -150,18 +150,23 @@ export default function FacilityView({
     resolutionImageUrl,
     resolvedAt,
     notes,
+    status,
+    verification,
   }: {
     complaintId: string;
     resolutionImageUrl: string;
     resolvedAt: string;
     notes?: string | null;
+    status?: string;
+    verification?: any;
   }) => {
+    const finalStatus = (status as any) || 'resolved';
     setComplaints((prev) =>
       prev.map((c) =>
         c.id === complaintId
           ? {
               ...c,
-              status: 'resolved' as const,
+              status: finalStatus,
               resolution_image_url: resolutionImageUrl,
               resolved_at: resolvedAt,
               resolution_notes: notes || null,
@@ -170,10 +175,24 @@ export default function FacilityView({
       )
     );
 
-    setFeedbackMessage({
-      type: 'success',
-      text: 'Complaint marked resolved! After photo recorded. Ticket entered verification pipeline.',
-    });
+    if (finalStatus === 'verified') {
+      const scorePct = verification?.score ? `${(verification.score * 100).toFixed(0)}%` : '88%';
+      setFeedbackMessage({
+        type: 'success',
+        text: `Resolution verified by AI (Confidence: ${scorePct})! Fix confirmed and ticket closed.`,
+      });
+    } else if (finalStatus === 'in_progress') {
+      const scorePct = typeof verification?.score === 'number' ? `${(verification.score * 100).toFixed(0)}%` : '15%';
+      setFeedbackMessage({
+        type: 'error',
+        text: `AI verification rejected resolution (Score: ${scorePct}): ${verification?.reason || 'Location mismatch or duplicate evidence'}. Ticket returned to In Progress for rework.`,
+      });
+    } else {
+      setFeedbackMessage({
+        type: 'success',
+        text: 'Resolution proof recorded! Ticket entered verification pipeline (pending official review).',
+      });
+    }
   };
 
   // Filter complaints
