@@ -1,5 +1,12 @@
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { connection } from 'next/server';
+
+export const metadata: Metadata = {
+  title: 'Facility Depot & Field Crew Portal',
+  description:
+    'Municipal facility depot portal for contractor work orders, resolution proof uploads, and GPS-stamped evidence submission.',
+};
 import { getServerSession } from '@/lib/auth/session';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';

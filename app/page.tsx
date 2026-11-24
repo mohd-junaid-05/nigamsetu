@@ -458,18 +458,59 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* ═══ FOOTER SESSION BAR ═══════════════════════════════════════════════ */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-4">
-        <Suspense
-          fallback={
-            <div className="text-xs text-muted-foreground animate-pulse border-t border-border pt-4">
-              Loading session…
+      {/* ═══ MUNICIPAL FOOTER & SESSION BAR ═══════════════════════════════════ */}
+      <footer className="bg-surface border-t border-border mt-auto">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div className="md:col-span-2 flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white p-1 shadow-sm border border-border flex items-center justify-center overflow-hidden shrink-0">
+                  <img
+                    src="/images/logo.png"
+                    alt="NigamSetu Official Logo"
+                    width={40}
+                    height={40}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-black text-lg text-foreground tracking-tight">NigamSetu</span>
+                  <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider">
+                    AI Civic Verification &amp; Redressal Platform
+                  </span>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed max-w-md">
+                An evidence-based municipal complaint redressal system for Hyderabad (GHMC). Powered by Gemini Vision verification, PostGIS spatial clustering, and zero ghost closures.
+              </p>
             </div>
-          }
-        >
-          <SessionFooter />
-        </Suspense>
-      </div>
+
+            <div className="flex flex-col gap-2 text-xs">
+              <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">Civic Access</span>
+              <Link href="/report" className="text-muted-foreground hover:text-[#1d70b8] transition-colors">File Complaint</Link>
+              <Link href="/map" className="text-muted-foreground hover:text-[#1d70b8] transition-colors">Public Incident Map</Link>
+              <Link href="/sign-in" className="text-muted-foreground hover:text-[#1d70b8] transition-colors">Citizen Portal Login</Link>
+            </div>
+
+            <div className="flex flex-col gap-2 text-xs">
+              <span className="font-bold text-foreground uppercase tracking-wider text-[11px]">Operations &amp; Audit</span>
+              <Link href="/dashboard" className="text-muted-foreground hover:text-[#1d70b8] transition-colors">Official Operations</Link>
+              <Link href="/facility" className="text-muted-foreground hover:text-[#1d70b8] transition-colors">Depot Work Orders</Link>
+              <Link href="/admin/traces" className="text-muted-foreground hover:text-[#1d70b8] transition-colors">AI Evidence Traces</Link>
+            </div>
+          </div>
+
+          <Suspense
+            fallback={
+              <div className="text-xs text-muted-foreground animate-pulse border-t border-border pt-4">
+                Loading session…
+              </div>
+            }
+          >
+            <SessionFooter />
+          </Suspense>
+        </div>
+      </footer>
     </div>
   );
 }

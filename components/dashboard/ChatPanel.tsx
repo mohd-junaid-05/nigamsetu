@@ -278,7 +278,9 @@ export default function ChatPanel({
                 /* Assistant Bubble */
                 <div className="flex flex-col gap-2 max-w-[95%]">
                   <div className="flex items-center gap-1.5 text-[11px] font-bold text-blue-600 dark:text-blue-400">
-                    <Sparkles className="w-3.5 h-3.5" />
+                    <div className="w-4 h-4 rounded-full bg-white border border-border overflow-hidden flex items-center justify-center p-0.5 shrink-0">
+                      <img src="/images/logo.png" alt="NigamSetu Logo" className="w-full h-full object-contain" />
+                    </div>
                     <span>NigamSetu Copilot</span>
                     <span className="text-[10px] text-muted-foreground font-normal ml-auto">
                       {msg.timestamp}

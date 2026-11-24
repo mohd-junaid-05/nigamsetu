@@ -1,6 +1,13 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { connection } from 'next/server';
+
+export const metadata: Metadata = {
+  title: 'Official Operations Dashboard | Priority Queue & Redressal',
+  description:
+    'Ward official operations dashboard for reviewing civic priority queue, assigning municipal depot facilities, and auditing verification traces across Hyderabad municipal wards (GHMC).',
+};
 import { getServerSession } from '@/lib/auth/session';
 import { createAnonymousSupabaseClient } from '@/lib/supabase/server';
 import DashboardController from '@/components/dashboard/DashboardController';

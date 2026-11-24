@@ -1,5 +1,12 @@
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { connection } from 'next/server';
+
+export const metadata: Metadata = {
+  title: 'AI Verification Audit Traces',
+  description:
+    'Complete transparent audit logs of AI decision engine traces: severity scoring, duplicate clustering, fix verification, and statutory escalations.',
+};
 import { getServerSession } from '@/lib/auth/session';
 import AdminTracesView from '@/components/admin/AdminTracesView';
 import { ShieldAlert } from 'lucide-react';

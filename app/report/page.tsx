@@ -1,8 +1,15 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { getServerSession } from '@/lib/auth/session';
 import { Smartphone, ArrowLeft, ChevronRight, FileText, ShieldCheck } from 'lucide-react';
 import { ReportContainer } from '@/components/complaints/ReportContainer';
+
+export const metadata: Metadata = {
+  title: 'Report Civic Issue | Camera GPS & AI Verification',
+  description:
+    'Report road potholes, drainage overflow, garbage dumps, or public infrastructure defects with camera GPS verification across Hyderabad municipal wards (GHMC).',
+};
 
 async function ReportShell() {
   const session = await getServerSession();

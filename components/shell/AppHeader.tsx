@@ -49,10 +49,17 @@ export async function AppHeader() {
         {/* Left: Brand Identity */}
         <Link
           href="/"
-          className="flex items-center gap-3 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFB81D] rounded py-1 group shrink-0"
+          className="flex items-center gap-2.5 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FFB81D] rounded py-1 group shrink-0"
+          title="NigamSetu — Official AI Civic Fix Platform"
         >
-          <div className="w-9 h-9 rounded bg-[#FFB81D] text-[#071D49] flex items-center justify-center font-black text-sm tracking-tight shadow-sm">
-            NS
+          <div className="w-9 h-9 rounded-lg bg-white p-0.5 shadow-sm border border-white/20 flex items-center justify-center overflow-hidden shrink-0 group-hover:scale-105 transition-transform">
+            <img
+              src="/images/logo.png"
+              alt="NigamSetu Logo"
+              width={36}
+              height={36}
+              className="w-full h-full object-contain"
+            />
           </div>
           <div className="flex flex-col">
             <span className="leading-tight font-black tracking-tight text-base text-white group-hover:text-[#FFB81D] transition-colors">

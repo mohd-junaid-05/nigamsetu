@@ -139,6 +139,7 @@ When you make a decision the spec doesn't cover, log it here:
 | 2026-11-24 | Elevate `AppHeader` to `z-[1000]`, isolate Leaflet contexts (`isolation: isolate; z-0`), and lift modals to `z-[2000]` | Prevents Leaflet map pins, controls, and page content from overlapping the navbar when scrolling | Yes |
 | 2026-11-24 | Dispatch formal civic complaint dossier to `sessionbyilder7@gmail.com` and `sessionbyilder@gmail.com` | Automatically dispatches registered civic complaint reports to official showcase recipient mailbox with mail client integration | Yes |
 | 2026-11-24 | Unify hero section into single contiguous layout and remove `.civic-hero > *` relative override | Eliminates accidental empty image block pushing down hero text and seamlessly blends Hyderabad cityscape behind hero copy | Yes |
+| 2026-11-24 | Integrate official broom & golden sun logo across all platform surfaces and implement comprehensive SEO | Generates multi-size favicons (16/32/48/ico), apple-touch-icon, 192/512 PWA icons, 1200x630 OG/Twitter cards, schema.org JSON-LD, robots.ts, sitemap.ts, and updates AppHeader, auth, loading, and municipal footer | Yes |
 
 This log is append-only. If a decision is reversed, add a new row. Don't edit old rows.
 
