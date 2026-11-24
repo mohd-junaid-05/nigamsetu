@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import { NextResponse } from 'next/server';
 import {
   createAnonymousSupabaseClient,
@@ -7,7 +5,8 @@ import {
 } from '@/lib/supabase/server';
 import { CivicAgent, CheckDuplicateInput, CheckDuplicateOutput } from '@/lib/agent/CivicAgent';
 
-export async function GET(): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
+  const _url = new URL(request.url);
   const adminClient = createAuthenticatedSupabaseClient('system_test_admin', 'admin');
   const user1Client = createAuthenticatedSupabaseClient('test_user_phase_06_1', 'citizen');
   const user2Client = createAuthenticatedSupabaseClient('test_user_phase_06_2', 'citizen');

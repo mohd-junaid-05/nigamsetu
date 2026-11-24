@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
@@ -19,7 +17,8 @@ type AcceptanceTestResponse = {
   checks: TestCheckResult[];
 };
 
-export async function GET(): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
+  const _url = new URL(request.url);
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xlagdiqtedflkigftwov.supabase.co';
   const supabaseAnonKey =
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ||

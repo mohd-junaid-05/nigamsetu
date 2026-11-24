@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import { createAuthenticatedSupabaseClient } from '@/lib/supabase/server';
 import { CivicAgent, VerifyResolutionOutput, haversineDistanceMeters } from '@/lib/agent/CivicAgent';
 
@@ -22,7 +20,8 @@ export type Phase09TestResponse = {
   timestamp: string;
 };
 
-export async function GET(): Promise<Response> {
+export async function GET(request: Request): Promise<Response> {
+  const _url = new URL(request.url);
   const testUserId = 'test_official_phase_09';
   const wardId = 'a0000000-0000-0000-0000-000000000001';
   const testComplaintId = 'c0000000-0000-0000-0000-000000000001';
