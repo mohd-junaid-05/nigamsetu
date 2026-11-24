@@ -8,6 +8,7 @@ import 'leaflet.markercluster/dist/MarkerCluster.css';
 import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { PublicMapPin } from '@/app/api/map/public/route';
 import { ComplaintPopupResponse } from '@/app/api/complaints/[id]/popup/route';
+import { getValidReportImageUrl, CATEGORY_REPORT_IMAGES } from '@/lib/utils/reportImages';
 
 interface PublicMapClientProps {
   pins: PublicMapPin[];
@@ -141,14 +142,17 @@ export default function PublicMapClient({
         const isClustered = typeof c.complaint_count === 'number' && c.complaint_count > 1;
         const attestations = Array.isArray(c.attestations) ? c.attestations : [];
 
+        const validImageUrl = getValidReportImageUrl(c.image_url, c.category);
+        const fallbackImg = CATEGORY_REPORT_IMAGES[c.category] || '/images/reports/road_pothole_1.webp';
+
         const contentHtml = `
           <div style="width: 285px; font-family: system-ui, -apple-system, sans-serif; overflow: hidden;">
             <div style="position: relative; width: 100%; height: 145px; background: #18181b; overflow: hidden;">
               <img
-                src="${c.image_url}"
+                src="${validImageUrl}"
                 alt="${categoryLabel}"
                 style="width: 100%; height: 100%; object-fit: cover; display: block;"
-                onerror="this.src='https://images.unsplash.com/photo-1584467735871-8e85353a8413?w=800'; this.onerror=null;"
+                onerror="this.src='${fallbackImg}'; this.onerror=null;"
               />
               <div style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600;">
                 ${categoryLabel}

@@ -7,6 +7,7 @@ import DashboardController from '@/components/dashboard/DashboardController';
 import { PriorityQueueItem } from '@/app/api/complaints/priority/route';
 import { FacilityItem } from '@/app/api/facilities/route';
 import { ShieldCheck, AlertCircle } from 'lucide-react';
+import { getValidReportImageUrl, getValidResolutionImageUrl } from '@/lib/utils/reportImages';
 
 interface DashboardPageProps {
   searchParams?: Promise<{ wardId?: string }>;
@@ -58,13 +59,18 @@ async function DashboardContent({ searchParams }: DashboardPageProps) {
     status: r.status,
     description: r.description,
     address_text: r.address_text,
-    image_url: r.image_url,
+    image_url: getValidReportImageUrl(r.image_url, r.category),
     created_at: r.created_at,
     weight: typeof r.weight === 'number' ? r.weight : 1,
     sla_breached: Boolean(r.sla_breached),
     effective_priority: r.severity * (typeof r.weight === 'number' ? r.weight : 1),
     location: r.location,
     facility_id: r.facility_id,
+    resolved_at: r.resolved_at || null,
+    resolution_image_url: getValidResolutionImageUrl(r.resolution_image_url, r.category),
+    resolution_notes: r.resolution_notes || null,
+    verification_score: typeof r.verification_score === 'number' ? r.verification_score : null,
+    verification_status: r.verification_status || null,
   }));
 
   const rawFacilities = (facilitiesRes.data as any[]) || [];

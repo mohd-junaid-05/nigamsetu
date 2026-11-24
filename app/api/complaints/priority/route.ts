@@ -1,5 +1,6 @@
 import { createAnonymousSupabaseClient } from '@/lib/supabase/server';
 import { ComplaintCategory, ComplaintStatus } from '@/lib/types/database';
+import { getValidReportImageUrl, getValidResolutionImageUrl } from '@/lib/utils/reportImages';
 
 export interface PriorityQueueItem {
   id: string;
@@ -61,7 +62,7 @@ export async function GET(req: Request): Promise<Response> {
       status: r.status,
       description: r.description,
       address_text: r.address_text,
-      image_url: r.image_url,
+      image_url: getValidReportImageUrl(r.image_url, r.category),
       created_at: r.created_at,
       weight: typeof r.weight === 'number' ? r.weight : 1,
       sla_breached: Boolean(r.sla_breached),
@@ -69,7 +70,7 @@ export async function GET(req: Request): Promise<Response> {
       location: r.location,
       facility_id: r.facility_id,
       resolved_at: r.resolved_at || null,
-      resolution_image_url: r.resolution_image_url || null,
+      resolution_image_url: getValidResolutionImageUrl(r.resolution_image_url, r.category),
       resolution_notes: r.resolution_notes || null,
       verification_score: typeof r.verification_score === 'number' ? r.verification_score : null,
       verification_status: r.verification_status || null,

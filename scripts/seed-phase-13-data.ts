@@ -19,23 +19,23 @@ const CLERK_OFFICIAL_HSR_ID = 'user_3MVBoxQTcCEFRWpGwdTzWJMHmDN';
 const CLERK_OFFICIAL_KORAMANGALA_ID = 'user_3MVBp5fbRQ1h6EQkxLeOSRSBeRY';
 const CLERK_ADMIN_ID = 'user_3MVBp9OTOUIhpUkHmz9uvWDjExd';
 
-// High quality, reliable photo evidence URLs
+// High quality, authentic Indian municipal photo evidence in public/images/reports
 const PHOTOS = {
-  pothole_crater_1: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800',
-  pothole_crater_2: 'https://images.unsplash.com/photo-1578991624414-276ef23a534f?w=800',
-  pothole_crater_3: 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=800',
-  pothole_repaired_1: 'https://images.unsplash.com/photo-1584467735871-8e85353a8413?w=800',
-  pothole_repaired_2: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=800',
-  garbage_overflow_1: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=800',
-  garbage_overflow_2: 'https://images.unsplash.com/photo-1605600659908-0ef719419d41?w=800',
-  garbage_cleared_1: 'https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=800',
-  sewage_overflow_1: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=800',
-  sewage_overflow_2: 'https://images.unsplash.com/photo-1586769852044-692d6e3703f0?w=800',
-  school_hazard: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800',
-  healthcenter_hazard: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=800',
-  streetlight_wire: 'https://images.unsplash.com/photo-1508873696983-2df5703bc20d?w=800',
-  sidewalk_broken: 'https://images.unsplash.com/photo-1541888946425-d0fbb18086f6?w=800',
-  unrelated_clean_road: 'https://images.unsplash.com/photo-1477959858617-67f30bc75b82?w=800',
+  pothole_crater_1: '/images/reports/road_pothole_1.webp',
+  pothole_crater_2: '/images/reports/road_pothole_2.webp',
+  pothole_crater_3: '/images/reports/road_pothole_3.webp',
+  pothole_repaired_1: '/images/reports/road_repaired_1.webp',
+  pothole_repaired_2: '/images/reports/road_repaired_2.webp',
+  garbage_overflow_1: '/images/reports/garbage_overflow_1.webp',
+  garbage_overflow_2: '/images/reports/garbage_overflow_2.webp',
+  garbage_cleared_1: '/images/reports/garbage_cleared_1.webp',
+  sewage_overflow_1: '/images/reports/sewage_overflow_1.webp',
+  sewage_overflow_2: '/images/reports/sewage_overflow_2.webp',
+  school_hazard: '/images/reports/school_damaged_1.webp',
+  healthcenter_hazard: '/images/reports/health_damaged_1.webp',
+  streetlight_wire: '/images/reports/360_F_1923589033_yWKTqqBrECrN7y2nlOw7pqzJRgPsdECp.webp',
+  sidewalk_broken: '/images/reports/sidewalk_broken_1.webp',
+  unrelated_clean_road: '/images/reports/unrelated_clean_road.webp',
 };
 
 export async function seedPhase13DemoData() {

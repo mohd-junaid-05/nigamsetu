@@ -1,51 +1,46 @@
 'use client';
 
 import React from 'react';
-import { useTheme, type Theme } from './ThemeContext';
+import { useTheme } from './ThemeContext';
 import { Sun, Moon, Laptop } from 'lucide-react';
 
-export function ThemeToggle() {
+export function ThemeToggle({ className = '' }: { className?: string }) {
   const { theme, setTheme, mounted } = useTheme();
 
-  const options: { value: Theme; label: string; icon: React.ReactNode }[] = [
-    { value: 'light', label: 'Light', icon: <Sun className="w-3.5 h-3.5" /> },
-    { value: 'system', label: 'System', icon: <Laptop className="w-3.5 h-3.5" /> },
-    { value: 'dark', label: 'Dark', icon: <Moon className="w-3.5 h-3.5" /> },
-  ];
-
   // During SSR and initial client hydration, activeTheme is strictly 'system'.
-  // Only after client mount does it reflect the user's stored theme, preventing hydration mismatch.
   const activeTheme = mounted ? theme : 'system';
 
+  const cycleTheme = () => {
+    if (activeTheme === 'light') {
+      setTheme('dark');
+    } else if (activeTheme === 'dark') {
+      setTheme('system');
+    } else {
+      setTheme('light');
+    }
+  };
+
+  const getIcon = () => {
+    if (activeTheme === 'light') return <Sun className="w-4 h-4 text-amber-300" />;
+    if (activeTheme === 'dark') return <Moon className="w-4 h-4 text-sky-300" />;
+    return <Laptop className="w-4 h-4 text-white/80" />;
+  };
+
+  const getLabel = () => {
+    if (activeTheme === 'light') return 'Theme: Light (Click to switch)';
+    if (activeTheme === 'dark') return 'Theme: Dark (Click to switch)';
+    return 'Theme: System (Click to switch)';
+  };
+
   return (
-    <div
-      role="radiogroup"
-      aria-label="Theme selector"
-      suppressHydrationWarning
-      className="inline-flex items-center p-1 rounded-lg border border-border bg-surface text-foreground"
+    <button
+      type="button"
+      onClick={cycleTheme}
+      title={getLabel()}
+      aria-label={getLabel()}
+      className={`p-2 rounded-md text-white/80 hover:text-white hover:bg-white/10 active:scale-95 transition-all flex items-center justify-center cursor-pointer ${className}`}
     >
-      {options.map((option) => {
-        const isSelected = activeTheme === option.value;
-        return (
-          <button
-            key={option.value}
-            type="button"
-            role="radio"
-            suppressHydrationWarning
-            aria-checked={isSelected}
-            onClick={() => setTheme(option.value)}
-            className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium rounded-md transition-colors ${
-              isSelected
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-muted-foreground hover:text-foreground'
-            }`}
-            title={`Switch to ${option.label} theme`}
-          >
-            {option.icon}
-            <span className="hidden sm:inline">{option.label}</span>
-          </button>
-        );
-      })}
-    </div>
+      {getIcon()}
+    </button>
   );
 }

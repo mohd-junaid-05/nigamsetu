@@ -115,7 +115,7 @@ VALUES
     3,
     'open',
     'Severe pothole on Outer Ring Road Bellandur causing traffic bottleneck',
-    'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800',
+    '/images/reports/road_pothole_1.webp',
     ST_GeomFromText('POINT(77.672 12.930)', 4326),
     'Outer Ring Road near Bellandur EcoSpace, Bengaluru',
     now() + interval '48 hours'
@@ -128,7 +128,7 @@ VALUES
     2,
     'in_progress',
     'Overflowing municipal garbage bin near Bellandur lake gate',
-    'https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=800',
+    '/images/reports/garbage_overflow_1.webp',
     ST_GeomFromText('POINT(77.674 12.934)', 4326),
     'Lake View Road, Ward 150 Bellandur, Bengaluru',
     now() + interval '24 hours'
@@ -141,7 +141,7 @@ VALUES
     4,
     'open',
     'Urgent raw sewage overflow in residential street',
-    'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=800',
+    '/images/reports/sewage_overflow_1.webp',
     ST_GeomFromText('POINT(77.648 12.915)', 4326),
     '14th Main, Sector 2, HSR Layout, Bengaluru',
     now() + interval '12 hours'
@@ -154,7 +154,7 @@ VALUES
     1,
     'rejected',
     'Cosmetic crack on sidewalk pavement',
-    'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800',
+    '/images/reports/road_pothole_2.webp',
     ST_GeomFromText('POINT(77.652 12.920)', 4326),
     '27th Main, Sector 1, HSR Layout, Bengaluru',
     now() - interval '2 days'

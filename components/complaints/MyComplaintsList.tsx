@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import { ComplaintItem, ListComplaintsResponse } from '@/app/api/complaints/route';
+import { getValidReportImageUrl } from '@/lib/utils/reportImages';
 import {
   RefreshCw,
   MapPin,
@@ -250,10 +251,16 @@ export function MyComplaintsList({ onSwitchToReport }: MyComplaintsListProps) {
                 {/* Photo Thumbnail */}
                 <div className="relative w-full sm:w-28 h-28 sm:h-auto rounded-md overflow-hidden border border-border bg-surface-card shrink-0">
                   <img
-                    src={item.image_url}
+                    src={getValidReportImageUrl(item.image_url, item.category)}
                     alt={item.category}
                     className="w-full h-full object-cover"
                     loading="lazy"
+                    onError={(e) => {
+                      const fallback = getValidReportImageUrl('', item.category);
+                      if (e.currentTarget.src !== fallback) {
+                        e.currentTarget.src = fallback;
+                      }
+                    }}
                   />
                   <div className="absolute top-1 left-1 sm:hidden">
                     <span

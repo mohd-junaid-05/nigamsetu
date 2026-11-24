@@ -1,5 +1,6 @@
 import { createAnonymousSupabaseClient } from '@/lib/supabase/server';
 import { ComplaintCategory, ComplaintStatus } from '@/lib/types/database';
+import { getValidReportImageUrl } from '@/lib/utils/reportImages';
 
 export interface ComplaintPopupData {
   id: string;
@@ -79,14 +80,19 @@ export async function GET(
         category: d.category,
         severity: d.severity,
         status: d.status,
-        image_url: d.image_url,
+        image_url: getValidReportImageUrl(d.image_url, d.category),
         address_text: d.address_text,
         created_at: d.created_at,
         lat: d.lat,
         lng: d.lng,
         complaint_count: typeof d.complaint_count === 'number' ? d.complaint_count : 1,
         cluster_id: d.cluster_id || null,
-        attestations: Array.isArray(d.attestations) ? d.attestations : [],
+        attestations: Array.isArray(d.attestations)
+          ? d.attestations.map((a: any) => ({
+              ...a,
+              image_url: getValidReportImageUrl(a.image_url, d.category),
+            }))
+          : [],
       };
     } else {
       // Fallback to basic get_complaint_popup
@@ -114,7 +120,10 @@ export async function GET(
           { status: 404 }
         );
       }
-      row = rows[0];
+      row = {
+        ...rows[0],
+        image_url: getValidReportImageUrl(rows[0].image_url, rows[0].category),
+      };
     }
 
     return Response.json(

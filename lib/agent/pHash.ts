@@ -110,12 +110,21 @@ export async function computePHashFromBuffer(buffer: Buffer): Promise<string> {
  */
 export async function computePHashFromUrl(imageUrl: string): Promise<string> {
   try {
-    const res = await fetch(imageUrl);
-    if (!res.ok) {
-      throw new Error(`Failed to fetch image: ${res.statusText} (${res.status})`);
+    let buffer: Buffer;
+    if (imageUrl.startsWith('/')) {
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      const localPath = path.join(process.cwd(), 'public', imageUrl.startsWith('/') ? imageUrl.slice(1) : imageUrl);
+      buffer = await fs.readFile(localPath);
+    } else {
+      const res = await fetch(imageUrl);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch image: ${res.statusText} (${res.status})`);
+      }
+      const arrayBuffer = await res.arrayBuffer();
+      buffer = Buffer.from(arrayBuffer);
     }
-    const arrayBuffer = await res.arrayBuffer();
-    return await computePHashFromBuffer(Buffer.from(arrayBuffer));
+    return await computePHashFromBuffer(buffer);
   } catch (err) {
     console.warn('[pHash] Failed to fetch image from URL, returning placeholder hash:', err);
     return '0000000000000000';

@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
 import { ComplaintCategory, ComplaintStatus } from '@/lib/types/database';
+import { getValidReportImageUrl, getValidResolutionImageUrl } from '@/lib/utils/reportImages';
 
 export interface FacilityComplaintItem {
   id: string;
@@ -121,13 +122,13 @@ export async function GET(req: Request): Promise<Response> {
         severity: row.severity,
         status: row.status as ComplaintStatus,
         description: row.description,
-        image_url: row.image_url,
+        image_url: getValidReportImageUrl(row.image_url, row.category),
         address_text: row.address_text,
         lat: 0,
         lng: 0,
         sla_deadline: row.sla_deadline,
         resolved_at: row.resolved_at,
-        resolution_image_url: row.resolution_image_url,
+        resolution_image_url: getValidResolutionImageUrl(row.resolution_image_url, row.category),
         resolution_notes: row.resolution_notes,
         created_at: row.created_at,
         updated_at: row.updated_at,
@@ -143,7 +144,12 @@ export async function GET(req: Request): Promise<Response> {
       } satisfies FacilityComplaintsApiResponse);
     }
 
-    const items = (complaintsData || []) as FacilityComplaintItem[];
+    const rawItems = (complaintsData || []) as any[];
+    const items: FacilityComplaintItem[] = rawItems.map((c) => ({
+      ...c,
+      image_url: getValidReportImageUrl(c.image_url, c.category),
+      resolution_image_url: getValidResolutionImageUrl(c.resolution_image_url, c.category),
+    }));
 
     return Response.json({
       success: true,

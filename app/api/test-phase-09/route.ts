@@ -32,9 +32,9 @@ export async function GET(): Promise<Response> {
   const baseLat = 12.9352;
   const baseLng = 77.6245;
 
-  const sampleBeforePhoto = 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800';
-  const sampleRealFixPhoto = 'https://images.unsplash.com/photo-1584467735871-8e85353a8413?w=800';
-  const sampleDifferentPotholePhoto = 'https://images.unsplash.com/photo-1578991624414-276ef23a534f?w=800&different=true';
+  const sampleBeforePhoto = '/images/reports/road_pothole_1.webp';
+  const sampleRealFixPhoto = '/images/reports/road_repaired_1.webp';
+  const sampleDifferentPotholePhoto = '/images/reports/road_pothole_2.webp';
 
   const beforeTime = new Date(Date.now() - 3600000 * 24).toISOString();
   const afterTime = new Date().toISOString();

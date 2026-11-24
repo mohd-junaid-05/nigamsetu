@@ -352,14 +352,27 @@ export class CivicAgent {
         let latencyMs = 0;
 
         try {
-          // 1. Fetch image from URL
-          const imgRes = await fetch(args.imageUrl);
-          if (!imgRes.ok) {
-            throw new Error(`Failed to fetch image: ${imgRes.statusText} (${imgRes.status})`);
+          // 1. Fetch image from URL or local file
+          let base64Data: string;
+          let mimeType: string;
+
+          if (args.imageUrl.startsWith('/')) {
+            const fs = await import('fs/promises');
+            const path = await import('path');
+            const localPath = path.join(process.cwd(), 'public', args.imageUrl.startsWith('/') ? args.imageUrl.slice(1) : args.imageUrl);
+            const buf = await fs.readFile(localPath);
+            base64Data = buf.toString('base64');
+            const ext = path.extname(args.imageUrl).toLowerCase();
+            mimeType = ext === '.webp' ? 'image/webp' : ext === '.png' ? 'image/png' : 'image/jpeg';
+          } else {
+            const imgRes = await fetch(args.imageUrl);
+            if (!imgRes.ok) {
+              throw new Error(`Failed to fetch image: ${imgRes.statusText} (${imgRes.status})`);
+            }
+            const arrayBuffer = await imgRes.arrayBuffer();
+            base64Data = Buffer.from(arrayBuffer).toString('base64');
+            mimeType = (imgRes.headers.get('content-type') || 'image/jpeg').split(';')[0];
           }
-          const arrayBuffer = await imgRes.arrayBuffer();
-          const base64Data = Buffer.from(arrayBuffer).toString('base64');
-          const mimeType = (imgRes.headers.get('content-type') || 'image/jpeg').split(';')[0];
 
           // 2. Check for blank or unparseable image
           if (isBlankOrUnparseableImage(base64Data, mimeType, args.imageUrl)) {
@@ -1780,24 +1793,40 @@ export class CivicAgent {
     beforeImageUrl: string,
     afterImageUrl: string
   ): Promise<{ verified: boolean; confidence: number; reason: string; rawResponse?: string }> {
-    const [res1, res2] = await Promise.all([fetch(beforeImageUrl), fetch(afterImageUrl)]);
-    if (!res1.ok || !res2.ok) {
-      throw new Error(`Failed to fetch images for comparison: img1=${res1.status}, img2=${res2.status}`);
-    }
+    const fetchImg = async (url: string) => {
+      if (url.startsWith('/')) {
+        const fs = await import('fs/promises');
+        const path = await import('path');
+        const localPath = path.join(process.cwd(), 'public', url.startsWith('/') ? url.slice(1) : url);
+        const buf = await fs.readFile(localPath);
+        const ext = path.extname(url).toLowerCase();
+        const mimeType = ext === '.webp' ? 'image/webp' : ext === '.png' ? 'image/png' : 'image/jpeg';
+        return { data: buf.toString('base64'), mimeType };
+      }
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch image for comparison: url=${url}, status=${res.status}`);
+      }
+      const arrayBuffer = await res.arrayBuffer();
+      return {
+        data: Buffer.from(arrayBuffer).toString('base64'),
+        mimeType: (res.headers.get('content-type') || 'image/jpeg').split(';')[0],
+      };
+    };
 
-    const [buf1, buf2] = await Promise.all([res1.arrayBuffer(), res2.arrayBuffer()]);
+    const [img1, img2] = await Promise.all([fetchImg(beforeImageUrl), fetchImg(afterImageUrl)]);
 
     const part1 = {
       inlineData: {
-        data: Buffer.from(buf1).toString('base64'),
-        mimeType: (res1.headers.get('content-type') || 'image/jpeg').split(';')[0],
+        data: img1.data,
+        mimeType: img1.mimeType,
       },
     };
 
     const part2 = {
       inlineData: {
-        data: Buffer.from(buf2).toString('base64'),
-        mimeType: (res2.headers.get('content-type') || 'image/jpeg').split(';')[0],
+        data: img2.data,
+        mimeType: img2.mimeType,
       },
     };
 

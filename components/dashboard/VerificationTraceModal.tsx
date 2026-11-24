@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { getValidReportImageUrl } from '@/lib/utils/reportImages';
 import {
   X,
   Sparkles,
@@ -301,10 +302,16 @@ export function AgentTraceModal({
                   <div className="flex items-center gap-3">
                     <div className="w-20 h-20 rounded-lg overflow-hidden border border-border bg-black/40 flex-shrink-0">
                       <img
-                        src={imageUrl}
+                        src={getValidReportImageUrl(imageUrl, selectedTrace?.tool_name)}
                         alt="Analyzed Complaint"
                         className="w-full h-full object-cover"
                         loading="lazy"
+                        onError={(e) => {
+                          const fallback = getValidReportImageUrl('', 'road');
+                          if (e.currentTarget.src !== fallback) {
+                            e.currentTarget.src = fallback;
+                          }
+                        }}
                       />
                     </div>
                     <div className="min-w-0 flex-1">

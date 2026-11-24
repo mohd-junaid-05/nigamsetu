@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { EscalationQueueItem } from '@/app/api/escalations/route';
 import { EscalationStatus } from '@/lib/types/database';
+import { getValidReportImageUrl } from '@/lib/utils/reportImages';
 import {
   FileText,
   Clock,
@@ -215,13 +216,17 @@ export default function EscalationQueueTable({
 
                 {/* Complaint Category and Snippet */}
                 <div className="flex items-start gap-2.5">
-                  {item.image_url && (
-                    <img
-                      src={item.image_url}
-                      alt={item.category}
-                      className="w-12 h-12 rounded-md object-cover border border-border shrink-0"
-                    />
-                  )}
+                  <img
+                    src={getValidReportImageUrl(item.image_url, item.category)}
+                    alt={item.category}
+                    className="w-12 h-12 rounded-md object-cover border border-border shrink-0"
+                    onError={(e) => {
+                      const fallback = getValidReportImageUrl('', item.category);
+                      if (e.currentTarget.src !== fallback) {
+                        e.currentTarget.src = fallback;
+                      }
+                    }}
+                  />
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
                       <h4 className="text-xs font-bold text-foreground capitalize truncate">

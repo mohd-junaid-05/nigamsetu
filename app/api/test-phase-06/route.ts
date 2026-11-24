@@ -32,8 +32,8 @@ export async function GET(): Promise<Response> {
     const { data: wards } = await adminClient.from('wards').select('id, name').limit(1);
     const wardId = wards?.[0]?.id || null;
 
-    // Use a clean test image URL for potholes
-    const testImageUrl = 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800';
+    // Use an authentic Indian municipal image for potholes
+    const testImageUrl = '/images/reports/road_pothole_1.webp';
 
     // Base point X in Bengaluru
     const latX = 12.935;

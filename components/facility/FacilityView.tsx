@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { FacilityComplaintItem } from '@/app/api/facility/complaints/route';
 import { FacilityItem } from '@/app/api/facilities/route';
+import { getValidReportImageUrl } from '@/lib/utils/reportImages';
 import ResolutionModal from './ResolutionModal';
 import {
   Building2,
@@ -371,9 +372,15 @@ export default function FacilityView({
                   {/* Evidence Thumbnail */}
                   <div className="relative w-full h-36 rounded-md overflow-hidden border border-border bg-surface-card">
                     <img
-                      src={c.image_url}
+                      src={getValidReportImageUrl(c.image_url, c.category)}
                       alt={c.category}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const fallback = getValidReportImageUrl('', c.category);
+                        if (e.currentTarget.src !== fallback) {
+                          e.currentTarget.src = fallback;
+                        }
+                      }}
                     />
                     <div className="absolute top-2 left-2 px-2 py-0.5 rounded bg-black/75 text-white font-mono text-[10px] font-bold capitalize">
                       {c.category}

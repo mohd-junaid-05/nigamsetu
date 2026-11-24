@@ -6,7 +6,7 @@ export function HeaderAuth() {
   const { isSignedIn, isLoaded } = useUser();
 
   if (!isLoaded) {
-    return <div className="w-7 h-7 rounded-full bg-white/10 animate-pulse" />;
+    return <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />;
   }
 
   return (
@@ -14,14 +14,16 @@ export function HeaderAuth() {
       {isSignedIn ? (
         <UserButton
           appearance={{
-            elements: { userButtonAvatarBox: 'w-7 h-7' },
+            elements: {
+              userButtonAvatarBox: 'w-8 h-8 ring-2 ring-white/20 hover:ring-[#FFB81D] transition-all',
+            },
           }}
         />
       ) : (
         <SignInButton mode="modal">
           <button
             type="button"
-            className="px-3 py-1 text-xs font-semibold rounded bg-[#1d70b8] text-white hover:bg-[#144e82] active:scale-[0.98] transition-all cursor-pointer"
+            className="px-3.5 py-1.5 text-xs font-bold rounded bg-white/15 text-white border border-white/20 hover:bg-white/25 active:scale-95 transition-all cursor-pointer shadow-xs"
           >
             Sign In
           </button>

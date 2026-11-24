@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { PriorityQueueItem } from '@/app/api/complaints/priority/route';
+import { getValidReportImageUrl, getValidResolutionImageUrl } from '@/lib/utils/reportImages';
 import {
   ShieldAlert,
   MapPin,
@@ -233,9 +234,15 @@ export default function ComplaintDetailPanel({
       {/* Main Evidence Photo Card */}
       <div className="relative w-full h-44 rounded-lg overflow-hidden border border-border bg-surface-card group">
         <img
-          src={complaint.image_url}
+          src={getValidReportImageUrl(complaint.image_url, complaint.category)}
           alt={complaint.category}
           className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-102"
+          onError={(e) => {
+            const fallback = getValidReportImageUrl('', complaint.category);
+            if (e.currentTarget.src !== fallback) {
+              e.currentTarget.src = fallback;
+            }
+          }}
         />
 
         {/* Category tag */}
@@ -358,9 +365,15 @@ export default function ComplaintDetailPanel({
               </span>
               <div className="relative w-full h-28 rounded-md overflow-hidden border border-border bg-black/60 group">
                 <img
-                  src={complaint.image_url}
+                  src={getValidReportImageUrl(complaint.image_url, complaint.category)}
                   alt="Before defect"
                   className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-102"
+                  onError={(e) => {
+                    const fallback = getValidReportImageUrl('', complaint.category);
+                    if (e.currentTarget.src !== fallback) {
+                      e.currentTarget.src = fallback;
+                    }
+                  }}
                 />
                 <span className="absolute bottom-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/75 text-[9px] font-bold text-white backdrop-blur-md">
                   Original Defect
@@ -376,9 +389,15 @@ export default function ComplaintDetailPanel({
               <div className="relative w-full h-28 rounded-md overflow-hidden border border-border bg-black/60 group">
                 {complaint.resolution_image_url ? (
                   <img
-                    src={complaint.resolution_image_url}
+                    src={getValidResolutionImageUrl(complaint.resolution_image_url, complaint.category) || getValidReportImageUrl('', complaint.category)}
                     alt="After resolution"
                     className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-102"
+                    onError={(e) => {
+                      const fallback = getValidResolutionImageUrl('', complaint.category) || getValidReportImageUrl('', complaint.category);
+                      if (e.currentTarget.src !== fallback) {
+                        e.currentTarget.src = fallback;
+                      }
+                    }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground text-[10px]">
