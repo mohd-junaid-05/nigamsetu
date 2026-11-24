@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { createAuthenticatedSupabaseClient } from '@/lib/supabase/server';
 import { CivicAgent, VerifyResolutionOutput, haversineDistanceMeters } from '@/lib/agent/CivicAgent';
 

@@ -4,6 +4,8 @@
 // Validates all 5 acceptance checks defined in phase-10.md
 // =====================================================================
 
+export const dynamic = 'force-dynamic';
+
 import { createAuthenticatedSupabaseClient } from '@/lib/supabase/server';
 import { CivicAgent, GenerateEscalationOutput } from '@/lib/agent/CivicAgent';
 
