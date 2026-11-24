@@ -1,4 +1,5 @@
-import { auth, clerkClient } from '@clerk/nextjs/server';
+import { clerkClient } from '@clerk/nextjs/server';
+import { getServerSession } from '@/lib/auth/session';
 import { z } from 'zod';
 
 const promoteRequestSchema = z.object({
@@ -22,26 +23,14 @@ type PromoteResponse = {
 /**
  * Admin promotion endpoint.
  * Promotes a user to official/admin and assigns a ward in Clerk publicMetadata.
+ * Strictly restricted to verified administrator (nigamsetupanel@gmail.com).
  */
 export async function POST(req: Request): Promise<Response> {
   try {
-    const { userId, sessionClaims } = await auth();
+    const session = await getServerSession();
 
-    // Verify authentication
-    if (!userId) {
-      return Response.json(
-        { success: false, message: 'Unauthorized: Authentication required' } satisfies PromoteResponse,
-        { status: 401 }
-      );
-    }
-
-    // Check caller's role (allow admin, or allow initial bootstrap in development)
-    const rawRole =
-      (sessionClaims?.role as string) ||
-      ((sessionClaims?.public_metadata as Record<string, unknown>)?.role as string);
-
-    const isDevelopment = process.env.NODE_ENV !== 'production';
-    if (rawRole !== 'admin' && !isDevelopment) {
+    // Verify authentication and administrator privilege
+    if (!session.isAuthenticated || session.role !== 'admin') {
       return Response.json(
         { success: false, message: 'Forbidden: Admin privilege required' } satisfies PromoteResponse,
         { status: 403 }

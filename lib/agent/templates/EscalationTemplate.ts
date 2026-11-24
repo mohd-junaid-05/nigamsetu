@@ -52,7 +52,7 @@ export class MaharashtraRTITemplate extends EscalationTemplate {
     const complainantName = 'Citizen Representative (Ward Resident - Identity Protected)';
     const address = data.addressText || `${data.wardName}, ${data.city}, ${data.state}`;
     const phone = '+91 •••••••••• (Privacy Redacted)';
-    const email = 'sessionbyilder7@gmail.com';
+    const email = 'nigamsetupanel@gmail.com';
     const today = new Date().toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'long',
@@ -60,13 +60,13 @@ export class MaharashtraRTITemplate extends EscalationTemplate {
     });
 
     return `[HACKATHON DEMO & SHOWCASE MODE — NO EXTERNAL GOVERNMENT BODIES OR ENDPOINTS CONTACTED]
-[All statutory notices and grievance reports are routed exclusively to: sessionbyilder7@gmail.com]
+[All statutory notices and grievance reports are routed exclusively to: nigamsetupanel@gmail.com]
 
 To,
-The Public Information Officer / Designated Authority (sessionbyilder7@gmail.com),
+The Public Information Officer / Designated Authority (nigamsetupanel@gmail.com),
 Department of Municipal Grievance Redressal,
 Greater Hyderabad Municipal Corporation (GHMC), CC Complex, Tank Bund Road, Hyderabad, Telangana — 500063,
-Official Recipient Inbox: sessionbyilder7@gmail.com.
+Official Recipient Inbox: nigamsetupanel@gmail.com.
 
 Subject: Application under Section 6(1) of the Right to Information Act, 2005
 
@@ -118,7 +118,7 @@ export class GeneralCommissionerTemplate extends EscalationTemplate {
     const complainantName = 'Citizen Representative (Ward Resident - Identity Protected)';
     const address = data.addressText || `${data.wardName}, ${data.city}, ${data.state}`;
     const phone = '+91 •••••••••• (Privacy Redacted)';
-    const email = 'sessionbyilder7@gmail.com';
+    const email = 'nigamsetupanel@gmail.com';
     const today = new Date().toLocaleDateString('en-IN', {
       day: 'numeric',
       month: 'long',
@@ -147,12 +147,12 @@ export class GeneralCommissionerTemplate extends EscalationTemplate {
         : 'Ongoing civic impairment impacting residents, daily transit, and municipal hygiene.');
 
     return `[HACKATHON DEMO & SHOWCASE MODE — NO EXTERNAL GOVERNMENT BODIES OR ENDPOINTS CONTACTED]
-[All statutory notices and grievance reports are routed exclusively to: sessionbyilder7@gmail.com]
+[All statutory notices and grievance reports are routed exclusively to: nigamsetupanel@gmail.com]
 
 To,
-The Municipal Commissioner / Designated Authority (sessionbyilder7@gmail.com),
+The Municipal Commissioner / Designated Authority (nigamsetupanel@gmail.com),
 Greater Hyderabad Municipal Corporation (GHMC), CC Complex, Tank Bund Road, Hyderabad, Telangana — 500063,
-Official Recipient Inbox: sessionbyilder7@gmail.com.
+Official Recipient Inbox: nigamsetupanel@gmail.com.
 
 Subject: Appeal regarding non-redressal of civic complaint ${data.complaintId}
 
@@ -216,13 +216,13 @@ export class WardOfficerTemplate extends EscalationTemplate {
     });
 
     return `[HACKATHON DEMO & SHOWCASE MODE — NO EXTERNAL GOVERNMENT BODIES OR ENDPOINTS CONTACTED]
-[All statutory notices and grievance reports are routed exclusively to: sessionbyilder7@gmail.com]
+[All statutory notices and grievance reports are routed exclusively to: nigamsetupanel@gmail.com]
 
 To,
-The Ward Officer / Assistant Commissioner (sessionbyilder7@gmail.com),
+The Ward Officer / Assistant Commissioner (nigamsetupanel@gmail.com),
 ${data.wardName},
 Greater Hyderabad Municipal Corporation (GHMC), CC Complex, Tank Bund Road, Hyderabad, Telangana — 500063,
-Official Recipient Inbox: sessionbyilder7@gmail.com.
+Official Recipient Inbox: nigamsetupanel@gmail.com.
 
 Subject: Urgent Grievance Notice: Overdue civic complaint #${data.complaintId}
 
@@ -248,7 +248,7 @@ Kindly confirm initiation of corrective action within 48 hours.
 Respectfully,
 ${complainantName}
 ${address}
-Official Recipient: sessionbyilder7@gmail.com
+Official Recipient: nigamsetupanel@gmail.com
 Date: ${today}`;
   }
 }

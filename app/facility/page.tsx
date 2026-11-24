@@ -1,6 +1,8 @@
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { connection } from 'next/server';
+import Link from 'next/link';
+import { Building2 } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Facility Depot & Field Crew Portal',
@@ -22,6 +24,43 @@ async function FacilityContent({ searchParams }: FacilityPageProps) {
   await connection();
   const session = await getServerSession();
   const queryParams = await searchParams;
+
+  // Route Guard: Strictly restricted to municipal facility contractors and administrators
+  const isAuthorized = session.isAuthenticated && (session.role === 'admin' || session.role === 'official' || session.role === 'facility');
+  if (!isAuthorized) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] p-6 text-center bg-surface">
+        <div className="max-w-md w-full p-8 rounded-2xl border border-border bg-surface-card shadow-lg flex flex-col items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+            <Building2 className="w-8 h-8" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <h2 className="text-lg font-bold text-foreground">Depot Facility Access Required</h2>
+            <p className="text-sm font-semibold text-muted-foreground">
+              Municipal contractor or administrator credentials required to manage work orders.
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground/80 leading-relaxed">
+            Facility depots are reserved for municipal repair crews to upload repair proof and log resolution timestamps.
+          </p>
+          <div className="pt-2 flex gap-3">
+            <Link
+              href="/"
+              className="py-2 px-4 rounded-xl border border-border text-xs font-semibold hover:bg-surface transition-colors"
+            >
+              Return Home
+            </Link>
+            <Link
+              href="/report"
+              className="py-2 px-4 rounded-xl bg-[#FFB81D] text-[#071D49] text-xs font-bold hover:bg-amber-300 transition-colors shadow-xs"
+            >
+              Report an Issue
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // In showcase mode, allow smooth depot inspection for evaluators and depot managers
   const supabase = await createServerSupabaseClient();

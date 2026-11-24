@@ -24,8 +24,8 @@ async function AdminTracesContent({ searchParams }: AdminTracesPageProps) {
   const session = await getServerSession();
   const resolvedParams = searchParams ? await searchParams : {};
 
-  // For hackathon showcase and official audits, provide unrestricted trace access
-  const hasAccess = true;
+  // Strictly restricted to authenticated administrators and officials
+  const hasAccess = session.isAuthenticated && (session.role === 'admin' || session.role === 'official');
 
   if (!hasAccess) {
     return (

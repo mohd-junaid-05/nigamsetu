@@ -24,7 +24,45 @@ async function DashboardContent({ searchParams }: DashboardPageProps) {
   await connection();
   const session = await getServerSession();
   const resolvedParams = searchParams ? await searchParams : {};
-  // Seamless fallback for hackathon demonstration: default to Ward 150 (Bellandur)
+
+  // Route Guard: Strictly restricted to official and administrator credentials
+  const isAuthorized = session.isAuthenticated && (session.role === 'admin' || session.role === 'official');
+  if (!isAuthorized) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] p-6 text-center bg-surface">
+        <div className="max-w-md w-full p-8 rounded-2xl border border-border bg-surface-card shadow-lg flex flex-col items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+            <ShieldCheck className="w-8 h-8" />
+          </div>
+          <div className="flex flex-col gap-1">
+            <h2 className="text-lg font-bold text-foreground">Municipal Official Access Required</h2>
+            <p className="text-sm font-semibold text-muted-foreground">
+              Citizen accounts cannot access internal municipal triage operations.
+            </p>
+          </div>
+          <p className="text-xs text-muted-foreground/80 leading-relaxed">
+            To report civic defects or track your complaints, please visit the citizen portal. Official operations are restricted to verified GHMC ward officers and administrators.
+          </p>
+          <div className="pt-2 flex gap-3">
+            <Link
+              href="/"
+              className="py-2 px-4 rounded-xl border border-border text-xs font-semibold hover:bg-surface transition-colors"
+            >
+              Return Home
+            </Link>
+            <Link
+              href="/report"
+              className="py-2 px-4 rounded-xl bg-[#FFB81D] text-[#071D49] text-xs font-bold hover:bg-amber-300 transition-colors shadow-xs"
+            >
+              Report an Issue
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Target ward: default to Ward 104 (Banjara Hills)
   const effectiveWardId = session.wardId || resolvedParams?.wardId || 'a0000000-0000-0000-0000-000000000001';
 
   // Acceptance Check 7: Empty state when official has no ward assigned

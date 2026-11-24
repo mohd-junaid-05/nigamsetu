@@ -301,7 +301,7 @@ export function SuccessScreen({
         </div>
         <p className="text-[11px] text-muted-foreground leading-relaxed">
           The full complaint report and evidentiary photos have been dispatched to the designated official authority inbox:
-          <span className="block font-mono font-bold text-foreground mt-0.5">sessionbyilder7@gmail.com</span>
+          <span className="block font-mono font-bold text-foreground mt-0.5">nigamsetupanel@gmail.com</span>
         </p>
       </div>
 

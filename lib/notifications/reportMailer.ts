@@ -15,8 +15,7 @@ export interface ComplaintReportPayload {
 }
 
 export const SHOWCASE_RECIPIENT_EMAILS = [
-  'sessionbyilder7@gmail.com',
-  'sessionbyilder@gmail.com',
+  'nigamsetupanel@gmail.com',
 ];
 
 /**

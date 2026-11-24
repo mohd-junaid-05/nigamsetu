@@ -694,10 +694,10 @@ export default function ComplaintDetailPanel({
         </div>
         <p className="text-[11px] text-muted-foreground leading-relaxed">
           Case reports, AI verification scores, and statutory appeals for this ticket are routed to:
-          <strong className="block text-foreground font-mono mt-0.5">sessionbyilder7@gmail.com & sessionbyilder@gmail.com</strong>
+          <strong className="block text-foreground font-mono mt-0.5">nigamsetupanel@gmail.com</strong>
         </p>
         <a
-          href={`mailto:sessionbyilder7@gmail.com,sessionbyilder@gmail.com?subject=${encodeURIComponent(`[NigamSetu Report] Ticket #${complaint.id}: ${complaint.category.toUpperCase()}`)}&body=${encodeURIComponent(`NigamSetu Municipal Grievance Report\nTicket ID: #${complaint.id}\nCategory: ${complaint.category}\nStatus: ${complaint.status}\nSeverity: ${complaint.severity}\nLocation: ${complaint.address_text || 'Ward'}\nProof: ${complaint.image_url || 'N/A'}`)}`}
+          href={`mailto:nigamsetupanel@gmail.com?subject=${encodeURIComponent(`[NigamSetu Report] Ticket #${complaint.id}: ${complaint.category.toUpperCase()}`)}&body=${encodeURIComponent(`NigamSetu Municipal Grievance Report\nTicket ID: #${complaint.id}\nCategory: ${complaint.category}\nStatus: ${complaint.status}\nSeverity: ${complaint.severity}\nLocation: ${complaint.address_text || 'Ward'}\nProof: ${complaint.image_url || 'N/A'}`)}`}
           className="mt-0.5 inline-flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-md border border-border bg-surface hover:bg-surface-hover text-foreground text-xs font-semibold transition-all cursor-pointer"
         >
           <Mail className="w-3 h-3 text-blue-600" />
