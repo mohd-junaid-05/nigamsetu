@@ -54,9 +54,7 @@ export default function DashboardController({
   const refreshQueue = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      const url = wardId
-        ? `/api/complaints/priority?wardId=${encodeURIComponent(wardId)}`
-        : '/api/complaints/priority';
+      const url = '/api/complaints/priority';
       const res = await fetch(url);
       const data = await res.json();
       if (data.success && Array.isArray(data.items)) {
@@ -75,14 +73,12 @@ export default function DashboardController({
     } finally {
       setIsRefreshing(false);
     }
-  }, [wardId]);
+  }, []);
 
   // Fetch escalations from API
   const fetchEscalations = useCallback(async () => {
     try {
-      const url = wardId
-        ? `/api/escalations?wardId=${encodeURIComponent(wardId)}`
-        : '/api/escalations';
+      const url = '/api/escalations';
       const res = await fetch(url);
       const data = await res.json();
       if (data.success && Array.isArray(data.escalations)) {
@@ -91,7 +87,7 @@ export default function DashboardController({
     } catch (err) {
       console.warn('[DashboardController] Failed to fetch escalations:', err);
     }
-  }, [wardId]);
+  }, []);
 
   useEffect(() => {
     fetchEscalations();
@@ -277,7 +273,7 @@ export default function DashboardController({
               Municipal Operations Centre
             </div>
             <h1 className="text-lg font-black text-white tracking-tight">
-              {wardName} — Complaint Command Dashboard
+              All User Complaints — Command Dashboard
             </h1>
           </div>
 
@@ -330,7 +326,7 @@ export default function DashboardController({
           }`}
         >
           <Map className="w-3.5 h-3.5" />
-          <span>Ward Map</span>
+          <span>Live Map</span>
         </button>
         <button
           onClick={() => setActiveTab('details')}
@@ -420,7 +416,7 @@ export default function DashboardController({
                 <Map className="w-3.5 h-3.5" />
               </div>
               <h2 className="text-xs font-bold text-foreground">
-                {wardName} — Geospatial Operations
+                Live Municipal Map — Geospatial Operations
               </h2>
             </div>
             <span className="text-[10px] text-muted-foreground font-mono">

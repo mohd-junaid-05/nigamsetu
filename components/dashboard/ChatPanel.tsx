@@ -71,11 +71,6 @@ export default function ChatPanel({
     const textToSend = (queryText ?? inputValue).trim();
     if (!textToSend || isLoading) return;
 
-    if (!wardId) {
-      alert('Ward access required to query municipal complaint data.');
-      return;
-    }
-
     const userMessageId = `user-${Date.now()}`;
     const userMessage: ChatMessage = {
       id: userMessageId,
@@ -92,7 +87,7 @@ export default function ChatPanel({
       const res = await fetch('/api/agent/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: textToSend, wardId }),
+        body: JSON.stringify({ query: textToSend, wardId: wardId || null }),
       });
 
       const data = await res.json();
@@ -207,9 +202,9 @@ export default function ChatPanel({
             <Sparkles className="w-3.5 h-3.5" />
           </div>
           <div>
-            <h3 className="font-bold text-foreground text-xs leading-tight">Ward Copilot</h3>
+            <h3 className="font-bold text-foreground text-xs leading-tight">Municipal Copilot</h3>
             <span className="text-[10px] text-muted-foreground font-mono">
-              Scoped to {wardName}
+              All User Complaints Intake
             </span>
           </div>
         </div>
@@ -368,7 +363,7 @@ export default function ChatPanel({
             onChange={(e) => setInputValue(e.target.value)}
             onKeyDown={handleKeyDown}
             disabled={isLoading}
-            placeholder={`Ask about complaints in ${wardName}...`}
+            placeholder="Ask about complaints (e.g. how many critical potholes)..."
             className="flex-1 px-3 py-2 text-xs rounded-md border border-border bg-surface text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-[#071D49] dark:focus:ring-[#1d70b8] disabled:opacity-50"
           />
           <button

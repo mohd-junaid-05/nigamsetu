@@ -7,7 +7,7 @@ import { generateEscalationPdf } from '@/lib/pdf/generateEscalationPdf';
 
 export interface AgentContext {
   complaintId?: string;
-  wardId?: string;
+  wardId?: string | null;
   userRole?: 'citizen' | 'official' | 'admin' | string;
   // Supabase client instance passed from server context to avoid coupling CivicAgent to Next.js
   supabase?: any;
@@ -151,7 +151,7 @@ export interface GenerateEscalationOutput {
 
 export const answerChatInputSchema = z.object({
   query: z.string().min(1, 'Query is required'),
-  wardId: z.string().min(1, 'Ward ID is required'),
+  wardId: z.string().nullable().optional(),
   userRole: z.string().optional().default('official'),
 });
 
@@ -1561,11 +1561,7 @@ export class CivicAgent {
       ): Promise<AnswerChatOutput> => {
         const startTime = Date.now();
         const effectiveSupabase = context?.supabase || this.supabase;
-        const targetWardId = args.wardId || context?.wardId;
-
-        if (!targetWardId) {
-          throw new Error('wardId is required for answerChat');
-        }
+        const targetWardId = args.wardId || context?.wardId || null;
 
         // Step 1: Parse natural language query to structured filter
         const { filter, modelUsed: parseModel } = await this.parseChatQueryToFilter(args.query);
@@ -1574,7 +1570,7 @@ export class CivicAgent {
         if (filter.is_off_topic) {
           const latencyMs = Date.now() - startTime;
           const output: AnswerChatOutput = {
-            answer: 'I can only answer questions about complaints in your ward. Try asking about category, status, or date.',
+            answer: 'I can only answer questions about municipal complaints. Try asking about category, status, or date.',
             dataQuery: '',
             resultCount: 0,
             sources: [],
@@ -1650,8 +1646,11 @@ export class CivicAgent {
               // Fallback to direct supabase table query builder
               let qb = effectiveSupabase
                 .from('complaints')
-                .select('id, category, severity, status, description, address_text, created_at, sla_deadline, cluster_id', { count: 'exact' })
-                .eq('ward_id', targetWardId);
+                .select('id, category, severity, status, description, address_text, created_at, sla_deadline, cluster_id', { count: 'exact' });
+
+              if (targetWardId) {
+                qb = qb.eq('ward_id', targetWardId);
+              }
 
               if (filter.category) qb = qb.eq('category', filter.category);
               if (filter.severity) qb = qb.eq('severity', filter.severity);
@@ -2214,14 +2213,17 @@ Respond ONLY with JSON.`,
    * Guarantees strict scoping to official's ward and prevents malformed SQL.
    */
   public buildChatSqlQuery(
-    wardId: string,
+    wardId: string | null | undefined,
     filter: StructuredChatFilter,
     queryText: string
   ): string {
     const lower = queryText.toLowerCase().trim();
     const isCountQuery = lower.startsWith('how many') || filter.query_type === 'count' || filter.query_type === 'count_and_list';
 
-    const whereClauses: string[] = [`ward_id = '${wardId}'`];
+    const whereClauses: string[] = [];
+    if (wardId) {
+      whereClauses.push(`ward_id = '${wardId}'`);
+    }
 
     if (filter.category) {
       whereClauses.push(`category = '${filter.category}'`);
@@ -2272,7 +2274,7 @@ Respond ONLY with JSON.`,
       whereClauses.push(`sla_deadline >= NOW()`);
     }
 
-    const whereStr = whereClauses.join(' AND ');
+    const whereStr = whereClauses.length > 0 ? whereClauses.join(' AND ') : '1=1';
 
     if (isCountQuery) {
       return `SELECT COUNT(*) FROM complaints WHERE ${whereStr};`;

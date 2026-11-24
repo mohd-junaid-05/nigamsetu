@@ -89,25 +89,8 @@ export async function POST(req: Request): Promise<Response> {
     const body: ChatApiRequest = await req.json();
     const query = typeof body.query === 'string' ? body.query.trim() : '';
 
-    // Admin can query a specific ward if requested, but official is strictly locked to their ward
-    const targetWardId =
-      effectiveRole === 'admin' && body.wardId ? body.wardId : effectiveWardId;
-
-    if (!targetWardId) {
-      return Response.json(
-        {
-          success: false,
-          error: 'No ward assigned. Contact your administrator.',
-          answer: '',
-          dataQuery: '',
-          resultCount: 0,
-          sources: [],
-          modelUsed: '',
-          latencyMs: 0,
-        } satisfies ChatApiResponse,
-        { status: 400 }
-      );
-    }
+    // Support global intake queries across all wards or optionally filter by wardId
+    const targetWardId = body.wardId || effectiveWardId || null;
 
     if (!query) {
       return Response.json(
@@ -130,11 +113,11 @@ export async function POST(req: Request): Promise<Response> {
       'answerChat',
       {
         query,
-        wardId: targetWardId,
+        wardId: targetWardId ?? undefined,
         userRole: effectiveRole,
       },
       {
-        wardId: targetWardId,
+        wardId: targetWardId ?? undefined,
         userRole: effectiveRole,
         supabase,
       }

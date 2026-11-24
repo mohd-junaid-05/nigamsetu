@@ -23,7 +23,6 @@ interface DashboardPageProps {
 async function DashboardContent({ searchParams }: DashboardPageProps) {
   await connection();
   const session = await getServerSession();
-  const resolvedParams = searchParams ? await searchParams : {};
 
   // Route Guard: Strictly restricted to official and administrator credentials
   const isAuthorized = session.isAuthenticated && (session.role === 'admin' || session.role === 'official');
@@ -41,7 +40,7 @@ async function DashboardContent({ searchParams }: DashboardPageProps) {
             </p>
           </div>
           <p className="text-xs text-muted-foreground/80 leading-relaxed">
-            To report civic defects or track your complaints, please visit the citizen portal. Official operations are restricted to verified GHMC ward officers and administrators.
+            To report civic defects or track your complaints, please visit the citizen portal. Official operations are restricted to verified administrators and officials.
           </p>
           <div className="pt-2 flex gap-3">
             <Link
@@ -62,38 +61,12 @@ async function DashboardContent({ searchParams }: DashboardPageProps) {
     );
   }
 
-  // Target ward: default to Ward 104 (Banjara Hills)
-  const effectiveWardId = session.wardId || resolvedParams?.wardId || 'a0000000-0000-0000-0000-000000000001';
-
-  // Acceptance Check 7: Empty state when official has no ward assigned
-  if (!effectiveWardId) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] p-6 text-center bg-surface">
-        <div className="max-w-md w-full p-8 rounded-2xl border border-border bg-surface-card shadow-lg flex flex-col items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
-            <AlertCircle className="w-8 h-8" />
-          </div>
-          <div className="flex flex-col gap-1">
-            <h2 className="text-lg font-bold text-foreground">Ward Access Required</h2>
-            <p className="text-sm font-semibold text-muted-foreground">
-              No ward assigned. Contact your administrator.
-            </p>
-          </div>
-          <p className="text-xs text-muted-foreground/80 leading-relaxed">
-            Municipal officials must be assigned to an active municipal ward boundary to triage tickets, inspect evidence, and route maintenance crews.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Load Initial Priority Queue & Ward Facilities on the server
+  // Load Priority Queue & Facilities across all locations (irrespective of ward)
   const supabase = createAnonymousSupabaseClient();
 
-  const [queueRes, facilitiesRes, wardRes] = await Promise.all([
-    supabase.rpc('get_priority_queue', { target_ward_id: effectiveWardId }),
-    supabase.rpc('get_ward_facilities', { target_ward_id: effectiveWardId }),
-    supabase.from('wards').select('name').eq('id', effectiveWardId).maybeSingle(),
+  const [queueRes, facilitiesRes] = await Promise.all([
+    supabase.rpc('get_priority_queue', { target_ward_id: null }),
+    supabase.rpc('get_ward_facilities', { target_ward_id: null }),
   ]);
 
   const rawQueue = (queueRes.data as any[]) || [];
@@ -129,7 +102,7 @@ async function DashboardContent({ searchParams }: DashboardPageProps) {
     lng: typeof f.lng === 'number' ? f.lng : 78.4350,
   }));
 
-  const wardName = wardRes.data?.name || `Ward ${effectiveWardId.slice(0, 8)}`;
+  const dashboardTitle = 'All User Complaints';
 
   return (
     <div className="flex-1 flex flex-col bg-surface min-h-[calc(100vh-4rem)]">
@@ -151,55 +124,26 @@ async function DashboardContent({ searchParams }: DashboardPageProps) {
                 </span>
               </div>
               <p className="text-xs text-muted-foreground">
-                Desktop-first 3-panel command center for priority triage, facility routing, and fix verification.
+                Desktop-first unified command center for priority triage, facility routing, and fix verification across all locations.
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-1.5 bg-surface border border-border rounded-lg p-1">
-              <span className="text-[11px] font-semibold text-muted-foreground px-1.5">Ward:</span>
-              <Link
-                href="/dashboard?wardId=a0000000-0000-0000-0000-000000000001"
-                className={`px-2.5 py-1 text-xs rounded-md font-semibold transition-all ${
-                  effectiveWardId === 'a0000000-0000-0000-0000-000000000001'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-surface-card'
-                }`}
-              >
-                Banjara Hills (104)
-              </Link>
-              <Link
-                href="/dashboard?wardId=a0000000-0000-0000-0000-000000000002"
-                className={`px-2.5 py-1 text-xs rounded-md font-semibold transition-all ${
-                  effectiveWardId === 'a0000000-0000-0000-0000-000000000002'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-surface-card'
-                }`}
-              >
-                Gachibowli (107)
-              </Link>
-              <Link
-                href="/dashboard?wardId=a0000000-0000-0000-0000-000000000003"
-                className={`px-2.5 py-1 text-xs rounded-md font-semibold transition-all ${
-                  effectiveWardId === 'a0000000-0000-0000-0000-000000000003'
-                    ? 'bg-blue-600 text-white shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-surface-card'
-                }`}
-              >
-                Charminar (69)
-              </Link>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/10 border border-blue-500/20 rounded-lg text-xs font-semibold text-blue-700 dark:text-blue-300">
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+              <span>Global Intake Stream · All User Complaints</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3-Panel Controller (Queue 25% | Ward Map 50% | Details 25%) */}
+      {/* 3-Panel Controller (Queue 25% | Map 50% | Details 25%) */}
       <DashboardController
         initialQueue={initialQueue}
         facilities={facilities}
-        wardId={effectiveWardId}
-        wardName={wardName}
+        wardId={null}
+        wardName={dashboardTitle}
       />
     </div>
   );
