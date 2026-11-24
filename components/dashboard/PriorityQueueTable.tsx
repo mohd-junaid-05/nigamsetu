@@ -151,11 +151,21 @@ export default function PriorityQueueTable({
         </button>
       </div>
 
-      {filteredItems.length === 0 ? (
+      {items.length === 0 ? (
+        <div className="p-12 flex-1 flex flex-col items-center justify-center text-center text-xs text-muted-foreground">
+          <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-3">
+            <CheckCircle2 className="w-6 h-6" />
+          </div>
+          <h3 className="text-sm font-black text-foreground uppercase tracking-tight">No Complaints</h3>
+          <p className="text-[11px] mt-1 text-muted-foreground max-w-[220px] leading-relaxed">
+            All civic issues in this ward have been resolved or none are currently open.
+          </p>
+        </div>
+      ) : filteredItems.length === 0 ? (
         <div className="p-8 flex-1 flex flex-col items-center justify-center text-center text-xs text-muted-foreground">
           <Layers className="w-8 h-8 mb-2 opacity-40 text-blue-600" />
-          <p className="font-semibold text-foreground">No Tickets In Filter</p>
-          <p className="text-[11px] mt-1">All tickets in this view have been processed or moved.</p>
+          <p className="font-semibold text-foreground">No Complaints</p>
+          <p className="text-[11px] mt-1">No complaints match the selected status filter.</p>
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto divide-y divide-border">

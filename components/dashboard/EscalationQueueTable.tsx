@@ -159,12 +159,22 @@ export default function EscalationQueueTable({
 
       {/* Escalations List */}
       <div className="flex-1 overflow-y-auto divide-y divide-border">
-        {filteredItems.length === 0 ? (
+        {items.length === 0 ? (
+          <div className="p-10 text-center flex flex-col items-center justify-center text-muted-foreground space-y-2">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mb-1">
+              <CheckCircle2 className="w-5 h-5" />
+            </div>
+            <p className="text-sm font-black text-foreground uppercase tracking-tight">No Complaints</p>
+            <p className="text-[11px] text-muted-foreground max-w-xs">
+              No breached or escalated complaints pending for this ward.
+            </p>
+          </div>
+        ) : filteredItems.length === 0 ? (
           <div className="p-8 text-center flex flex-col items-center justify-center text-muted-foreground space-y-2">
             <FileText className="w-8 h-8 opacity-40 text-blue-600" />
-            <p className="text-xs font-semibold text-foreground">No Escalated Complaints</p>
+            <p className="text-xs font-semibold text-foreground">No Complaints</p>
             <p className="text-[11px] text-muted-foreground max-w-xs">
-              Complaints that breach SLA or fail verification will appear here with statutory deadlines.
+              No complaints match the selected filter query.
             </p>
           </div>
         ) : (

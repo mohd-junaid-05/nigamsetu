@@ -61,6 +61,14 @@ export default function DashboardController({
       const data = await res.json();
       if (data.success && Array.isArray(data.items)) {
         setQueue(data.items);
+        // Automatically sync selectedId if the previously selected item was removed or newly loaded
+        setSelectedId((prev) => {
+          if (!prev && data.items.length > 0) return data.items[0].id;
+          if (prev && !data.items.some((i: PriorityQueueItem) => i.id === prev)) {
+            return data.items.length > 0 ? data.items[0].id : null;
+          }
+          return prev;
+        });
       }
     } catch (err) {
       console.warn('[DashboardController] Realtime refresh error:', err);
